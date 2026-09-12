@@ -1,0 +1,166 @@
+{
+  "recordedAt": "2026-09-12T15:45:43.505Z",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "public deterministic rehearsal only",
+  "deploymentId": "dpl_4a3Ju9SuPXCeaj3uszR559YBpEeG",
+  "sourceCommit": "2ca68b3",
+  "checks": [
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/demo",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/login",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/app",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/runs/public-probe",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/api/session",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/merchant/wallet-snapshot",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/tools/wallet_snapshot",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/server/index.ts",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/api/runs",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "path": "/demo",
+      "method": "POST",
+      "status": 405
+    }
+  ],
+  "assets": [
+    {
+      "path": "/index.html",
+      "status": 200,
+      "localSha256": "232a3e4f714c32ff9199d4c7eb170d26eb909d6b051efbd76f9df4f4adda62be",
+      "remoteSha256": "232a3e4f714c32ff9199d4c7eb170d26eb909d6b051efbd76f9df4f4adda62be",
+      "matches": true
+    },
+    {
+      "path": "/favicon.svg",
+      "status": 200,
+      "localSha256": "a94ea359184b0ab92a5057baa9c66ebe19f828d520ddf5007978c81e7c295ea3",
+      "remoteSha256": "a94ea359184b0ab92a5057baa9c66ebe19f828d520ddf5007978c81e7c295ea3",
+      "matches": true
+    },
+    {
+      "path": "/allowance-symbol.svg",
+      "status": 200,
+      "localSha256": "a94ea359184b0ab92a5057baa9c66ebe19f828d520ddf5007978c81e7c295ea3",
+      "remoteSha256": "a94ea359184b0ab92a5057baa9c66ebe19f828d520ddf5007978c81e7c295ea3",
+      "matches": true
+    },
+    {
+      "path": "/allowance-wordmark.svg",
+      "status": 200,
+      "localSha256": "fc70b2d9bbf1f5c6a84347945a297b46ed0591f90fdda2d9e46bef72c6d7a303",
+      "remoteSha256": "fc70b2d9bbf1f5c6a84347945a297b46ed0591f90fdda2d9e46bef72c6d7a303",
+      "matches": true
+    },
+    {
+      "path": "/assets/index-BvBWThZR.css",
+      "status": 200,
+      "localSha256": "eb3bb89f70a8780aac1ba5815c257a503c6a12c5c2c88e01cc9ff8d0901c5de8",
+      "remoteSha256": "eb3bb89f70a8780aac1ba5815c257a503c6a12c5c2c88e01cc9ff8d0901c5de8",
+      "matches": true
+    },
+    {
+      "path": "/assets/index-CU6ps6CW.js",
+      "status": 200,
+      "localSha256": "c2511e14435439f59b9442ad1c665b3fb14885f665f99393b4235d8817ebafb1",
+      "remoteSha256": "c2511e14435439f59b9442ad1c665b3fb14885f665f99393b4235d8817ebafb1",
+      "matches": true
+    }
+  ],
+  "validation": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "normalProductionBuild": "passed",
+    "staticRehearsalBuild": "passed",
+    "unitIntegrationTestsPassed": 75,
+    "normalBrowserJourneysPassed": 4,
+    "normalBrowserDurationSeconds": 44.2,
+    "localHostedJourneysPassed": 2,
+    "localHostedDurationSeconds": 13.6,
+    "productionHostedJourneysPassed": 2,
+    "productionHostedDurationSeconds": 16.0,
+    "productionReceiptPdf": "Both pages visually inspected; complete timeline, receipt, denied probe and brief",
+    "normalPrintFollowup": "Passed after print fix in 8.3 seconds including server startup",
+    "independentDeploymentReview": "approved",
+    "printAnimationFix": "reviewed and tested for immediate visibility"
+  },
+  "realAllowanceDevnetSettlement": "not performed",
+  "paidModelCall": "not performed"
+}

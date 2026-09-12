@@ -6,7 +6,7 @@ Recorded on **September 12, 2026**. This report distinguishes local controlled t
 
 The application, public rehearsal, operator access, durable SQLite ledger, exact x402 HTTP buyer/merchants, bounded Responses API runner, receipt UI, developer example, SVG identity, Docker setup and submission drafts are implemented. Live payments remain **unavailable in the delivered configuration**. No real Allowance devnet settlement or paid OpenAI call was performed. The hackathon working-payment demonstration is therefore **not yet evidenced**.
 
-## Local verification
+## Initial local verification
 
 | Check                                 | Result                                                                                                                                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -24,7 +24,7 @@ The application, public rehearsal, operator access, durable SQLite ledger, exact
 | Read-only application preflight       | Exited 1 with exact missing configuration; data RPC check passed                                                                                                                                                   |
 | Docker image execution                | Not executed; Dockerfile and volume instructions supplied                                                                                                                                                          |
 
-Final command results are recorded in `evidence/local-checks.json`. Desktop and mobile captures were visually inspected after the passing browser suite. The private screenshot is explicitly a controlled authentication test with no purchases or live settlement.
+Initial command results are recorded in `evidence/local-checks.json`. Desktop and mobile captures were visually inspected after the passing browser suite. The private screenshot is explicitly a controlled authentication test with no purchases or live settlement.
 
 The private browser harness also passed three parallel repetitions after isolating each worker's port. Lint and TypeScript passed again after the final test changes; a separate reviewer approved the browser harness and public network-isolation assertions.
 
@@ -74,6 +74,16 @@ The observed application preflight at **2026-09-12T12:41:50Z** reported:
 8. `DEMO_WALLET` with at least two suitable transactions for repeatability.
 
 Default devnet RPC reads passed; they may later need a separately configured reliable endpoint. Run `npm run preflight`, then, after setup and deliberate test spending authorization, `npm run smoke:devnet -- --confirm-devnet-spend`. Stop the local app first because the standalone smoke command owns its merchant listener. The command writes dated evidence and requires two delivered, independently chain-verified purchases plus the separate blocked probe before reporting the scenario demonstrated. It makes no LLM call; an autonomous operator run is a separate trace.
+
+## Public Vercel rehearsal follow-up
+
+On September 12, 2026, the user authorized public deployment. The static rehearsal is now available at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The live backend is not deployed there: the output contains only six static files and routing configuration, with no functions, database, signer or model runtime.
+
+The deployment follow-up passed lint, TypeScript, both builds, all 75 controlled tests, four normal browser journeys and two hosted journeys. An independent reviewer approved the deployment boundary, routing, Content Security Policy, and print fix. A print regression test confirms newly revealed timeline entries are immediately visible without waiting for screen animations.
+
+Public HTTP verification confirmed the six page routes return 200, API/merchant/source/secret-file paths return 404, and POST to the rehearsal returns 405. All published static assets match their local SHA-256 hashes. The exact deployed revision, deployment ID, recording time and final browser results are in `evidence/vercel-deployment.json`. Screenshots and the PDF under `evidence/hosted-*` come from the public site and still show only deterministic fixtures.
+
+A persistent backend hosting target remains to be selected. Operator credentials, a dedicated devnet payer, recipient/token accounts, trusted sponsor, provider configuration, a prepared data wallet and test funding remain required for live execution. No devnet payment or paid model request was made as part of this deployment, and the hackathon working-payment demonstration remains unevidenced.
 
 ## Practical limits
 
