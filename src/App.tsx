@@ -53,6 +53,7 @@ import {
 } from '../shared/domain';
 import { api, downloadJSON, type Session } from './api';
 import { createDemo, demoProbe, fixtureStep, type DemoScenario } from './demo';
+import { rehearsalOnly } from './deployment';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -103,7 +104,7 @@ function Header() {
           </Link>
           <span className="nav-divider" />
           <Link className="button button-small button-outline" to="/app">
-            Open console <ArrowUpRight size={15} />
+            {rehearsalOnly ? 'About live runs' : 'Open console'} <ArrowUpRight size={15} />
           </Link>
         </nav>
       </div>
@@ -120,7 +121,9 @@ function Footer() {
       <div className="footer-right">
         <span>Built for Solana agentic payments</span>
         <span className="small muted">
-          First-party tools · Devnet payments · Working product name
+          {rehearsalOnly
+            ? 'Public rehearsal · Fixture receipts · No onchain payments'
+            : 'First-party tools · Devnet payments · Working product name'}
         </span>
       </div>
     </footer>
@@ -391,7 +394,9 @@ function Landing() {
               <span>
                 No account. No wallet. No spending.
                 <br />
-                <b>Just a working example.</b>
+                <b>
+                  {rehearsalOnly ? 'This site is a public rehearsal.' : 'Just a working example.'}
+                </b>
               </span>
             </div>
           </div>
@@ -561,7 +566,11 @@ function Demo() {
         <div>
           <b>You’re in rehearsal.</b> These are deterministic fixtures. No signing, model calls, RPC
           calls, or paid requests.
-          <span>Refreshing resets this local example. Live runs are saved on the server.</span>
+          <span>
+            {rehearsalOnly
+              ? 'Refreshing resets this example. Actual agent runs require the separate persistent backend.'
+              : 'Refreshing resets this local example. Live runs are saved on the server.'}
+          </span>
         </div>
       </div>
       <div className="workspace-grid">
@@ -671,9 +680,14 @@ function Demo() {
         probePending={false}
       />
       <div className="under-console">
-        <span>Ready to connect real devnet tools?</span>
+        <span>
+          {rehearsalOnly
+            ? 'Ready to explore actual agent runs?'
+            : 'Ready to connect real devnet tools?'}
+        </span>
         <Link to="/app" className="text-link">
-          Open the operator console <ArrowUpRight size={16} />
+          {rehearsalOnly ? 'About live runs' : 'Open the operator console'}{' '}
+          <ArrowUpRight size={16} />
         </Link>
       </div>
     </main>
@@ -1110,6 +1124,63 @@ function RunDetails({
         )}
       </div>
     </div>
+  );
+}
+function HostedConsole() {
+  return (
+    <main className="login-page page-width">
+      <section className="login-story">
+        <div className="eyebrow">The public rehearsal</div>
+        <h1>
+          Explore the agent.
+          <br />
+          See the boundary.
+        </h1>
+        <p>
+          Follow a useful task from allowance to receipt.
+          <br />
+          Try the spending limit for yourself.
+        </p>
+        <div className="login-illustration" aria-hidden="true">
+          <div className="limit-ceiling" />
+          <span className="limit-upright left" />
+          <span className="limit-upright right" />
+          <span className="limit-dot">
+            <Wallet size={30} />
+          </span>
+          <span className="limit-caption">ROOM TO WORK. A LIMIT TO RESPECT.</span>
+        </div>
+        <span className="small muted">No account · No wallet connection · No spending</span>
+      </section>
+      <section className="card login-card">
+        <div className="login-key">
+          <Layers3 size={25} />
+        </div>
+        <h2>Live runs need a persistent backend.</h2>
+        <p>
+          This Vercel site hosts the public rehearsal and developer guide. Operator sign-in, actual
+          AI agent runs, and devnet payments are available only on a separately configured server.
+        </p>
+        <div className="notice">
+          <Info size={19} />
+          <div>
+            <b>Fixture receipts, clearly labeled.</b>
+            <p>
+              The rehearsal makes no model, RPC, or paid API calls. It creates no signatures or
+              verified onchain transactions.
+            </p>
+          </div>
+        </div>
+        <div className="login-bottom">
+          <Link className="button button-primary full-width" to="/demo">
+            Try the rehearsal <ArrowRight size={16} />
+          </Link>
+          <Link className="text-link" to="/developers">
+            Read the backend setup guide <ArrowUpRight size={15} />
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }
 function Login() {
@@ -1827,6 +1898,16 @@ function Developers() {
       >
         Two useful tools and one guarded payment client. Built to be inspected.
       </PageHeading>
+      {rehearsalOnly && (
+        <div className="notice rehearsal-notice">
+          <Info size={18} />
+          <div>
+            <b>This site hosts the public rehearsal.</b> The architecture and endpoints below
+            describe the separately configured persistent backend. This static deployment does not
+            run an agent, expose paid APIs, or verify devnet payments.
+          </div>
+        </div>
+      )}
       <div className="developer-intro">
         <div>
           <h2>
@@ -2046,9 +2127,12 @@ function ScrollReset() {
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title =
-      pathname === '/'
-        ? 'Allowance — Give your agent a budget.'
-        : `${pathname === '/demo' ? 'Rehearsal' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
+      rehearsalOnly &&
+      (pathname === '/app' || pathname === '/login' || pathname.startsWith('/runs/'))
+        ? 'About live runs · Allowance'
+        : pathname === '/'
+          ? 'Allowance — Give your agent a budget.'
+          : `${pathname === '/demo' ? 'Rehearsal' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
   }, [pathname]);
   return null;
 }
@@ -2064,9 +2148,9 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/demo" element={<Demo />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/app" element={<OperatorApp />} />
-          <Route path="/runs/:id" element={<LiveRun />} />
+          <Route path="/login" element={rehearsalOnly ? <HostedConsole /> : <Login />} />
+          <Route path="/app" element={rehearsalOnly ? <HostedConsole /> : <OperatorApp />} />
+          <Route path="/runs/:id" element={rehearsalOnly ? <HostedConsole /> : <LiveRun />} />
           <Route path="/developers" element={<Developers />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

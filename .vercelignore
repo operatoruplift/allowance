@@ -1,11 +1,12 @@
-node_modules
 .git
-.vercel
+node_modules
+dist
 .env
 .env.*
 secrets
 var
-dist
+*.sqlite*
+*.db*
 coverage
 test-results
 playwright-report

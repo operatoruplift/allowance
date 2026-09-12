@@ -4,6 +4,8 @@
 
 The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution requires explicit setup. **No real Allowance devnet settlement is claimed in this delivery.** See [verification](docs/verification.md) for the exact evidence obtained and remaining setup.
 
+The [Vercel deployment guide](docs/vercel.md) provides a separate static rehearsal build for `allowanceonsolana.vercel.app`. Live operator access and payments continue to require the persistent backend described below.
+
 ## Run
 
 Node 22.19 or newer in the supported Node 22/24 lines, npm, and a writable local disk are required.
