@@ -1,0 +1,61 @@
+{
+  "recordedAt": "2026-09-12T12:58:53Z",
+  "scope": "Local controlled verification; no external signing, settlement or paid model requests",
+  "checks": [
+    {
+      "command": "npm run check",
+      "exitCode": 0,
+      "lint": "passed",
+      "typecheck": "passed",
+      "unitIntegrationFiles": 8,
+      "unitIntegrationPassed": 75,
+      "productionBuild": "passed"
+    },
+    {
+      "command": "npm run test:browser",
+      "exitCode": 0,
+      "passed": 4,
+      "durationSeconds": 23.3,
+      "browser": "Chromium",
+      "includes": [
+        "public rehearsal",
+        "keyboard",
+        "390px mobile",
+        "reduced motion",
+        "200% CSS zoom",
+        "empty history",
+        "service failure",
+        "JSON export",
+        "print PDF",
+        "real controlled operator authentication",
+        "refresh",
+        "Stop",
+        "private receipt authorization"
+      ]
+    },
+    { "command": "npm ls --depth=0", "exitCode": 0 },
+    {
+      "command": "npm run preflight",
+      "exitCode": 1,
+      "expected": true,
+      "reason": "Live configuration missing; public devnet data RPC passed",
+      "recordedAt": "2026-09-12T12:41:50Z"
+    },
+    {
+      "command": "npm run smoke:devnet",
+      "exitCode": 2,
+      "expected": true,
+      "reason": "Explicit devnet-spend flag absent; exited before creating runtime/signer"
+    }
+  ],
+  "finalBrowserHarnessChecks": {
+    "privateParallelRepetitionsPassed": 3,
+    "privateParallelDurationSeconds": 25.9,
+    "lintAfterTestChanges": "passed",
+    "typecheckAfterTestChanges": "passed",
+    "independentTestReview": "approved with no blocking issues"
+  },
+  "realAllowanceDevnetSettlement": "not performed",
+  "paidOpenAICall": "not performed",
+  "dockerImageExecution": "not performed; Docker CLI unavailable"
+}

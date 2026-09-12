@@ -1,0 +1,96 @@
+{
+  "recordedAt": "2026-09-12T12:03:08.192Z",
+  "rpc": "https://api.devnet.solana.com",
+  "records": [
+    {
+      "method": "getGenesisHash",
+      "status": 200,
+      "body": {
+        "jsonrpc": "2.0",
+        "result": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+        "id": 1
+      }
+    },
+    {
+      "method": "getAccountInfo",
+      "status": 200,
+      "body": {
+        "jsonrpc": "2.0",
+        "result": {
+          "context": {
+            "apiVersion": "4.3.0-rc.0",
+            "slot": 497177823
+          },
+          "value": {
+            "data": {
+              "parsed": {
+                "info": {
+                  "decimals": 6,
+                  "freezeAuthority": "CJtyoKSLrktozQzjERTiK3btQtiTK3nN4QrqGHLidyCT",
+                  "isInitialized": true,
+                  "mintAuthority": "GrNg1XM2ctzeE2mXxXCfhcTUbejM8Z4z4wNVTy2FjMEz",
+                  "supply": "16286784307947114583"
+                },
+                "type": "mint"
+              },
+              "program": "spl-token",
+              "space": 82
+            },
+            "executable": false,
+            "lamports": 418423285289,
+            "owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+            "rentEpoch": 18446744073709552000,
+            "space": 82
+          }
+        },
+        "id": 2
+      }
+    },
+    {
+      "method": "getSignaturesForAddress",
+      "status": 200,
+      "body": {
+        "jsonrpc": "2.0",
+        "result": [
+          {
+            "blockTime": 1789214590,
+            "confirmationStatus": "confirmed",
+            "err": null,
+            "memo": null,
+            "signature": "NMn8e9w2PkvNYbuB2Xxk5bEqPtFGYQxyRjZTvsAJGovRcdA6CWCcVdfTK9gEFyhAfHTpgVpwEci28WwakvqXyqy",
+            "slot": 497177819,
+            "transactionIndex": 2
+          },
+          {
+            "blockTime": 1789214584,
+            "confirmationStatus": "finalized",
+            "err": null,
+            "memo": "[32] ecb7929740747d17bb57b713d547ca8b",
+            "signature": "5PaB8KQZAhCQUaMo8K3Gyeg9jt6HPxCdfaBi5pjSn8RKMNoEnW9k3uuUNyv6VviJ2RdMdAfdXu4z6vR3gAuw5Z6h",
+            "slot": 497177780,
+            "transactionIndex": 16
+          },
+          {
+            "blockTime": 1789214578,
+            "confirmationStatus": "finalized",
+            "err": null,
+            "memo": "[32] 0d067ba8671e92474349fd9a7d62fd39",
+            "signature": "3WVvYbZ6fZt44F3Mm5kEtP99rULTZwWa1nmzEFbUY9McdXgQagYLWoCzLhvSDTUXyqoVqhVFT8Faq1r7a4uuD2mF",
+            "slot": 497177744,
+            "transactionIndex": 21
+          },
+          {
+            "blockTime": 1789214573,
+            "confirmationStatus": "finalized",
+            "err": null,
+            "memo": null,
+            "signature": "5FfQwtjLpV5hT1w5APGfYs6QYi2dMeMGGeuWWJmWN6yAzn5eBYvNXUfHyVbtFw8LZxTfNR4zzSDb9W4z3eqEUeRR",
+            "slot": 497177713,
+            "transactionIndex": 8
+          }
+        ],
+        "id": 3
+      }
+    }
+  ]
+}
