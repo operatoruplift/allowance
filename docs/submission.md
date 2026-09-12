@@ -1,6 +1,6 @@
 # Submission draft — Allowance
 
-**Status: local implementation and rehearsal; genuine end-to-end Allowance devnet payment evidence pending. Do not submit this draft as a completed working payment demonstration yet.**
+**Status: implemented application and deployed public rehearsal; genuine end-to-end Allowance devnet payment evidence pending. Do not submit this draft as a completed working payment demonstration yet.**
 
 ## Event check
 
@@ -22,6 +22,7 @@ The design separates authorization, held reservation, submission uncertainty, se
 
 ## Evidence to attach
 
+- Public deterministic rehearsal: [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployed September 12, 2026. This site makes no model calls or real payments.
 - Repository URL: **to be supplied after the user chooses to publish**.
 - Recording URL and date: **pending**; use [demo-script.md](demo-script.md).
 - Local checks and screenshots: see the repository verification report and screenshot artifacts.

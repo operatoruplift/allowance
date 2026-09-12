@@ -36,6 +36,8 @@ flowchart LR
 
 The live runner must traverse the same HTTP merchant middleware as a separate client. The public `/demo` is fixture-only and invokes neither a model nor payment services. The conventional LLM-provider bill is separately capped and outside the USDC allowance.
 
+The [Vercel rehearsal](vercel.md) is a static copy of the public interface. Its build does not mount operator/private route components and emits no backend functions. API and merchant paths return 404, and browser connections are blocked by its Content Security Policy. This public deployment does not change the live application's one-instance, persistent-disk requirements or host its ledger.
+
 ## Durable purchase lifecycle
 
 ```mermaid

@@ -1,6 +1,6 @@
 # Vercel public rehearsal
 
-The requested production address is `https://allowanceonsolana.vercel.app`. This deployment hosts the landing page, deterministic rehearsal, developer guide, and an explanation of live backend requirements. It contains **no Express functions, SQLite database, development signer, OpenAI runtime, or paid merchant endpoints**. A hosted rehearsal receipt is not chain evidence.
+The public rehearsal was deployed on September 12, 2026 at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). This deployment hosts the landing page, deterministic rehearsal, developer guide, and an explanation of live backend requirements. It contains **no Express functions, SQLite database, development signer, OpenAI runtime, or paid merchant endpoints**. A hosted rehearsal receipt is not chain evidence. The deployment ID, source revision, public HTTP checks and matching asset hashes are saved in `evidence/vercel-deployment.json`.
 
 The complete live application remains a single persistent Express service with SQLite. Follow [live setup](live-setup.md) and the README's Docker volume instructions to operate it on a server with persistent storage. Do not configure payer keys, operator credentials, or provider keys in the Vercel project.
 

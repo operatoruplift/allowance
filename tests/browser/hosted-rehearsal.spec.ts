@@ -112,6 +112,14 @@ test('hosted rehearsal exports fixture accounting without a signature or network
     animations: 'disabled',
   });
   await page.emulateMedia({ media: 'print' });
+  const printedTimeline = await page
+    .locator('.activity-card .timeline li')
+    .first()
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { animation: style.animationName, opacity: style.opacity };
+    });
+  expect(printedTimeline).toEqual({ animation: 'none', opacity: '1' });
   await page.pdf({
     path: 'evidence/hosted-rehearsal-print.pdf',
     format: 'A4',
