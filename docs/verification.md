@@ -95,7 +95,9 @@ Browser QA inspected landing, rehearsal, developers and brand routes at 320, 390
 
 Independent code and publication/security reviews approved the final changes. The asset audit checked all 26 compositions, 29 SVGs and the 66-entry ZIP: no active SVG content, external asset calls, private state or credentials were found. Complete font notices accompany source-matched font binaries. All 26 PNG dimensions and ZIP integrity passed. These are scoped checks, not a formal security audit. Backend/authentication/payment source was not changed by this design work; real settlement and model execution remain pending the configuration listed above.
 
-The initial September 12 deployment evidence remains in `evidence/vercel-deployment.json`. The red edition's deployment and source-publication evidence will be recorded separately after their actual completion.
+The red edition was deployed to [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), including the public `/brand` route, on September 13. All four production browser journeys passed in 13.7 seconds. Public verification checked 18 route/method responses and matched all 97 deployed static files against local SHA-256 hashes. The static network restriction remains `connect-src 'none'`; API and merchant paths remain unavailable.
+
+After explicit user approval, [operatoruplift/allowance](https://github.com/operatoruplift/allowance) was created publicly with the complete reviewed source and MIT license. An unauthenticated GitHub API read returned 200 and confirmed public visibility. The initial September 12 deployment evidence remains in `evidence/vercel-deployment.json`; `evidence/brand-deployment.json` records the red edition's deployment, asset hashes, public repository and final validation. No real payment or paid model call was performed during publication.
 
 ## Practical limits
 

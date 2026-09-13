@@ -1,0 +1,1045 @@
+{
+  "recordedAt": "2026-09-13T13:26:26.473Z",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "Public deterministic rehearsal and brand library only",
+  "deploymentId": "dpl_4DAwuNpWHT6v9kdv4wtLzjZqWtSR",
+  "sourceCommit": "a382c4646823c8daecfefaeb3a3ca3af0d3abb31",
+  "checks": [
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/demo",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/developers",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/brand",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/brand/",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/login",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/app",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/runs/public-probe",
+      "method": "GET",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/api/session",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/api/health",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/merchant/wallet-snapshot",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/tools/wallet_snapshot",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/.env",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/.env.local",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/server/index.ts",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/brand/absent-file.png",
+      "method": "GET",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/api/runs",
+      "method": "POST",
+      "status": 404,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    },
+    {
+      "path": "/demo",
+      "method": "POST",
+      "status": 405,
+      "contentType": "text/plain; charset=utf-8",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    }
+  ],
+  "assets": [
+    {
+      "path": "/allowance-symbol.svg",
+      "status": 200,
+      "bytes": 203,
+      "contentType": "image/svg+xml",
+      "localSha256": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+      "remoteSha256": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+      "matches": true
+    },
+    {
+      "path": "/allowance-wordmark.svg",
+      "status": 200,
+      "bytes": 3421,
+      "contentType": "image/svg+xml",
+      "localSha256": "ab6f2cb04ccab863b932cdbfe406beb5589d4136d16277fe11c0fa08d8f36bf4",
+      "remoteSha256": "ab6f2cb04ccab863b932cdbfe406beb5589d4136d16277fe11c0fa08d8f36bf4",
+      "matches": true
+    },
+    {
+      "path": "/assets/index-DA97z1NL.js",
+      "status": 200,
+      "bytes": 421217,
+      "contentType": "application/javascript; charset=utf-8",
+      "localSha256": "4e5324f804702a026a9c7f587432126539d32139e1aa7658210c8ce22eda0079",
+      "remoteSha256": "4e5324f804702a026a9c7f587432126539d32139e1aa7658210c8ce22eda0079",
+      "matches": true
+    },
+    {
+      "path": "/assets/index-lmc71a80.css",
+      "status": 200,
+      "bytes": 88448,
+      "contentType": "text/css; charset=utf-8",
+      "localSha256": "de2ef154f81086246410d9cf0ffe9339ceac0068adae0004af2060c8415c4e46",
+      "remoteSha256": "de2ef154f81086246410d9cf0ffe9339ceac0068adae0004af2060c8415c4e46",
+      "matches": true
+    },
+    {
+      "path": "/brand/allowance-brand-kit.zip",
+      "status": 200,
+      "bytes": 1919579,
+      "contentType": "application/zip",
+      "localSha256": "f10d404491ddf8dff31d35206f637700915558876fca87cd90dff18d1845d248",
+      "remoteSha256": "f10d404491ddf8dff31d35206f637700915558876fca87cd90dff18d1845d248",
+      "matches": true
+    },
+    {
+      "path": "/brand/backgrounds/background-ink.png",
+      "status": 200,
+      "bytes": 56329,
+      "contentType": "image/png",
+      "localSha256": "e0b16113d84c75e04bdb03334289edf48d124be0959d4aaff66e87053b9f3d35",
+      "remoteSha256": "e0b16113d84c75e04bdb03334289edf48d124be0959d4aaff66e87053b9f3d35",
+      "matches": true
+    },
+    {
+      "path": "/brand/backgrounds/background-ink.svg",
+      "status": 200,
+      "bytes": 932,
+      "contentType": "image/svg+xml",
+      "localSha256": "05460d55fe7bf1a5726a910ef0352b213dffb796c722664e871209730a9b2620",
+      "remoteSha256": "05460d55fe7bf1a5726a910ef0352b213dffb796c722664e871209730a9b2620",
+      "matches": true
+    },
+    {
+      "path": "/brand/backgrounds/background-paper.png",
+      "status": 200,
+      "bytes": 54560,
+      "contentType": "image/png",
+      "localSha256": "e1684d188686f1935f69eea470f32da7049a61800c7743b59b7154f429d3f40e",
+      "remoteSha256": "e1684d188686f1935f69eea470f32da7049a61800c7743b59b7154f429d3f40e",
+      "matches": true
+    },
+    {
+      "path": "/brand/backgrounds/background-paper.svg",
+      "status": 200,
+      "bytes": 934,
+      "contentType": "image/svg+xml",
+      "localSha256": "046c5ef06a4552b7f503a2e777ab4af942cd540dec893ca3f068a389af85459f",
+      "remoteSha256": "046c5ef06a4552b7f503a2e777ab4af942cd540dec893ca3f068a389af85459f",
+      "matches": true
+    },
+    {
+      "path": "/brand/backgrounds/background-red.png",
+      "status": 200,
+      "bytes": 55115,
+      "contentType": "image/png",
+      "localSha256": "619c395ad40aaf82bc109a24f76aac4b8b9614f8a6a7928236d68861865fad23",
+      "remoteSha256": "619c395ad40aaf82bc109a24f76aac4b8b9614f8a6a7928236d68861865fad23",
+      "matches": true
+    },
+    {
+      "path": "/brand/backgrounds/background-red.svg",
+      "status": 200,
+      "bytes": 932,
+      "contentType": "image/svg+xml",
+      "localSha256": "4d5dc2e72ccfeae705dcc9a9628d13175dd9aaf3da99c2b050229c469db42d10",
+      "remoteSha256": "4d5dc2e72ccfeae705dcc9a9628d13175dd9aaf3da99c2b050229c469db42d10",
+      "matches": true
+    },
+    {
+      "path": "/brand/brand-overview.png",
+      "status": 200,
+      "bytes": 250650,
+      "contentType": "image/png",
+      "localSha256": "7a5dca77ffe70dcb7e4d313c07b4728f698a33319fce85bdd466a6cd6f146b51",
+      "remoteSha256": "7a5dca77ffe70dcb7e4d313c07b4728f698a33319fce85bdd466a6cd6f146b51",
+      "matches": true
+    },
+    {
+      "path": "/brand/fonts/Figtree-LICENSE.txt",
+      "status": 200,
+      "bytes": 4498,
+      "contentType": "text/plain; charset=utf-8",
+      "localSha256": "ee23e6c84000126692e112ff067b456470493349f993ceaa8b4d3766dd6fad5d",
+      "remoteSha256": "ee23e6c84000126692e112ff067b456470493349f993ceaa8b4d3766dd6fad5d",
+      "matches": true
+    },
+    {
+      "path": "/brand/fonts/Figtree-Variable.ttf",
+      "status": 200,
+      "bytes": 62712,
+      "contentType": "font/ttf",
+      "localSha256": "26ad3db9b31ff7dde67a91ff515d022d2f495cd506590699cf264f0bfe6fb714",
+      "remoteSha256": "26ad3db9b31ff7dde67a91ff515d022d2f495cd506590699cf264f0bfe6fb714",
+      "matches": true
+    },
+    {
+      "path": "/brand/fonts/GeistMono-LICENSE.txt",
+      "status": 200,
+      "bytes": 4498,
+      "contentType": "text/plain; charset=utf-8",
+      "localSha256": "cc815ed4fc045f0e991abb10395b7932bd028c6a067deb13316d6002105074e6",
+      "remoteSha256": "cc815ed4fc045f0e991abb10395b7932bd028c6a067deb13316d6002105074e6",
+      "matches": true
+    },
+    {
+      "path": "/brand/fonts/GeistMono-Variable.ttf",
+      "status": 200,
+      "bytes": 171948,
+      "contentType": "font/ttf",
+      "localSha256": "d00e590b8eb3a59acc329b2d044fd143ae935090b7da33199ebee27cc7de8196",
+      "remoteSha256": "d00e590b8eb3a59acc329b2d044fd143ae935090b7da33199ebee27cc7de8196",
+      "matches": true
+    },
+    {
+      "path": "/brand/headers/header-linkedin-paper.png",
+      "status": 200,
+      "bytes": 37595,
+      "contentType": "image/png",
+      "localSha256": "13dd16359cb6537b66a7ffad0112aa77709f8a5c4c03b4f92004e17cdfa58daf",
+      "remoteSha256": "13dd16359cb6537b66a7ffad0112aa77709f8a5c4c03b4f92004e17cdfa58daf",
+      "matches": true
+    },
+    {
+      "path": "/brand/headers/header-linkedin-paper.svg",
+      "status": 200,
+      "bytes": 19857,
+      "contentType": "image/svg+xml",
+      "localSha256": "aaf3e89de80470499bf1a1ed49b81be7a5af2eb46a47328b9f907321415f9f0f",
+      "remoteSha256": "aaf3e89de80470499bf1a1ed49b81be7a5af2eb46a47328b9f907321415f9f0f",
+      "matches": true
+    },
+    {
+      "path": "/brand/headers/header-x-red.png",
+      "status": 200,
+      "bytes": 48114,
+      "contentType": "image/png",
+      "localSha256": "ad4f42b28fc4b2dc44cbe9848ecbe7aea6b19375fb422f872a8417edc60ed82e",
+      "remoteSha256": "ad4f42b28fc4b2dc44cbe9848ecbe7aea6b19375fb422f872a8417edc60ed82e",
+      "matches": true
+    },
+    {
+      "path": "/brand/headers/header-x-red.svg",
+      "status": 200,
+      "bytes": 19639,
+      "contentType": "image/svg+xml",
+      "localSha256": "8d1140049fc865dc5a20889b259398f4876cdbc2621fd7956f0203319ea7c728",
+      "remoteSha256": "8d1140049fc865dc5a20889b259398f4876cdbc2621fd7956f0203319ea7c728",
+      "matches": true
+    },
+    {
+      "path": "/brand/headers/header-youtube-ink.png",
+      "status": 200,
+      "bytes": 99903,
+      "contentType": "image/png",
+      "localSha256": "abceb05c79fb9080d4105db7c202da2d00c75c38cf64d4e2bb227cb940a2d63c",
+      "remoteSha256": "abceb05c79fb9080d4105db7c202da2d00c75c38cf64d4e2bb227cb940a2d63c",
+      "matches": true
+    },
+    {
+      "path": "/brand/headers/header-youtube-ink.svg",
+      "status": 200,
+      "bytes": 19563,
+      "contentType": "image/svg+xml",
+      "localSha256": "2adbdc0d75b1088e36ad4d1058b7814745ad105956a64781fac0f654c9834858",
+      "remoteSha256": "2adbdc0d75b1088e36ad4d1058b7814745ad105956a64781fac0f654c9834858",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/symbol-ink.png",
+      "status": 200,
+      "bytes": 24991,
+      "contentType": "image/png",
+      "localSha256": "4b6f80e6ce1f4ec9d76d677db0672423f41b8148bd702b1309d5ee10780cbcb3",
+      "remoteSha256": "4b6f80e6ce1f4ec9d76d677db0672423f41b8148bd702b1309d5ee10780cbcb3",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/symbol-ink.svg",
+      "status": 200,
+      "bytes": 509,
+      "contentType": "image/svg+xml",
+      "localSha256": "d85f38d6a48044dac7a74fbb9387258209829f1a595254bbe855ebe79b885114",
+      "remoteSha256": "d85f38d6a48044dac7a74fbb9387258209829f1a595254bbe855ebe79b885114",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/symbol-red.png",
+      "status": 200,
+      "bytes": 25338,
+      "contentType": "image/png",
+      "localSha256": "a40bffc73332e09ace35e3f7d49d44e2498c1e97c271cef955cc6d008af7d01f",
+      "remoteSha256": "a40bffc73332e09ace35e3f7d49d44e2498c1e97c271cef955cc6d008af7d01f",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/symbol-red.svg",
+      "status": 200,
+      "bytes": 509,
+      "contentType": "image/svg+xml",
+      "localSha256": "b09f4f9a15cba63a1726712c24610cca185e656ff33ccc706760fa695755a99d",
+      "remoteSha256": "b09f4f9a15cba63a1726712c24610cca185e656ff33ccc706760fa695755a99d",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/symbol-white.png",
+      "status": 200,
+      "bytes": 21312,
+      "contentType": "image/png",
+      "localSha256": "7ddfd891ba3d135bb9832bf17227147e7d453bf3d9f768fef3b51c3c6b526563",
+      "remoteSha256": "7ddfd891ba3d135bb9832bf17227147e7d453bf3d9f768fef3b51c3c6b526563",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/symbol-white.svg",
+      "status": 200,
+      "bytes": 511,
+      "contentType": "image/svg+xml",
+      "localSha256": "9d92e336bc595931694bf58840ab09e9149ac42380fc96f84b1c8c20b8858761",
+      "remoteSha256": "9d92e336bc595931694bf58840ab09e9149ac42380fc96f84b1c8c20b8858761",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/wordmark-ink.png",
+      "status": 200,
+      "bytes": 39789,
+      "contentType": "image/png",
+      "localSha256": "ea1e7d79d1ba6996c55c5af5e6c23dcdca3ed3f0cbaecfe01778df1e90e4a685",
+      "remoteSha256": "ea1e7d79d1ba6996c55c5af5e6c23dcdca3ed3f0cbaecfe01778df1e90e4a685",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/wordmark-ink.svg",
+      "status": 200,
+      "bytes": 3421,
+      "contentType": "image/svg+xml",
+      "localSha256": "fa3d911c633981133708d7b8b9d64145c5ef4480da037d950b7281e667abce82",
+      "remoteSha256": "fa3d911c633981133708d7b8b9d64145c5ef4480da037d950b7281e667abce82",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/wordmark-red.png",
+      "status": 200,
+      "bytes": 40210,
+      "contentType": "image/png",
+      "localSha256": "2f48f86633a99d6aa7b9a6201c8fbe9220e52436fda18783472edafde8a7fb5d",
+      "remoteSha256": "2f48f86633a99d6aa7b9a6201c8fbe9220e52436fda18783472edafde8a7fb5d",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/wordmark-red.svg",
+      "status": 200,
+      "bytes": 3421,
+      "contentType": "image/svg+xml",
+      "localSha256": "ab6f2cb04ccab863b932cdbfe406beb5589d4136d16277fe11c0fa08d8f36bf4",
+      "remoteSha256": "ab6f2cb04ccab863b932cdbfe406beb5589d4136d16277fe11c0fa08d8f36bf4",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/wordmark-white.png",
+      "status": 200,
+      "bytes": 30134,
+      "contentType": "image/png",
+      "localSha256": "d525e29bf18684a224e5f8339772b48e925a76b977901287a3959a86196d2dcc",
+      "remoteSha256": "d525e29bf18684a224e5f8339772b48e925a76b977901287a3959a86196d2dcc",
+      "matches": true
+    },
+    {
+      "path": "/brand/logos/wordmark-white.svg",
+      "status": 200,
+      "bytes": 3423,
+      "contentType": "image/svg+xml",
+      "localSha256": "96ae0a0024746a725cd3f0a15b919f73976a7c7892fd9ff27baa6628fe4ce0bd",
+      "remoteSha256": "96ae0a0024746a725cd3f0a15b919f73976a7c7892fd9ff27baa6628fe4ce0bd",
+      "matches": true
+    },
+    {
+      "path": "/brand/manifest.json",
+      "status": 200,
+      "bytes": 12709,
+      "contentType": "application/json; charset=utf-8",
+      "localSha256": "34bba34f3af485ba0fdb23b0ec6f768e918f06d39f75eadca69cca51cca7ff4d",
+      "remoteSha256": "34bba34f3af485ba0fdb23b0ec6f768e918f06d39f75eadca69cca51cca7ff4d",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/background-ink.png",
+      "status": 200,
+      "bytes": 12675,
+      "contentType": "image/png",
+      "localSha256": "bfa88c9aec45a3f4d435fae2e6c7f8ef9bff7d6072e80fd3f606de360c83999f",
+      "remoteSha256": "bfa88c9aec45a3f4d435fae2e6c7f8ef9bff7d6072e80fd3f606de360c83999f",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/background-paper.png",
+      "status": 200,
+      "bytes": 12549,
+      "contentType": "image/png",
+      "localSha256": "fa8a5c33fd2f3648312287b05963c25af96a2c0624ef2d37687616ffeb1aab9c",
+      "remoteSha256": "fa8a5c33fd2f3648312287b05963c25af96a2c0624ef2d37687616ffeb1aab9c",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/background-red.png",
+      "status": 200,
+      "bytes": 12695,
+      "contentType": "image/png",
+      "localSha256": "6fe678a04a3e5a8de99af1cf1cac12c01cb0ed9b11ec53af9f20a8edbebeea98",
+      "remoteSha256": "6fe678a04a3e5a8de99af1cf1cac12c01cb0ed9b11ec53af9f20a8edbebeea98",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/header-linkedin-paper.png",
+      "status": 200,
+      "bytes": 12709,
+      "contentType": "image/png",
+      "localSha256": "7d5635e65077dec3240453365e06b211424d2888695ac84e543f124f350ac838",
+      "remoteSha256": "7d5635e65077dec3240453365e06b211424d2888695ac84e543f124f350ac838",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/header-x-red.png",
+      "status": 200,
+      "bytes": 17406,
+      "contentType": "image/png",
+      "localSha256": "b142274c1c258a2e25cb400fd266c28f7b74f1b425805a9568522051ef138868",
+      "remoteSha256": "b142274c1c258a2e25cb400fd266c28f7b74f1b425805a9568522051ef138868",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/header-youtube-ink.png",
+      "status": 200,
+      "bytes": 18523,
+      "contentType": "image/png",
+      "localSha256": "0f1921d61b2efea177a032810c99e0debe2c51cb04de997d01a5728dabe68a4d",
+      "remoteSha256": "0f1921d61b2efea177a032810c99e0debe2c51cb04de997d01a5728dabe68a4d",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/profile-ink.png",
+      "status": 200,
+      "bytes": 9221,
+      "contentType": "image/png",
+      "localSha256": "6718a23de9dd7dba4b890597b46ba8048059946e0a1f3566a965897df5d76f4e",
+      "remoteSha256": "6718a23de9dd7dba4b890597b46ba8048059946e0a1f3566a965897df5d76f4e",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/profile-paper.png",
+      "status": 200,
+      "bytes": 9081,
+      "contentType": "image/png",
+      "localSha256": "ce90211c30a64761f6b56eb2dc8de191fbdd84340f052a354c7c0f6fcaf09cd9",
+      "remoteSha256": "ce90211c30a64761f6b56eb2dc8de191fbdd84340f052a354c7c0f6fcaf09cd9",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/profile-red.png",
+      "status": 200,
+      "bytes": 9110,
+      "contentType": "image/png",
+      "localSha256": "308b2e722fd1cd2918bc718b4eca26c5ea126a0b2d2f784fd0c5209e49e089c4",
+      "remoteSha256": "308b2e722fd1cd2918bc718b4eca26c5ea126a0b2d2f784fd0c5209e49e089c4",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/social-portrait-budget.png",
+      "status": 200,
+      "bytes": 33767,
+      "contentType": "image/png",
+      "localSha256": "f7a9d1d869c09168adfffe9ba8e36a9eac5e4dc5ea717f637bcd33d38e296973",
+      "remoteSha256": "f7a9d1d869c09168adfffe9ba8e36a9eac5e4dc5ea717f637bcd33d38e296973",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/social-portrait-policy.png",
+      "status": 200,
+      "bytes": 31472,
+      "contentType": "image/png",
+      "localSha256": "e422196cf5eea5213942e06b14e6bbdc4b2cd7397cf760ba08673f4c14cd0fa1",
+      "remoteSha256": "e422196cf5eea5213942e06b14e6bbdc4b2cd7397cf760ba08673f4c14cd0fa1",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/social-square-budget.png",
+      "status": 200,
+      "bytes": 29559,
+      "contentType": "image/png",
+      "localSha256": "67407556a8531e5911ce0dc58ad57b7eacb75344abca63c676e3b1bc8eedfcc1",
+      "remoteSha256": "67407556a8531e5911ce0dc58ad57b7eacb75344abca63c676e3b1bc8eedfcc1",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/social-square-policy.png",
+      "status": 200,
+      "bytes": 33418,
+      "contentType": "image/png",
+      "localSha256": "236e686a9c43df050469c06ee1b012755decc6aca813722e399c5c8fd92fb22c",
+      "remoteSha256": "236e686a9c43df050469c06ee1b012755decc6aca813722e399c5c8fd92fb22c",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/social-square-receipt.png",
+      "status": 200,
+      "bytes": 29681,
+      "contentType": "image/png",
+      "localSha256": "10d20ee12aa2967130c68149570787040e34adf508f9ba6f6694237bdcaa8e28",
+      "remoteSha256": "10d20ee12aa2967130c68149570787040e34adf508f9ba6f6694237bdcaa8e28",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/social-story-budget.png",
+      "status": 200,
+      "bytes": 22780,
+      "contentType": "image/png",
+      "localSha256": "c929df7786f9052b46238665c54b7984d5b14d3c16535ee84add312b7f929c77",
+      "remoteSha256": "c929df7786f9052b46238665c54b7984d5b14d3c16535ee84add312b7f929c77",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/symbol-ink.png",
+      "status": 200,
+      "bytes": 13875,
+      "contentType": "image/png",
+      "localSha256": "99060866df29e37f42b2ff0cb791ca8eecddd07c85621a04a2fd222b57f28fcd",
+      "remoteSha256": "99060866df29e37f42b2ff0cb791ca8eecddd07c85621a04a2fd222b57f28fcd",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/symbol-red.png",
+      "status": 200,
+      "bytes": 14101,
+      "contentType": "image/png",
+      "localSha256": "55f83d6ed27968ea843788507be36dcb49b8c315063cf59a4418ab7540915e43",
+      "remoteSha256": "55f83d6ed27968ea843788507be36dcb49b8c315063cf59a4418ab7540915e43",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/symbol-white.png",
+      "status": 200,
+      "bytes": 11497,
+      "contentType": "image/png",
+      "localSha256": "89e5d17b42343a873478ac2a307dc3e48ef25f9bec6aab2b7410fb764e919037",
+      "remoteSha256": "89e5d17b42343a873478ac2a307dc3e48ef25f9bec6aab2b7410fb764e919037",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wallpaper-desktop-paper.png",
+      "status": 200,
+      "bytes": 24185,
+      "contentType": "image/png",
+      "localSha256": "4575baad9df0493309a62249093a398c82fb6a090a40bc1de9759dee4d4a0770",
+      "remoteSha256": "4575baad9df0493309a62249093a398c82fb6a090a40bc1de9759dee4d4a0770",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wallpaper-desktop-red.png",
+      "status": 200,
+      "bytes": 24431,
+      "contentType": "image/png",
+      "localSha256": "a6468c92cb1f5c21c99818e53f073cae4578388db36132dd6b5b71abb27c1d9b",
+      "remoteSha256": "a6468c92cb1f5c21c99818e53f073cae4578388db36132dd6b5b71abb27c1d9b",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wallpaper-phone-ink.png",
+      "status": 200,
+      "bytes": 14476,
+      "contentType": "image/png",
+      "localSha256": "589afb891bc9849ef8cad1ccfbd393d4680ec9a566ab1bcb4ee5015d9abf28d2",
+      "remoteSha256": "589afb891bc9849ef8cad1ccfbd393d4680ec9a566ab1bcb4ee5015d9abf28d2",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wallpaper-phone-paper.png",
+      "status": 200,
+      "bytes": 15159,
+      "contentType": "image/png",
+      "localSha256": "fa1424208e7bf6b058384b15ee79f76dea4fa42848ce67e639c88a329ccf78c0",
+      "remoteSha256": "fa1424208e7bf6b058384b15ee79f76dea4fa42848ce67e639c88a329ccf78c0",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wallpaper-phone-red.png",
+      "status": 200,
+      "bytes": 14866,
+      "contentType": "image/png",
+      "localSha256": "c4409bdc4f2164f9bc250db8a539330cb8f7a577b4e18ff6e6d243b57b4d7eca",
+      "remoteSha256": "c4409bdc4f2164f9bc250db8a539330cb8f7a577b4e18ff6e6d243b57b4d7eca",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wordmark-ink.png",
+      "status": 200,
+      "bytes": 12535,
+      "contentType": "image/png",
+      "localSha256": "a39f5e63c5232a8945019e3535c7981cb66bfe39ae530350f05595b8b515228d",
+      "remoteSha256": "a39f5e63c5232a8945019e3535c7981cb66bfe39ae530350f05595b8b515228d",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wordmark-red.png",
+      "status": 200,
+      "bytes": 12572,
+      "contentType": "image/png",
+      "localSha256": "5214120435a4c5b7c72e97d9dd22cb383625d7aec46f08a923da8723d5969497",
+      "remoteSha256": "5214120435a4c5b7c72e97d9dd22cb383625d7aec46f08a923da8723d5969497",
+      "matches": true
+    },
+    {
+      "path": "/brand/previews/wordmark-white.png",
+      "status": 200,
+      "bytes": 9275,
+      "contentType": "image/png",
+      "localSha256": "e42bc719c381bd502e9f5fe2724e3344d18d73d15dc939c8ec488628b66860e7",
+      "remoteSha256": "e42bc719c381bd502e9f5fe2724e3344d18d73d15dc939c8ec488628b66860e7",
+      "matches": true
+    },
+    {
+      "path": "/brand/profiles/profile-ink.png",
+      "status": 200,
+      "bytes": 16719,
+      "contentType": "image/png",
+      "localSha256": "d79abc708029ba7fd223a943a9f694cbe5b5eaed930277a1438b0b92dab17d1a",
+      "remoteSha256": "d79abc708029ba7fd223a943a9f694cbe5b5eaed930277a1438b0b92dab17d1a",
+      "matches": true
+    },
+    {
+      "path": "/brand/profiles/profile-ink.svg",
+      "status": 200,
+      "bytes": 575,
+      "contentType": "image/svg+xml",
+      "localSha256": "2aaede53755f7b2705ef1062a1b23429adc1db92997d4ced71f27d9cf14079ba",
+      "remoteSha256": "2aaede53755f7b2705ef1062a1b23429adc1db92997d4ced71f27d9cf14079ba",
+      "matches": true
+    },
+    {
+      "path": "/brand/profiles/profile-paper.png",
+      "status": 200,
+      "bytes": 16384,
+      "contentType": "image/png",
+      "localSha256": "15779d142e6371c3d28cf258e5e4f7f6e9d2567b5c79f968fd5996be6c934e6b",
+      "remoteSha256": "15779d142e6371c3d28cf258e5e4f7f6e9d2567b5c79f968fd5996be6c934e6b",
+      "matches": true
+    },
+    {
+      "path": "/brand/profiles/profile-paper.svg",
+      "status": 200,
+      "bytes": 577,
+      "contentType": "image/svg+xml",
+      "localSha256": "561ea5410f335705ea34298cb36c1987d6d66010e821ac79bacbdba6601e9e18",
+      "remoteSha256": "561ea5410f335705ea34298cb36c1987d6d66010e821ac79bacbdba6601e9e18",
+      "matches": true
+    },
+    {
+      "path": "/brand/profiles/profile-red.png",
+      "status": 200,
+      "bytes": 16376,
+      "contentType": "image/png",
+      "localSha256": "2e22e2b60f4f9b512bc78a8dc2763dc9c229a9df8f28392c9696977bab7f4034",
+      "remoteSha256": "2e22e2b60f4f9b512bc78a8dc2763dc9c229a9df8f28392c9696977bab7f4034",
+      "matches": true
+    },
+    {
+      "path": "/brand/profiles/profile-red.svg",
+      "status": 200,
+      "bytes": 575,
+      "contentType": "image/svg+xml",
+      "localSha256": "7bed995c9924ee4bdd0d249ed2edecd580eba91a73f72f5f81686d7fd32bbdbc",
+      "remoteSha256": "7bed995c9924ee4bdd0d249ed2edecd580eba91a73f72f5f81686d7fd32bbdbc",
+      "matches": true
+    },
+    {
+      "path": "/brand/README.md",
+      "status": 200,
+      "bytes": 2874,
+      "contentType": "text/markdown; charset=utf-8",
+      "localSha256": "cbacffa6992ed8e4fa620360d3f79ba4e35f8f01826298334e9a672c6137d3e5",
+      "remoteSha256": "cbacffa6992ed8e4fa620360d3f79ba4e35f8f01826298334e9a672c6137d3e5",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-portrait-budget.png",
+      "status": 200,
+      "bytes": 85329,
+      "contentType": "image/png",
+      "localSha256": "f8b9a6644e9cef0f34b44258e16435fc985000a21418130b4df9834da1e076dc",
+      "remoteSha256": "f8b9a6644e9cef0f34b44258e16435fc985000a21418130b4df9834da1e076dc",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-portrait-budget.svg",
+      "status": 200,
+      "bytes": 48460,
+      "contentType": "image/svg+xml",
+      "localSha256": "3a8c4a879e8903ea0c9253c8dd9e673ebb4da176d31785037256312e55c9ae07",
+      "remoteSha256": "3a8c4a879e8903ea0c9253c8dd9e673ebb4da176d31785037256312e55c9ae07",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-portrait-policy.png",
+      "status": 200,
+      "bytes": 78777,
+      "contentType": "image/png",
+      "localSha256": "ad3bfb642ced5a2a7e8c9179744d3afb1470fec1e2a94bc01939e34e265b4720",
+      "remoteSha256": "ad3bfb642ced5a2a7e8c9179744d3afb1470fec1e2a94bc01939e34e265b4720",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-portrait-policy.svg",
+      "status": 200,
+      "bytes": 32995,
+      "contentType": "image/svg+xml",
+      "localSha256": "ed7a19bef028c8096ad9cfa7af249a77c75d6341b02ab2585adac53305c7e895",
+      "remoteSha256": "ed7a19bef028c8096ad9cfa7af249a77c75d6341b02ab2585adac53305c7e895",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-square-budget.png",
+      "status": 200,
+      "bytes": 57955,
+      "contentType": "image/png",
+      "localSha256": "94ada7b47e2980b82dd2b923bff6fbed647589d9398aaa994cd78d51031ae6d4",
+      "remoteSha256": "94ada7b47e2980b82dd2b923bff6fbed647589d9398aaa994cd78d51031ae6d4",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-square-budget.svg",
+      "status": 200,
+      "bytes": 30797,
+      "contentType": "image/svg+xml",
+      "localSha256": "71475e80a0a869e0f3d6639683cd71cff6022832be109991236ab2f1a512e8d9",
+      "remoteSha256": "71475e80a0a869e0f3d6639683cd71cff6022832be109991236ab2f1a512e8d9",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-square-policy.png",
+      "status": 200,
+      "bytes": 63569,
+      "contentType": "image/png",
+      "localSha256": "6e544f470b394606a5a70786f46be2eed4ec8d4f589479cdf1dbeb52f8e7182c",
+      "remoteSha256": "6e544f470b394606a5a70786f46be2eed4ec8d4f589479cdf1dbeb52f8e7182c",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-square-policy.svg",
+      "status": 200,
+      "bytes": 33574,
+      "contentType": "image/svg+xml",
+      "localSha256": "9129a9e31f0b71ef9d1e89c4a592f167e000b2d22f2b6dd06e77288bd3275565",
+      "remoteSha256": "9129a9e31f0b71ef9d1e89c4a592f167e000b2d22f2b6dd06e77288bd3275565",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-square-receipt.png",
+      "status": 200,
+      "bytes": 57964,
+      "contentType": "image/png",
+      "localSha256": "8c7888551ee38a18d1d24712ae3b6130372b3d2d62c9a85635bb03a1f248af6b",
+      "remoteSha256": "8c7888551ee38a18d1d24712ae3b6130372b3d2d62c9a85635bb03a1f248af6b",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-square-receipt.svg",
+      "status": 200,
+      "bytes": 33423,
+      "contentType": "image/svg+xml",
+      "localSha256": "2299783bd0641a171653b1addc050e7c86c78d37164abb73b8931cc0244c1f56",
+      "remoteSha256": "2299783bd0641a171653b1addc050e7c86c78d37164abb73b8931cc0244c1f56",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-story-budget.png",
+      "status": 200,
+      "bytes": 76495,
+      "contentType": "image/png",
+      "localSha256": "315bc5345e90db737c2790474a4e053dd115f9b35bb48a02ba37ab52f402764b",
+      "remoteSha256": "315bc5345e90db737c2790474a4e053dd115f9b35bb48a02ba37ab52f402764b",
+      "matches": true
+    },
+    {
+      "path": "/brand/social/social-story-budget.svg",
+      "status": 200,
+      "bytes": 31989,
+      "contentType": "image/svg+xml",
+      "localSha256": "adda68fb6a379dea0e1d1179f3ec688b81010108fbe34ffef877b278f531d067",
+      "remoteSha256": "adda68fb6a379dea0e1d1179f3ec688b81010108fbe34ffef877b278f531d067",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-desktop-paper.png",
+      "status": 200,
+      "bytes": 212844,
+      "contentType": "image/png",
+      "localSha256": "a6f7c642b4bd28e64fc187b5414380aebb618acd6666aba570f761005f498ced",
+      "remoteSha256": "a6f7c642b4bd28e64fc187b5414380aebb618acd6666aba570f761005f498ced",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-desktop-paper.svg",
+      "status": 200,
+      "bytes": 24981,
+      "contentType": "image/svg+xml",
+      "localSha256": "48a591c47ff17a59a6fb7d11f8b2441c191f117a7472c58c9e6dbe527216b1a6",
+      "remoteSha256": "48a591c47ff17a59a6fb7d11f8b2441c191f117a7472c58c9e6dbe527216b1a6",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-desktop-red.png",
+      "status": 200,
+      "bytes": 219366,
+      "contentType": "image/png",
+      "localSha256": "127aa037a39256e4fe4a3b0baef68c1339a2b1a4b490941aef651cd45bed92cb",
+      "remoteSha256": "127aa037a39256e4fe4a3b0baef68c1339a2b1a4b490941aef651cd45bed92cb",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-desktop-red.svg",
+      "status": 200,
+      "bytes": 24979,
+      "contentType": "image/svg+xml",
+      "localSha256": "832b17caf8d3eeee5860d0dc6d2f1b3beb1042f9f92f2634125c1cd048dea8f0",
+      "remoteSha256": "832b17caf8d3eeee5860d0dc6d2f1b3beb1042f9f92f2634125c1cd048dea8f0",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-phone-ink.png",
+      "status": 200,
+      "bytes": 59154,
+      "contentType": "image/png",
+      "localSha256": "c8d92afbf5707e9ca3a0d937b6e13e6734625eacad7ea79ac796662e99195388",
+      "remoteSha256": "c8d92afbf5707e9ca3a0d937b6e13e6734625eacad7ea79ac796662e99195388",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-phone-ink.svg",
+      "status": 200,
+      "bytes": 14084,
+      "contentType": "image/svg+xml",
+      "localSha256": "46a26edd655d9c71d40aac5c47726eb22a49dcc581bdaad1e534d394317b02ae",
+      "remoteSha256": "46a26edd655d9c71d40aac5c47726eb22a49dcc581bdaad1e534d394317b02ae",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-phone-paper.png",
+      "status": 200,
+      "bytes": 59076,
+      "contentType": "image/png",
+      "localSha256": "0d1a0042cefd1382c8f6cb80966f7e403ce5c675bab301eebf5b88ec9d14ca8e",
+      "remoteSha256": "0d1a0042cefd1382c8f6cb80966f7e403ce5c675bab301eebf5b88ec9d14ca8e",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-phone-paper.svg",
+      "status": 200,
+      "bytes": 14086,
+      "contentType": "image/svg+xml",
+      "localSha256": "bf138b8ea1d7f51eb52ffac5993075fb6608cda59ba1f32a3b0333a6d28b4477",
+      "remoteSha256": "bf138b8ea1d7f51eb52ffac5993075fb6608cda59ba1f32a3b0333a6d28b4477",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-phone-red.png",
+      "status": 200,
+      "bytes": 59743,
+      "contentType": "image/png",
+      "localSha256": "64ab899261bf614a4cc36a86d3930867a177c8c47c13fbda538410a9a87189b9",
+      "remoteSha256": "64ab899261bf614a4cc36a86d3930867a177c8c47c13fbda538410a9a87189b9",
+      "matches": true
+    },
+    {
+      "path": "/brand/wallpapers/wallpaper-phone-red.svg",
+      "status": 200,
+      "bytes": 14084,
+      "contentType": "image/svg+xml",
+      "localSha256": "4300a2e0d05d6db0e03600feaf07ba552bef55ca4e22719dc17daf23feb993a0",
+      "remoteSha256": "4300a2e0d05d6db0e03600feaf07ba552bef55ca4e22719dc17daf23feb993a0",
+      "matches": true
+    },
+    {
+      "path": "/favicon.svg",
+      "status": 200,
+      "bytes": 281,
+      "contentType": "image/svg+xml",
+      "localSha256": "cc7823a5118dfeeed42e6f3468fe85df61d546c217b25b64c5b725f8642a405e",
+      "remoteSha256": "cc7823a5118dfeeed42e6f3468fe85df61d546c217b25b64c5b725f8642a405e",
+      "matches": true
+    },
+    {
+      "path": "/fonts/figtree-latin-variable.woff2",
+      "status": 200,
+      "bytes": 20156,
+      "contentType": "font/woff2",
+      "localSha256": "4ba7d3d096695818fe0686be4f1e82c6b05134e18a22260336130335027462dd",
+      "remoteSha256": "4ba7d3d096695818fe0686be4f1e82c6b05134e18a22260336130335027462dd",
+      "matches": true
+    },
+    {
+      "path": "/fonts/Figtree-LICENSE.txt",
+      "status": 200,
+      "bytes": 4498,
+      "contentType": "text/plain; charset=utf-8",
+      "localSha256": "ee23e6c84000126692e112ff067b456470493349f993ceaa8b4d3766dd6fad5d",
+      "remoteSha256": "ee23e6c84000126692e112ff067b456470493349f993ceaa8b4d3766dd6fad5d",
+      "matches": true
+    },
+    {
+      "path": "/fonts/geist-mono-latin-variable.woff2",
+      "status": 200,
+      "bytes": 23128,
+      "contentType": "font/woff2",
+      "localSha256": "684ad5b531f81d43c1e8c7038262d5db7cdc1f68006e04d6c7769efa8d33c8cc",
+      "remoteSha256": "684ad5b531f81d43c1e8c7038262d5db7cdc1f68006e04d6c7769efa8d33c8cc",
+      "matches": true
+    },
+    {
+      "path": "/fonts/GeistMono-LICENSE.txt",
+      "status": 200,
+      "bytes": 4498,
+      "contentType": "text/plain; charset=utf-8",
+      "localSha256": "cc815ed4fc045f0e991abb10395b7932bd028c6a067deb13316d6002105074e6",
+      "remoteSha256": "cc815ed4fc045f0e991abb10395b7932bd028c6a067deb13316d6002105074e6",
+      "matches": true
+    },
+    {
+      "path": "/fonts/README.md",
+      "status": 200,
+      "bytes": 845,
+      "contentType": "text/markdown; charset=utf-8",
+      "localSha256": "afd750e7fa316f8e22739c413c253d340de882d1aecf49591e1de7dc9299fb3d",
+      "remoteSha256": "afd750e7fa316f8e22739c413c253d340de882d1aecf49591e1de7dc9299fb3d",
+      "matches": true
+    },
+    {
+      "path": "/index.html",
+      "status": 200,
+      "bytes": 735,
+      "contentType": "text/html; charset=utf-8",
+      "localSha256": "27e0d64b1d4d15d50ea46bfd0fd2330f7a3aa96ee287ab58a077effb61dfdae1",
+      "remoteSha256": "27e0d64b1d4d15d50ea46bfd0fd2330f7a3aa96ee287ab58a077effb61dfdae1",
+      "matches": true
+    }
+  ],
+  "github": {
+    "url": "https://github.com/operatoruplift/allowance",
+    "visibility": "public",
+    "defaultBranch": "main",
+    "license": "MIT",
+    "homepage": "https://allowanceonsolana.vercel.app",
+    "unauthenticatedReadStatus": 200
+  },
+  "realAllowanceDevnetSettlement": "not performed",
+  "paidModelCall": "not performed",
+  "validation": {
+    "lint": "passed",
+    "frontendBackendTypeScript": "passed",
+    "normalProductionBuild": "passed",
+    "staticRehearsalBuild": "passed",
+    "controlledTests": 75,
+    "normalBrowserJourneys": 4,
+    "normalBrowserSeconds": 41.2,
+    "localHostedJourneys": 4,
+    "localHostedSeconds": 35.8,
+    "productionHostedJourneys": 4,
+    "productionHostedSeconds": 13.7,
+    "brandCompositions": 26,
+    "fullSizePNGs": 26,
+    "outlinedSVGs": 26,
+    "previewPNGs": 26,
+    "zipBytes": 1919579,
+    "zipIntegrity": "passed",
+    "pngDimensions": "all 26 match manifest",
+    "responsiveChecks": "320, 390, 768, 1440 CSS pixels; reduced motion; keyboard; 200% zoom/reflow",
+    "phoneSaveLimit": "Full-size image and download paths verified with Chromium device emulation; native iOS/Android Photos sheets not exercised",
+    "independentCodeReview": "approved; tablet console navigation finding fixed and re-reviewed",
+    "independentSecurityPublicationReview": "approved; complete font notices included; no committed credentials or private state found",
+    "dependencyAuditVulnerabilities": 0
+  }
+}
