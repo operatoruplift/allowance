@@ -1,0 +1,345 @@
+{
+  "version": "2026-09-13",
+  "name": "Allowance — Red edition",
+  "palette": [
+    {
+      "name": "Brand red",
+      "hex": "#B42336"
+    },
+    {
+      "name": "Paper",
+      "hex": "#FAF7F4"
+    },
+    {
+      "name": "Ink",
+      "hex": "#281E20"
+    },
+    {
+      "name": "Muted",
+      "hex": "#6F6163"
+    },
+    {
+      "name": "Line",
+      "hex": "#E3D5D4"
+    },
+    {
+      "name": "Soft red",
+      "hex": "#FBECEE"
+    }
+  ],
+  "zip": "/brand/allowance-brand-kit.zip",
+  "assets": [
+    {
+      "id": "symbol-red",
+      "title": "The symbol · red",
+      "description": "Transparent background. The original curved Allowance mark, ready for your own layouts.",
+      "category": "logos",
+      "width": 1024,
+      "height": 1024,
+      "preview": "/brand/previews/symbol-red.png",
+      "png": "/brand/logos/symbol-red.png",
+      "svg": "/brand/logos/symbol-red.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "wordmark-red",
+      "title": "The wordmark · red",
+      "description": "Transparent background. Outlined lettering keeps the logo consistent on every device.",
+      "category": "logos",
+      "width": 1800,
+      "height": 420,
+      "preview": "/brand/previews/wordmark-red.png",
+      "png": "/brand/logos/wordmark-red.png",
+      "svg": "/brand/logos/wordmark-red.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "symbol-white",
+      "title": "The symbol · white",
+      "description": "Transparent background. The original curved Allowance mark, ready for your own layouts.",
+      "category": "logos",
+      "width": 1024,
+      "height": 1024,
+      "preview": "/brand/previews/symbol-white.png",
+      "png": "/brand/logos/symbol-white.png",
+      "svg": "/brand/logos/symbol-white.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "wordmark-white",
+      "title": "The wordmark · white",
+      "description": "Transparent background. Outlined lettering keeps the logo consistent on every device.",
+      "category": "logos",
+      "width": 1800,
+      "height": 420,
+      "preview": "/brand/previews/wordmark-white.png",
+      "png": "/brand/logos/wordmark-white.png",
+      "svg": "/brand/logos/wordmark-white.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "symbol-ink",
+      "title": "The symbol · ink",
+      "description": "Transparent background. The original curved Allowance mark, ready for your own layouts.",
+      "category": "logos",
+      "width": 1024,
+      "height": 1024,
+      "preview": "/brand/previews/symbol-ink.png",
+      "png": "/brand/logos/symbol-ink.png",
+      "svg": "/brand/logos/symbol-ink.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "wordmark-ink",
+      "title": "The wordmark · ink",
+      "description": "Transparent background. Outlined lettering keeps the logo consistent on every device.",
+      "category": "logos",
+      "width": 1800,
+      "height": 420,
+      "preview": "/brand/previews/wordmark-ink.png",
+      "png": "/brand/logos/wordmark-ink.png",
+      "svg": "/brand/logos/wordmark-ink.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "profile-red",
+      "title": "Profile picture · red",
+      "description": "A centered mark with generous room for circular profile crops. Made for social avatars.",
+      "category": "profiles",
+      "width": 1024,
+      "height": 1024,
+      "preview": "/brand/previews/profile-red.png",
+      "png": "/brand/profiles/profile-red.png",
+      "svg": "/brand/profiles/profile-red.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "profile-paper",
+      "title": "Profile picture · paper",
+      "description": "A centered mark with generous room for circular profile crops. Made for social avatars.",
+      "category": "profiles",
+      "width": 1024,
+      "height": 1024,
+      "preview": "/brand/previews/profile-paper.png",
+      "png": "/brand/profiles/profile-paper.png",
+      "svg": "/brand/profiles/profile-paper.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "profile-ink",
+      "title": "Profile picture · ink",
+      "description": "A centered mark with generous room for circular profile crops. Made for social avatars.",
+      "category": "profiles",
+      "width": 1024,
+      "height": 1024,
+      "preview": "/brand/previews/profile-ink.png",
+      "png": "/brand/profiles/profile-ink.png",
+      "svg": "/brand/profiles/profile-ink.svg",
+      "background": "#281E20"
+    },
+    {
+      "id": "header-x-red",
+      "title": "X header · a clear limit",
+      "description": "Wide header with the lower-left profile overlap kept quiet. Keep text within the supplied composition.",
+      "category": "headers",
+      "width": 1500,
+      "height": 500,
+      "preview": "/brand/previews/header-x-red.png",
+      "png": "/brand/headers/header-x-red.png",
+      "svg": "/brand/headers/header-x-red.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "header-linkedin-paper",
+      "title": "LinkedIn header · agent autonomy",
+      "description": "A clean wide composition. The profile-photo area on the left stays free of essential text.",
+      "category": "headers",
+      "width": 1584,
+      "height": 396,
+      "preview": "/brand/previews/header-linkedin-paper.png",
+      "png": "/brand/headers/header-linkedin-paper.png",
+      "svg": "/brand/headers/header-linkedin-paper.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "header-youtube-ink",
+      "title": "YouTube banner · the allowance",
+      "description": "Core logo and message sit inside the central 1546 × 423 area for small-screen crops.",
+      "category": "headers",
+      "width": 2560,
+      "height": 1440,
+      "preview": "/brand/previews/header-youtube-ink.png",
+      "png": "/brand/headers/header-youtube-ink.png",
+      "svg": "/brand/headers/header-youtube-ink.svg",
+      "background": "#281E20"
+    },
+    {
+      "id": "wallpaper-phone-red",
+      "title": "Phone wallpaper · red",
+      "description": "A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.",
+      "category": "wallpapers",
+      "width": 1080,
+      "height": 1920,
+      "preview": "/brand/previews/wallpaper-phone-red.png",
+      "png": "/brand/wallpapers/wallpaper-phone-red.png",
+      "svg": "/brand/wallpapers/wallpaper-phone-red.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "wallpaper-phone-paper",
+      "title": "Phone wallpaper · paper",
+      "description": "A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.",
+      "category": "wallpapers",
+      "width": 1080,
+      "height": 1920,
+      "preview": "/brand/previews/wallpaper-phone-paper.png",
+      "png": "/brand/wallpapers/wallpaper-phone-paper.png",
+      "svg": "/brand/wallpapers/wallpaper-phone-paper.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "wallpaper-phone-ink",
+      "title": "Phone wallpaper · ink",
+      "description": "A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.",
+      "category": "wallpapers",
+      "width": 1080,
+      "height": 1920,
+      "preview": "/brand/previews/wallpaper-phone-ink.png",
+      "png": "/brand/wallpapers/wallpaper-phone-ink.png",
+      "svg": "/brand/wallpapers/wallpaper-phone-ink.svg",
+      "background": "#281E20"
+    },
+    {
+      "id": "wallpaper-desktop-red",
+      "title": "Desktop wallpaper · red",
+      "description": "4K artwork with a quiet left side for desktop icons and a generous, graphic right side.",
+      "category": "wallpapers",
+      "width": 3840,
+      "height": 2160,
+      "preview": "/brand/previews/wallpaper-desktop-red.png",
+      "png": "/brand/wallpapers/wallpaper-desktop-red.png",
+      "svg": "/brand/wallpapers/wallpaper-desktop-red.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "wallpaper-desktop-paper",
+      "title": "Desktop wallpaper · paper",
+      "description": "4K artwork with a quiet left side for desktop icons and a generous, graphic right side.",
+      "category": "wallpapers",
+      "width": 3840,
+      "height": 2160,
+      "preview": "/brand/previews/wallpaper-desktop-paper.png",
+      "png": "/brand/wallpapers/wallpaper-desktop-paper.png",
+      "svg": "/brand/wallpapers/wallpaper-desktop-paper.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "social-square-budget",
+      "title": "Square post · give it a budget",
+      "description": "Launch artwork for a social feed. Describes the public rehearsal without claiming a live payment.",
+      "category": "social",
+      "width": 1080,
+      "height": 1080,
+      "preview": "/brand/previews/social-square-budget.png",
+      "png": "/brand/social/social-square-budget.png",
+      "svg": "/brand/social/social-square-budget.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "social-square-policy",
+      "title": "Square post · the policy decides",
+      "description": "A strong editorial message for a feed post or square ad.",
+      "category": "social",
+      "width": 1080,
+      "height": 1080,
+      "preview": "/brand/previews/social-square-policy.png",
+      "png": "/brand/social/social-square-policy.png",
+      "svg": "/brand/social/social-square-policy.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "social-square-receipt",
+      "title": "Square post · a clear receipt",
+      "description": "An expressive brand post about spending limits and readable records. No transaction stats.",
+      "category": "social",
+      "width": 1080,
+      "height": 1080,
+      "preview": "/brand/previews/social-square-receipt.png",
+      "png": "/brand/social/social-square-receipt.png",
+      "svg": "/brand/social/social-square-receipt.svg",
+      "background": "#281E20"
+    },
+    {
+      "id": "social-portrait-budget",
+      "title": "Portrait post · room to act",
+      "description": "A 4:5 feed or ad layout with the message and brand comfortably inside the canvas.",
+      "category": "social",
+      "width": 1080,
+      "height": 1350,
+      "preview": "/brand/previews/social-portrait-budget.png",
+      "png": "/brand/social/social-portrait-budget.png",
+      "svg": "/brand/social/social-portrait-budget.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "social-portrait-policy",
+      "title": "Portrait post · the boundary",
+      "description": "A 4:5 red edition of the core policy message. Ready for a feed post or ad.",
+      "category": "social",
+      "width": 1080,
+      "height": 1350,
+      "preview": "/brand/previews/social-portrait-policy.png",
+      "png": "/brand/social/social-portrait-policy.png",
+      "svg": "/brand/social/social-portrait-policy.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "social-story-budget",
+      "title": "Story · a little independence",
+      "description": "Vertical story artwork with the central message clear of common top and bottom interface controls.",
+      "category": "social",
+      "width": 1080,
+      "height": 1920,
+      "preview": "/brand/previews/social-story-budget.png",
+      "png": "/brand/social/social-story-budget.png",
+      "svg": "/brand/social/social-story-budget.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "background-red",
+      "title": "Background · red geometry",
+      "description": "Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "preview": "/brand/previews/background-red.png",
+      "png": "/brand/backgrounds/background-red.png",
+      "svg": "/brand/backgrounds/background-red.svg",
+      "background": "#B42336"
+    },
+    {
+      "id": "background-paper",
+      "title": "Background · paper geometry",
+      "description": "Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "preview": "/brand/previews/background-paper.png",
+      "png": "/brand/backgrounds/background-paper.png",
+      "svg": "/brand/backgrounds/background-paper.svg",
+      "background": "#FAF7F4"
+    },
+    {
+      "id": "background-ink",
+      "title": "Background · ink geometry",
+      "description": "Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "preview": "/brand/previews/background-ink.png",
+      "png": "/brand/backgrounds/background-ink.png",
+      "svg": "/brand/backgrounds/background-ink.svg",
+      "background": "#281E20"
+    }
+  ]
+}

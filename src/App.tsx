@@ -54,20 +54,12 @@ import {
 import { api, downloadJSON, type Session } from './api';
 import { createDemo, demoProbe, fixtureStep, type DemoScenario } from './demo';
 import { rehearsalOnly } from './deployment';
+import BrandKit from './BrandKit';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="brand" aria-label="Allowance home">
-      <svg width="33" height="33" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <path
-          d="M7 23V7H25V23"
-          stroke="currentColor"
-          strokeWidth="3.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="16" cy="21" r="2.8" fill="currentColor" />
-      </svg>
+      <img src="/allowance-symbol.svg" width="33" height="33" alt="" aria-hidden="true" />
       {!compact && (
         <span>
           Allowance<span className="brand-period">.</span>
@@ -88,11 +80,16 @@ function Header() {
           className="icon-button mobile-menu"
           aria-label={open ? 'Close navigation' : 'Open navigation'}
           aria-expanded={open}
+          aria-controls="main-navigation"
           onClick={() => setOpen(!open)}
         >
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
-        <nav aria-label="Main navigation" className={open ? 'main-nav is-open' : 'main-nav'}>
+        <nav
+          id="main-navigation"
+          aria-label="Main navigation"
+          className={open ? 'main-nav is-open' : 'main-nav'}
+        >
           <Link className={pathname === '/demo' ? 'nav-link active' : 'nav-link'} to="/demo">
             The example
           </Link>
@@ -102,11 +99,28 @@ function Header() {
           >
             For developers
           </Link>
-          <span className="nav-divider" />
-          <Link className="button button-small button-outline" to="/app">
+          <Link className={pathname === '/brand' ? 'nav-link active' : 'nav-link'} to="/brand">
+            Brand kit
+          </Link>
+          <Link className="button button-small button-outline mobile-console-link" to="/app">
             {rehearsalOnly ? 'About live runs' : 'Open console'} <ArrowUpRight size={15} />
           </Link>
         </nav>
+        <div className="header-context">
+          <ShieldCheck size={21} />
+          <span>
+            {rehearsalOnly || pathname === '/' || pathname === '/demo' || pathname === '/brand'
+              ? 'Public rehearsal · No real payments'
+              : 'Application policies · Devnet payments'}
+          </span>
+          <Link
+            className="header-console-link"
+            to="/app"
+            aria-label={rehearsalOnly ? 'About live runs' : 'Open console'}
+          >
+            <ArrowUpRight size={16} />
+          </Link>
+        </div>
       </div>
     </header>
   );
@@ -119,6 +133,16 @@ function Footer() {
         <p>A little independence. A clear limit.</p>
       </div>
       <div className="footer-right">
+        <nav className="footer-links" aria-label="Footer navigation">
+          <Link to="/demo">The example</Link>
+          <Link to="/developers">For developers</Link>
+          <Link to="/brand">
+            Brand kit <ArrowUpRight size={13} />
+          </Link>
+          <a href="https://github.com/operatoruplift/allowance" target="_blank" rel="noreferrer">
+            GitHub <ArrowUpRight size={13} />
+          </a>
+        </nav>
         <span>Built for Solana agentic payments</span>
         <span className="small muted">
           {rehearsalOnly
@@ -361,13 +385,15 @@ function LandingReceipt() {
 function Landing() {
   return (
     <>
-      <main>
+      <main className="landing-page">
+        <div className="edition-line page-width" aria-hidden="true">
+          <span>Useful agents. Clear boundaries.</span>
+          <span>Allowance / On Solana</span>
+        </div>
         <section className="hero page-width">
           <div className="hero-copy">
             <div className="eyebrow hero-eyebrow">
-              <span className="tiny-mark">
-                <Layers3 size={13} />
-              </span>
+              <span className="eyebrow-rule" aria-hidden="true" />
               Agent autonomy. With an allowance.
             </div>
             <h1>
@@ -384,7 +410,7 @@ function Landing() {
                 Try the example <ArrowUpRight size={18} />
               </Link>
               <Link to="/developers" className="text-link">
-                See how it works <ArrowRight size={16} />
+                For developers <ArrowRight size={16} />
               </Link>
             </div>
             <div className="hero-reassurance">
@@ -413,7 +439,7 @@ function Landing() {
                 <Gauge size={22} />
               </span>
               <div className="feature-number">01 /</div>
-              <h2>Limits that mean it.</h2>
+              <h2>Set the boundary.</h2>
               <p>
                 A total ceiling, a per-request cap, and approved services. Checked in application
                 code before a payment is signed.
@@ -425,7 +451,7 @@ function Landing() {
                 <Layers3 size={22} />
               </span>
               <div className="feature-number">02 /</div>
-              <h2>Tools with a purpose.</h2>
+              <h2>Buy useful tools.</h2>
               <p>
                 A wallet snapshot. A transaction explained. Two first-party Solana data tools, paid
                 per request through x402.
@@ -437,12 +463,24 @@ function Landing() {
                 <ReceiptText size={22} />
               </span>
               <div className="feature-number">03 /</div>
-              <h2>Nothing to guess.</h2>
+              <h2>Follow every decision.</h2>
               <p>
                 Follow the decisions, read the brief, and take the receipt with you. Settled, held,
                 and blocked stay distinct.
               </p>
               <span className="feature-tag">A trail you can understand</span>
+            </article>
+            <article className="feature-card">
+              <span className="feature-icon">
+                <ShieldCheck size={22} />
+              </span>
+              <div className="feature-number">04 /</div>
+              <h2>Keep the receipt.</h2>
+              <p>
+                Export a clear record of the work, the purchases, and the requests your policy
+                blocked.
+              </p>
+              <span className="feature-tag">Every cent, accounted for</span>
             </article>
           </div>
         </section>
@@ -2093,6 +2131,12 @@ function Developers() {
         </div>
       </div>
       <div className="developer-links">
+        <a href="https://github.com/operatoruplift/allowance" target="_blank" rel="noreferrer">
+          Source on GitHub <ArrowUpRight size={15} />
+        </a>
+        <Link to="/brand">
+          Allowance brand kit <ArrowRight size={15} />
+        </Link>
         <a href="https://docs.x402.org/" target="_blank" rel="noreferrer">
           x402 documentation <ArrowUpRight size={15} />
         </a>
@@ -2132,7 +2176,7 @@ function ScrollReset() {
         ? 'About live runs · Allowance'
         : pathname === '/'
           ? 'Allowance — Give your agent a budget.'
-          : `${pathname === '/demo' ? 'Rehearsal' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
+          : `${pathname === '/brand' ? 'Brand kit' : pathname === '/demo' ? 'Rehearsal' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
   }, [pathname]);
   return null;
 }
@@ -2152,6 +2196,15 @@ export default function App() {
           <Route path="/app" element={rehearsalOnly ? <HostedConsole /> : <OperatorApp />} />
           <Route path="/runs/:id" element={rehearsalOnly ? <HostedConsole /> : <LiveRun />} />
           <Route path="/developers" element={<Developers />} />
+          <Route
+            path="/brand"
+            element={
+              <>
+                <BrandKit />
+                <Footer />
+              </>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

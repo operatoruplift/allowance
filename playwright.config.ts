@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: 'tests/browser',
-  testIgnore: 'hosted-rehearsal.spec.ts',
+  testIgnore: ['hosted-rehearsal.spec.ts', 'brand-kit.spec.ts'],
   timeout: 120000,
   expect: { timeout: 20000 },
   fullyParallel: false,

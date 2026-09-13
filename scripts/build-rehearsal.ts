@@ -44,7 +44,7 @@ const config = {
     { src: '/(?:api|merchant|tools)(?:/.*)?', status: 404 },
     { src: '/.*', methods: ['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], status: 405 },
     { handle: 'filesystem' },
-    { src: '/(?:demo|developers|login|app|runs/[^/]+)?/?', dest: '/index.html' },
+    { src: '/(?:demo|developers|brand|login|app|runs/[^/]+)?/?', dest: '/index.html' },
   ],
 };
 await fs.writeFile(path.join(output, 'config.json'), `${JSON.stringify(config, null, 2)}\n`);

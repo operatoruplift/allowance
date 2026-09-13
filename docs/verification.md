@@ -85,6 +85,18 @@ Public HTTP verification confirmed the six page routes return 200, API/merchant/
 
 A persistent backend hosting target remains to be selected. Operator credentials, a dedicated devnet payer, recipient/token accounts, trusted sponsor, provider configuration, a prepared data wallet and test funding remain required for live execution. No devnet payment or paid model request was made as part of this deployment, and the hackathon working-payment demonstration remains unevidenced.
 
+## Red interface and brand library — September 13, 2026
+
+The new curved-A symbol, red/paper palette, local Figtree/Geist Mono typography and ruled interface are implemented across public and private routes. `/brand` contains 26 compositions in PNG and outlined SVG, category filtering, accessible previews, individual downloads, full-size image links, palette copying and a complete ZIP. The kit includes profiles, headers, phone/4K wallpapers, social artwork and backgrounds, with font licenses and a reproducible local generator.
+
+The design follow-up passed lint, frontend/backend TypeScript, all 75 controlled tests, normal and static builds, four normal browser journeys (41.2 seconds), and four local hosted journeys (35.8 seconds). The first brand test run found a Node ESM JSON import incompatibility; the native import attribute fixed it, and the full hosted suite then passed. No paid API or payment test was used.
+
+Browser QA inspected landing, rehearsal, developers and brand routes at 320, 390, 768 and 1440 CSS pixels, reduced motion, keyboard skip navigation, preview focus/escape restoration and 200% zoom/reflow. Two findings—tablet console navigation and intrinsic header wrapping—were fixed and independently re-reviewed. Full-size images and PNG/ZIP downloads work; native iOS/Android Save-to-Photos sheets were not exercised. The detailed checks are in `evidence/design-responsive-qa.json`.
+
+Independent code and publication/security reviews approved the final changes. The asset audit checked all 26 compositions, 29 SVGs and the 66-entry ZIP: no active SVG content, external asset calls, private state or credentials were found. Complete font notices accompany source-matched font binaries. All 26 PNG dimensions and ZIP integrity passed. These are scoped checks, not a formal security audit. Backend/authentication/payment source was not changed by this design work; real settlement and model execution remain pending the configuration listed above.
+
+The initial September 12 deployment evidence remains in `evidence/vercel-deployment.json`. The red edition's deployment and source-publication evidence will be recorded separately after their actual completion.
+
 ## Practical limits
 
 Unknown payments remain held; recovery is bounded to four attempts per purchase and never creates a new signature. A crash inside signing before a replay payload is durably available can leave a conservative unresolved hold requiring manual evidence inspection. There is no automatic refund or manual “clear hold” escape hatch. Stop and restart do not reactivate old spending authorization.

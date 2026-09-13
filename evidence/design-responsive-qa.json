@@ -1,0 +1,216 @@
+{
+  "testedAt": "2026-09-13T12:36:17.458Z",
+  "origin": "http://127.0.0.1:4321",
+  "note": "Chromium device emulation. Opening and downloading PNG verified; native iOS/Android Photos sheet was not exercised. CSSzoom is a supplemental stress check; visual browser-zoom-equivalent evidence uses640CSSpx at2xdevice scale.",
+  "findings": [
+    {
+      "width": 320,
+      "route": "/",
+      "scroll": 320,
+      "overs": []
+    },
+    {
+      "width": 320,
+      "route": "/demo",
+      "scroll": 320,
+      "overs": []
+    },
+    {
+      "width": 320,
+      "route": "/developers",
+      "scroll": 320,
+      "overs": []
+    },
+    {
+      "width": 320,
+      "route": "/brand",
+      "scroll": 320,
+      "overs": []
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "scroll": 390,
+      "overs": []
+    },
+    {
+      "width": 390,
+      "route": "/demo",
+      "scroll": 390,
+      "overs": []
+    },
+    {
+      "width": 390,
+      "route": "/developers",
+      "scroll": 390,
+      "overs": []
+    },
+    {
+      "width": 390,
+      "route": "/brand",
+      "scroll": 390,
+      "overs": []
+    },
+    {
+      "width": 768,
+      "route": "/",
+      "scroll": 768,
+      "overs": []
+    },
+    {
+      "width": 768,
+      "route": "/demo",
+      "scroll": 768,
+      "overs": []
+    },
+    {
+      "width": 768,
+      "route": "/developers",
+      "scroll": 768,
+      "overs": []
+    },
+    {
+      "width": 768,
+      "route": "/brand",
+      "scroll": 768,
+      "overs": []
+    },
+    {
+      "width": 1440,
+      "route": "/",
+      "scroll": 1440,
+      "overs": []
+    },
+    {
+      "width": 1440,
+      "route": "/demo",
+      "scroll": 1440,
+      "overs": []
+    },
+    {
+      "width": 1440,
+      "route": "/developers",
+      "scroll": 1440,
+      "overs": []
+    },
+    {
+      "width": 1440,
+      "route": "/brand",
+      "scroll": 1440,
+      "overs": []
+    },
+    {
+      "reducedMotion": {
+        "animation": "none",
+        "transition": "0s"
+      }
+    },
+    {
+      "phoneFullSize": {
+        "width": 1024,
+        "height": 1024,
+        "src": "http://127.0.0.1:4321/brand/profiles/profile-red.png"
+      },
+      "expected": {
+        "width": 1024,
+        "height": 1024
+      }
+    },
+    {
+      "phonePNG": {
+        "filename": "profile-red.png",
+        "magic": "89504e470d0a1a0a",
+        "width": 1024,
+        "height": 1024
+      }
+    },
+    {
+      "dialogKeyboard": "Enter opens; autofocus close; Escape closes; focus restored"
+    },
+    {
+      "skipKeyboard": {
+        "focused": true,
+        "clip": "none"
+      }
+    },
+    {
+      "skipTarget": "main-content"
+    },
+    {
+      "width": 651,
+      "consoleLinkVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "consoleLinkVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 1024,
+      "consoleLinkVisible": true,
+      "overflow": false
+    },
+    {
+      "width": 1100,
+      "consoleLinkVisible": true,
+      "overflow": false
+    },
+    {
+      "zoom": "200%",
+      "route": "/",
+      "width": 640,
+      "scroll": 640
+    },
+    {
+      "zoom": "200%",
+      "route": "/demo",
+      "width": 640,
+      "scroll": 640
+    },
+    {
+      "zoom": "200%",
+      "route": "/developers",
+      "width": 640,
+      "scroll": 640
+    },
+    {
+      "zoom": "200%",
+      "route": "/brand",
+      "width": 640,
+      "scroll": 640
+    },
+    {
+      "zoom": "200%",
+      "route": "/",
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "zoom": "200%",
+      "route": "/demo",
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "zoom": "200%",
+      "route": "/developers",
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "zoom": "200%",
+      "route": "/brand",
+      "width": 1280,
+      "scroll": 1280
+    },
+    {
+      "browserZoomEquivalent": "1280x900 physical viewport at200%;640x450CSSpx,2xdeviceScaleFactor",
+      "landingOverflow": false
+    }
+  ],
+  "fixes": [
+    "Masthead side columns now allow intrinsic shrinkage and wrapping at200%CSSzoom.",
+    "Console entry remains visible at651–1100px."
+  ]
+}

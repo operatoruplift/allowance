@@ -6,6 +6,8 @@ The public rehearsal works immediately without accounts, signing, paid HTTP requ
 
 The public rehearsal is live at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The [Vercel deployment guide](docs/vercel.md) documents its separate static build. Live operator access and payments continue to require the persistent backend described below.
 
+[Source on GitHub](https://github.com/operatoruplift/allowance) · [Brand kit](https://allowanceonsolana.vercel.app/brand) · [Download all brand assets](https://allowanceonsolana.vercel.app/brand/allowance-brand-kit.zip)
+
 ## Run
 
 Node 22.19 or newer in the supported Node 22/24 lines, npm, and a writable local disk are required.
@@ -34,6 +36,7 @@ Production startup is **`npm start`**; Express serves `dist/client` and runs the
 | `/app`        | Authenticated readiness checks and task/policy composer                       |
 | `/runs/:id`   | Private durable run, report, JSON export, print view and stop                 |
 | `/developers` | Tool descriptions and server-side client example                              |
+| `/brand`      | Downloadable profiles, wallpapers, headers, social artwork and logos          |
 
 ## Operator and live setup
 
@@ -105,6 +108,8 @@ Place one HTTPS reverse proxy in front of the bound local port. `.env.docker` is
 Back up SQLite with its backup API while running, or stop the service and copy the entire volume. Keep secrets and backups private. Do not run multiple replicas. Preserve the disk across upgrades. The schema migration version is recorded in `schema_migrations`; payment cache tables are created by the payment module.
 
 ## Project map and delivery
+
+The red brand edition includes 26 compositions in full-size PNG and outlined SVG, a phone-friendly `/brand` library, and a complete ZIP. Use the library's **Open full-size image** action to save individual PNGs to a phone; browser downloads may go to Files. See [the brand guide](docs/brand.md) for colors, typography, dimensions and the local `npm run brand:generate` command.
 
 `src` contains the original React UI; `shared` contains validated contracts and money handling. `server/auth`, `agent`, `policy`, `payments`, `merchant`, `data`, and `db` form one Express service. [Architecture](docs/architecture.md) explains trust boundaries; [the reusable example](examples/paid-tool.ts) demonstrates calling the guarded buyer outside the sample agent.
 

@@ -23,7 +23,7 @@ The design separates authorization, held reservation, submission uncertainty, se
 ## Evidence to attach
 
 - Public deterministic rehearsal: [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployed September 12, 2026. This site makes no model calls or real payments.
-- Repository URL: **to be supplied after the user chooses to publish**.
+- Repository: [operatoruplift/allowance](https://github.com/operatoruplift/allowance), including application code, controlled tests, brand kit and setup instructions.
 - Recording URL and date: **pending**; use [demo-script.md](demo-script.md).
 - Local checks and screenshots: see the repository verification report and screenshot artifacts.
 - Real data reads: dated devnet genesis/mint verification and public wallet history are recorded in [sources.md](sources.md).
