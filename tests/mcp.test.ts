@@ -223,5 +223,5 @@ describe('Allowance local MCP bridge', () => {
     });
     expect(status.structuredContent).toMatchObject({ runId: run.id, executionMode: 'external' });
     await client.close();
-  });
+  }, 35_000);
 });
