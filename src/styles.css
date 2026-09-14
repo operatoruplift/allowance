@@ -1007,6 +1007,26 @@ strong {
 .notice.success-notice {
   background: var(--background);
 }
+.external-grant {
+  margin-top: 2px;
+  border-color: #d8c7c1;
+}
+.grant-token {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  max-width: 100%;
+  margin-top: 10px;
+  padding: 9px 10px;
+  overflow-wrap: anywhere;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--ink);
+  cursor: copy;
+  user-select: all;
+}
 .notice.setup-notice {
   background: #f7f1e3;
   border-color: #eae1cb;

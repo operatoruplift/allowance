@@ -20,10 +20,13 @@
     "setup:operator": "tsx scripts/setup-operator.ts",
     "preflight": "tsx scripts/preflight.ts",
     "smoke:devnet": "tsx scripts/smoke-devnet.ts",
+    "mcp": "tsx server/mcp.ts",
     "test:browser": "playwright test",
     "test:hosted": "playwright test --config playwright.hosted.config.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/client": "2.0.0",
+    "@modelcontextprotocol/server": "2.0.0",
     "@solana-program/compute-budget": "0.11.0",
     "@solana-program/token": "0.9.0",
     "@solana/kit": "5.5.1",

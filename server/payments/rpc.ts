@@ -127,6 +127,8 @@ export class PaymentRpc {
   ): Promise<{
     signature: string;
     chainVerified: true;
+    proofObservedAt?: string;
+    originalBlockhash?: string;
     slot: number;
     feeLamports: string;
     feeSponsor: string;
@@ -193,6 +195,8 @@ export class PaymentRpc {
     return {
       signature,
       chainVerified: true,
+      proofObservedAt: new Date().toISOString(),
+      originalBlockhash: original.decoded.blockhash,
       slot: tx.slot,
       feeLamports: String(tx.meta.fee),
       feeSponsor: sponsor,

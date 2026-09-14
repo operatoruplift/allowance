@@ -4,6 +4,7 @@ import argon2 from 'argon2';
 import type { Express, Request, Response, NextFunction } from 'express';
 import type Database from 'better-sqlite3';
 import { authenticationConfigured, type Config } from '../config.js';
+import { revokeSessionAgentGrants } from '../mcp/grants.js';
 declare module 'express-session' {
   interface SessionData {
     operator?: string;
@@ -173,6 +174,7 @@ export function installAuth(app: Express, db: Database.Database, config: Config)
     next();
   };
   app.post('/api/logout', requireOperator, (req, res, next) => {
+    revokeSessionAgentGrants(db, req.sessionID);
     req.session.destroy((error) => {
       if (error) next(error);
       else {

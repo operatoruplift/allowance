@@ -246,6 +246,12 @@ describe('durable policy', () => {
     expect(ledger.getRun(run.id).purchases[0].status).toBe('settled-but-result-unavailable');
     ledger.markDelivered('one', { cached: true });
     expect(ledger.getRun(run.id).purchases[0].result).toEqual({ cached: true });
+    expect(ledger.getRun(run.id).purchases[0]).toMatchObject({
+      originalBlockhash: signing.blockhash,
+      deliveryState: 'delivered',
+      proofObservedAt: expect.any(String),
+      resultHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
     expect(ledger.reserve(proposal(run.id)).created).toBe(false);
   });
   it('fails closed on database outage before signing', () => {

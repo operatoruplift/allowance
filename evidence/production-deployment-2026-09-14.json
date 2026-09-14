@@ -1,0 +1,31 @@
+{
+  "recordedAt": "2026-09-14T16:47:21Z",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "public deterministic rehearsal and brand library only",
+  "deploymentId": "dpl_82MNDYsm16aFHG8RG6hfAWdMDnAm",
+  "inspectUrl": "https://vercel.com/operatoruplift/allowanceonsolana/82MNDYsm16aFHG8RG6hfAWdMDnAm",
+  "productionUrl": "https://allowanceonsolana-eoe2o131z-operatoruplift.vercel.app",
+  "sourceCommit": null,
+  "workingTreeBuild": true,
+  "buildCommand": "npm run build:rehearsal",
+  "checks": {
+    "hostedBrowserJourneys": 4,
+    "hostedBrowserDurationSeconds": 23.2,
+    "indexStatus": 200,
+    "faviconPath": "/favicon-red.svg",
+    "faviconStatus": 200,
+    "faviconContentType": "image/svg+xml",
+    "apiSessionStatus": 404,
+    "connectSrc": "none"
+  },
+  "assetSha256": {
+    "/index.html": "c7f010d506bab7f2bade1c477409965dab4e6b184f263b6692b42d5f4e6359e8",
+    "/favicon-red.svg": "cc7823a5118dfeeed42e6f3468fe85df61d546c217b25b64c5b725f8642a405e",
+    "/allowance-symbol.svg": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+    "/allowance-wordmark.svg": "ab6f2cb04ccab863b932cdbfe406beb5589d4136d16277fe11c0fa08d8f36bf4",
+    "/assets/index-BK233WWO.css": "d3a5f828e3b1a55c9d74d8f687d0a04e08c1a0970daa2d58970d638df27d1e12",
+    "/assets/index-BA_uIQOF.js": "4e5324f804702a026a9c7f587432126539d32139e1aa7658210c8ce22eda0079"
+  },
+  "realAllowanceDevnetSettlement": "not performed",
+  "paidModelCall": "not performed"
+}

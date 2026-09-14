@@ -33,4 +33,28 @@ export function migrate(db: Database.Database) {
     `);
       db.prepare('INSERT INTO schema_migrations VALUES(1,?)').run(new Date().toISOString());
     }).immediate();
+  const latest = db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as {
+    version: number | null;
+  };
+  if ((latest.version || 0) < 2)
+    db.transaction(() => {
+      db.exec(`
+        ALTER TABLE runs ADD COLUMN execution_mode TEXT NOT NULL DEFAULT 'builtin' CHECK(execution_mode IN ('builtin','external'));
+        CREATE TABLE agent_grants (
+          id TEXT PRIMARY KEY,
+          token_hash TEXT NOT NULL UNIQUE,
+          run_id TEXT NOT NULL REFERENCES runs(id),
+          owner TEXT NOT NULL,
+          session_id TEXT NOT NULL,
+          scopes TEXT NOT NULL,
+          expires_at INTEGER NOT NULL,
+          created_at TEXT NOT NULL,
+          revoked_at INTEGER,
+          last_used_at INTEGER
+        );
+        CREATE INDEX agent_grants_run ON agent_grants(run_id);
+        CREATE INDEX agent_grants_session ON agent_grants(session_id);
+      `);
+      db.prepare('INSERT INTO schema_migrations VALUES(2,?)').run(new Date().toISOString());
+    }).immediate();
 }

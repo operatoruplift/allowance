@@ -1353,6 +1353,12 @@ function OperatorApp() {
   const [cap, setCap] = useState('0.020000');
   const [expiry, setExpiry] = useState('15');
   const [selected, setSelected] = useState<ToolName[]>(['wallet_snapshot', 'transaction_explain']);
+  const [externalPending, setExternalPending] = useState(false);
+  const [externalGrant, setExternalGrant] = useState<{
+    runId: string;
+    token: string;
+    expiresAt: string;
+  } | null>(null);
   const navigate = useNavigate();
   const load = useCallback(async () => {
     setError('');
@@ -1427,6 +1433,43 @@ function OperatorApp() {
       setError(e instanceof Error ? e.message : 'Readiness check failed.');
     } finally {
       setChecking(false);
+    }
+  }
+  async function authorizeExternal() {
+    if (!config?.externalReady || !session || externalPending) return;
+    const input = createRunSchema.safeParse({
+      wallet,
+      task,
+      allowance,
+      perRequestCap: cap,
+      expiresInMinutes: Number(expiry),
+      allowedTools: selected,
+    });
+    if (!input.success) {
+      setError(input.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(' '));
+      return;
+    }
+    setExternalPending(true);
+    setError('');
+    try {
+      const response = await api<{
+        run: { id: string };
+        grant: { token: string; expiresAt: string };
+      }>(
+        '/api/external-runs',
+        { method: 'POST', body: JSON.stringify(input.data) },
+        session.csrfToken
+      );
+      setExternalGrant({
+        runId: response.run.id,
+        token: response.grant.token,
+        expiresAt: response.grant.expiresAt,
+      });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not authorize external agent.');
+    } finally {
+      setExternalPending(false);
     }
   }
   async function logout() {
@@ -1589,6 +1632,50 @@ function OperatorApp() {
                       : 'Complete setup to start'}
                   <ArrowRight size={17} />
                 </button>
+                <button
+                  className="button button-outline full-width"
+                  type="button"
+                  onClick={() => void authorizeExternal()}
+                  disabled={
+                    !config.externalReady || pending || externalPending || selected.length === 0
+                  }
+                >
+                  {externalPending ? (
+                    <LoaderCircle size={17} className="spin" />
+                  ) : (
+                    <Terminal size={17} />
+                  )}
+                  {externalPending
+                    ? 'Creating MCP grant…'
+                    : config.externalReady
+                      ? 'Authorize external MCP agent'
+                      : 'Enable MCP after readiness'}
+                  <ArrowRight size={17} />
+                </button>
+                {externalGrant && (
+                  <div className="notice success-notice external-grant" role="status">
+                    <KeyRound size={18} />
+                    <div>
+                      <b>External run authorized.</b>
+                      <span>
+                        Save this one-time grant token, then run <code>npm run mcp</code> with{' '}
+                        <code>MCP_GRANT_TOKEN</code>. It expires at{' '}
+                        {new Date(externalGrant.expiresAt).toLocaleString()}.
+                      </span>
+                      <button
+                        className="grant-token"
+                        type="button"
+                        aria-label="Copy external agent grant token"
+                        onClick={() => void navigator.clipboard?.writeText(externalGrant.token)}
+                      >
+                        <code>{externalGrant.token}</code>
+                      </button>
+                      <Link className="text-link" to={`/runs/${externalGrant.runId}`}>
+                        Open external run receipt <ArrowUpRight size={15} />
+                      </Link>
+                    </div>
+                  </div>
+                )}
                 <p className="form-footnote">
                   This authorizes devnet USDC tool charges. SOL fees/rent and OpenAI usage are
                   separate. Stop prevents new payments; submitted payments can still settle.

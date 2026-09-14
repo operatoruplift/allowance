@@ -40,6 +40,14 @@ export interface SignedEvidence extends SigningEvidence {
 export interface SettlementEvidence {
   signature: string;
   chainVerified: boolean;
+  /** Time the settlement observation was recorded; it is not a claim that the chain verified it. */
+  proofObservedAt?: string;
+  /** The blockhash from the originally signed transaction, when persisted. */
+  originalBlockhash?: string;
+  /** Solana's originating validity bound when the payment provider exposes it. */
+  originatingLastValidBlockHeight?: string;
+  deliveryState?: 'pending' | 'delivered' | 'unavailable';
+  resultHash?: string;
   feeSponsor?: string;
   slot?: number;
   feeLamports?: string;

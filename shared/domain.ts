@@ -137,6 +137,11 @@ export interface PurchaseDTO {
   recipient?: string;
   feeSponsor?: string;
   feeLamports?: string;
+  originalBlockhash?: string;
+  originatingLastValidBlockHeight?: string;
+  proofObservedAt?: string;
+  deliveryState?: 'pending' | 'delivered' | 'unavailable';
+  resultHash?: string;
   serviceOutcome: 'pending' | 'delivered' | 'unavailable';
   source: 'agent' | 'policy-probe';
 }
@@ -154,6 +159,7 @@ export interface RunDTO {
   task: string;
   status: 'queued' | 'running' | 'completed' | 'stopped' | 'expired' | 'failed' | 'interrupted';
   mode: 'live' | 'rehearsal';
+  executionMode?: 'builtin' | 'external';
   paymentNetwork: 'devnet';
   dataNetwork: DataNetwork;
   createdAt: string;
@@ -187,6 +193,8 @@ export interface AppConfigDTO {
   paymentNetwork: 'devnet';
   dataNetwork: DataNetwork;
   ready: boolean;
+  externalReady: boolean;
+  mcpEnabled: boolean;
   readiness: ReadinessItem[];
   payer: string | null;
   recipient: string | null;

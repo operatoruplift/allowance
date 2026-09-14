@@ -29,6 +29,7 @@ export interface Config {
   maxLlmCalls: number;
   maxLlmOutputTokens: number;
   maxRuntimeMs: number;
+  mcpEnabled: boolean;
 }
 function integer(value: string | undefined, fallback: number, min: number, max: number) {
   const n = value === undefined || value === '' ? fallback : Number(value);
@@ -84,6 +85,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     maxLlmCalls: integer(env.LLM_MAX_CALLS, 5, 1, 6),
     maxLlmOutputTokens: integer(env.LLM_MAX_OUTPUT_TOKENS, 1200, 256, 2000),
     maxRuntimeMs: 180_000,
+    mcpEnabled: env.MCP_ENABLED === 'true',
   };
 }
 export function authenticationConfigured(config: Config): boolean {

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type Database from 'better-sqlite3';
 import {
   CATALOG,
@@ -36,6 +36,7 @@ interface RunRow {
   llm_calls: number;
   input_tokens: number;
   output_tokens: number;
+  execution_mode: 'builtin' | 'external';
 }
 interface IntentRow {
   id: string;
@@ -59,6 +60,9 @@ interface IntentRow {
 }
 const settledStates = ['settled', 'delivered', 'settled-but-result-unavailable'];
 const heldStates = ['reserved', 'submitted', 'settlement-unknown'];
+function resultHash(result: unknown) {
+  return createHash('sha256').update(JSON.stringify(result), 'utf8').digest('hex');
+}
 export class Ledger implements PaymentLedger {
   constructor(
     public db: Database.Database,
@@ -130,7 +134,11 @@ export class Ledger implements PaymentLedger {
       .prepare('INSERT INTO events(run_id,at,kind,title,detail,source) VALUES(?,?,?,?,?,?)')
       .run(runId, this.time(), kind, title, detail.slice(0, 4000), source);
   }
-  createRun(input: CreateRunInput, owner = 'operator'): RunDTO {
+  createRun(
+    input: CreateRunInput,
+    owner = 'operator',
+    executionMode: 'builtin' | 'external' = 'builtin'
+  ): RunDTO {
     this.assertOwnership();
     const allowance = parseMoney(input.allowance);
     const cap = parseMoney(input.perRequestCap);
@@ -162,7 +170,7 @@ export class Ledger implements PaymentLedger {
           throw new PolicyError('One run is already active. Stop it or wait for completion.');
         this.db
           .prepare(
-            'INSERT INTO runs(id,owner,wallet,task,status,policy,created_at,data_network) VALUES(?,?,?,?,?,?,?,?)'
+            'INSERT INTO runs(id,owner,wallet,task,status,policy,created_at,data_network,execution_mode) VALUES(?,?,?,?,?,?,?,?,?)'
           )
           .run(
             id,
@@ -172,7 +180,8 @@ export class Ledger implements PaymentLedger {
             'queued',
             JSON.stringify(policy),
             this.time(),
-            this.config.dataNetwork
+            this.config.dataNetwork,
+            executionMode
           );
         this.event(
           id,
@@ -190,23 +199,38 @@ export class Ledger implements PaymentLedger {
     if (run.owner !== owner) throw new Error('Run not found.');
     const policy = JSON.parse(run.policy) as Policy;
     const amounts = this.amounts(id);
-    const purchases = this.rows(id).map((row): PurchaseDTO => ({
-      id: row.id,
-      tool: row.tool,
-      amount: String(row.amount),
-      status: row.status,
-      createdAt: row.created_at,
-      reason: row.reason || undefined,
-      signature: row.signature || undefined,
-      chainVerified: row.chain_verified === 1,
-      result: row.result ? JSON.parse(row.result) : undefined,
-      source: row.source,
-      serviceOutcome: row.service_outcome,
-      payer: row.signed_identity ? JSON.parse(row.signed_identity).payer : undefined,
-      recipient: policy.recipient,
-      feeSponsor: row.evidence ? JSON.parse(row.evidence).feeSponsor : undefined,
-      feeLamports: row.evidence ? JSON.parse(row.evidence).feeLamports : undefined,
-    }));
+    const purchases = this.rows(id).map((row): PurchaseDTO => {
+      const signed = row.signed_identity ? JSON.parse(row.signed_identity) : undefined;
+      const evidence = row.evidence ? JSON.parse(row.evidence) : undefined;
+      return {
+        id: row.id,
+        tool: row.tool,
+        amount: String(row.amount),
+        status: row.status,
+        createdAt: row.created_at,
+        reason: row.reason || undefined,
+        signature: row.signature || undefined,
+        chainVerified: row.chain_verified === 1,
+        result: row.result ? JSON.parse(row.result) : undefined,
+        source: row.source,
+        serviceOutcome: row.service_outcome,
+        payer: signed?.payer,
+        recipient: policy.recipient,
+        feeSponsor: evidence?.feeSponsor,
+        feeLamports: evidence?.feeLamports,
+        originalBlockhash: evidence?.originalBlockhash || signed?.blockhash,
+        originatingLastValidBlockHeight: evidence?.originatingLastValidBlockHeight,
+        proofObservedAt: evidence?.proofObservedAt,
+        deliveryState:
+          evidence?.deliveryState ||
+          (row.service_outcome === 'delivered'
+            ? 'delivered'
+            : row.service_outcome === 'unavailable'
+              ? 'unavailable'
+              : 'pending'),
+        resultHash: evidence?.resultHash,
+      };
+    });
     const events = this.db
       .prepare('SELECT id,at,kind,title,detail,source FROM events WHERE run_id=? ORDER BY id')
       .all(id) as EventDTO[];
@@ -216,6 +240,7 @@ export class Ledger implements PaymentLedger {
       task: run.task,
       status: run.status,
       mode: 'live',
+      executionMode: run.execution_mode,
       paymentNetwork: 'devnet',
       dataNetwork: run.data_network,
       createdAt: run.created_at,
@@ -508,14 +533,21 @@ export class Ledger implements PaymentLedger {
           throw new Error('Cannot settle an unreserved intent.');
         if (intent.signature && intent.signature !== evidence.signature)
           throw new Error('Settlement identity changed.');
+        const signed = intent.signed_identity ? JSON.parse(intent.signed_identity) : undefined;
+        const observed: SettlementEvidence = {
+          ...evidence,
+          proofObservedAt: evidence.proofObservedAt ?? new Date(this.now()).toISOString(),
+          originalBlockhash: evidence.originalBlockhash ?? signed?.blockhash,
+          deliveryState: intent.service_outcome,
+        };
         this.db
           .prepare(
             "UPDATE intents SET status=CASE WHEN status IN ('delivered','settled-but-result-unavailable') THEN status ELSE 'settled' END,signature=?,chain_verified=MAX(chain_verified,?),evidence=?,day=?,reason=NULL WHERE id=?"
           )
           .run(
-            evidence.signature,
-            evidence.chainVerified ? 1 : 0,
-            JSON.stringify(evidence),
+            observed.signature,
+            observed.chainVerified ? 1 : 0,
+            JSON.stringify(observed),
             settledStates.includes(intent.status) ? intent.day : this.time().slice(0, 10),
             id
           );
@@ -524,7 +556,7 @@ export class Ledger implements PaymentLedger {
             intent.run_id,
             'settled',
             'Payment settled',
-            evidence.chainVerified
+            observed.chainVerified
               ? 'Trusted RPC confirmed the approved USDC movement.'
               : 'Facilitator reports settlement. Independent chain verification remains pending.'
           );
@@ -537,11 +569,26 @@ export class Ledger implements PaymentLedger {
       throw new Error('Delivery requires settlement evidence.');
     const json = JSON.stringify(result);
     if (json.length > 100000) throw new Error('Result exceeds storage bound.');
+    const evidence = intent.evidence ? JSON.parse(intent.evidence) : {};
     this.db
-      .prepare(
-        "UPDATE intents SET status='delivered',result=?,service_outcome='delivered' WHERE id=?"
-      )
-      .run(json, id);
+      .transaction(() => {
+        this.db
+          .prepare(
+            "UPDATE intents SET status='delivered',result=?,service_outcome='delivered' WHERE id=?"
+          )
+          .run(json, id);
+        this.db
+          .prepare('UPDATE intents SET evidence=? WHERE id=?')
+          .run(
+            JSON.stringify({
+              ...evidence,
+              deliveryState: 'delivered',
+              resultHash: resultHash(result),
+            }),
+            id
+          );
+      })
+      .immediate();
     this.event(
       intent.run_id,
       'delivered',
@@ -556,11 +603,19 @@ export class Ledger implements PaymentLedger {
       this.markUnknown(id, reason);
       return;
     }
+    const evidence = intent.evidence ? JSON.parse(intent.evidence) : {};
     this.db
-      .prepare(
-        "UPDATE intents SET status='settled-but-result-unavailable',service_outcome='unavailable',reason=? WHERE id=?"
-      )
-      .run(reason.slice(0, 500), id);
+      .transaction(() => {
+        this.db
+          .prepare(
+            "UPDATE intents SET status='settled-but-result-unavailable',service_outcome='unavailable',reason=? WHERE id=?"
+          )
+          .run(reason.slice(0, 500), id);
+        this.db
+          .prepare('UPDATE intents SET evidence=? WHERE id=?')
+          .run(JSON.stringify({ ...evidence, deliveryState: 'unavailable' }), id);
+      })
+      .immediate();
     this.event(
       intent.run_id,
       'unavailable',

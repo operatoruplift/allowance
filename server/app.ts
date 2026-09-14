@@ -14,6 +14,7 @@ import { configurationReadiness, type Config } from './config.js';
 import { Ledger } from './policy/ledger.js';
 import { PolicyError } from './policy/decision.js';
 import { AgentRunner, type PaidToolRunner } from './agent/runner.js';
+import { createAgentGrant } from './mcp/grants.js';
 export interface RuntimePayments extends PaidToolRunner {
   mountMerchant(app: express.Express): void;
   readiness(): Promise<{
@@ -87,11 +88,17 @@ export function createApp(
         detail:
           'An uncertain payment holds this payer. Reconcile existing purchases before a new run.',
       });
+    const externalReady =
+      config.mcpEnabled &&
+      Date.now() - preflightAt < 60000 &&
+      readiness.filter((item) => item.name !== 'OpenAI agent').every((item) => item.ready);
     return {
       tools: CATALOG,
       paymentNetwork: 'devnet',
       dataNetwork: config.dataNetwork,
       ready: readiness.every((x) => x.ready) && Date.now() - preflightAt < 60000,
+      externalReady,
+      mcpEnabled: config.mcpEnabled,
       readiness,
       payer: observed?.payer || null,
       recipient: config.recipient || null,
@@ -141,12 +148,10 @@ export function createApp(
   app.get('/api/runs', requireOperator, (_req, res) => res.json({ runs: ledger.listRuns() }));
   app.post('/api/runs', requireOperator, (req, res) => {
     if (!runner || !configDto().ready) {
-      res
-        .status(503)
-        .json({
-          error:
-            'Live execution is unavailable. Complete configuration and run a fresh readiness check.',
-        });
+      res.status(503).json({
+        error:
+          'Live execution is unavailable. Complete configuration and run a fresh readiness check.',
+      });
       return;
     }
     if (runner.isBusy()) {
@@ -157,6 +162,47 @@ export function createApp(
     const run = ledger.createRun(input);
     runner.start(run.id);
     res.status(201).json(ledger.getRun(run.id));
+  });
+  app.post('/api/external-runs', requireOperator, (req, res) => {
+    if (!config.mcpEnabled) {
+      res.status(503).json({ error: 'External-agent access is disabled.', code: 'MCP_DISABLED' });
+      return;
+    }
+    const current = configDto();
+    const externalReady =
+      Date.now() - preflightAt < 60000 &&
+      current.readiness.filter((item) => item.name !== 'OpenAI agent').every((item) => item.ready);
+    if (!externalReady) {
+      res.status(503).json({
+        error:
+          'External-agent execution is unavailable. Complete configuration and run a fresh readiness check.',
+        code: 'EXTERNAL_NOT_READY',
+      });
+      return;
+    }
+    const input = createRunSchema.parse(req.body);
+    const run = ledger.createRun(input, 'operator', 'external');
+    ledger.setStatus(run.id, 'running');
+    try {
+      const result = createAgentGrant(db, ledger, {
+        runId: run.id,
+        owner: 'operator',
+        sessionId: req.sessionID,
+        expiresAt: run.policy.expiresAt,
+      });
+      res.status(201).json({
+        run: ledger.getRun(run.id),
+        grant: {
+          id: result.grant.id,
+          expiresAt: result.grant.expiresAt,
+          scopes: result.grant.scopes,
+          token: result.token,
+        },
+      });
+    } catch (error) {
+      ledger.stop(run.id);
+      throw error;
+    }
   });
   const runIdSchema = z.string().uuid();
   app.get('/api/runs/:id', requireOperator, (req, res) =>
@@ -200,12 +246,10 @@ export function createApp(
         res.status(404).json({ error: 'Run not found.' });
         return;
       }
-      res
-        .status(503)
-        .json({
-          error:
-            'The service could not complete this request. No new spending is authorized by this error.',
-        });
+      res.status(503).json({
+        error:
+          'The service could not complete this request. No new spending is authorized by this error.',
+      });
     }
   );
   return app;

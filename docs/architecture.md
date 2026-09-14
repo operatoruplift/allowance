@@ -19,6 +19,8 @@ flowchart LR
   Reconcile --> Ledger
   Ledger --> Receipt[Run timeline and receipt]
   Express --> Receipt
+  External[Authorized local agent] --> MCP[Local MCP stdio bridge]
+  MCP --> Guard
 ```
 
 ## Boundaries
@@ -31,6 +33,7 @@ flowchart LR
 | `server/policy`   | Exact integer amounts, immutable policy, cap/expiry/allowlist checks and transactional reservation                        |
 | `server/db`       | Durable run, reservation, request identity, event, payment and delivery state                                             |
 | `server/payments` | Selected-requirement validation, pre-sign ledger guard, isolated signer, settlement checking and recovery                 |
+| `server/mcp`      | Local stdio tools, hashed session-bound grants, fixed scopes and safe error mapping                                    |
 | `server/merchant` | Actual HTTP x402 middleware, bounded validated inputs, purchased-result recovery                                          |
 | `server/data`     | Bounded, schema-validated, lossless Solana JSON-RPC reads                                                                 |
 
@@ -67,11 +70,13 @@ Response bodies are capped at 512 KiB, calls time out after 10 seconds by defaul
 
 Payment network always remains devnet. Mainnet data requires both an explicit mainnet data setting and a separate read-only opt-in. UI labels must identify mode, data network and payment network independently.
 
+Each purchase receipt separates facilitator settlement from independent chain proof. It records `chainVerified`, the original signed blockhash when known, the observation timestamp, delivery state, and a SHA-256 result hash after delivery. A provider validity height is recorded only when a provider supplies one; the application never fabricates it.
+
 ## Deployment
 
 One persistent Node process serves Express, the compiled frontend and its bounded background runner. SQLite needs a persistent mounted disk and one application instance. Back up the database together with its WAL state using an SQLite-aware backup method. Do not deploy this backend as stateless Vercel serverless functions. A separately hosted frontend rehearsal is a different deployment choice.
 
-Channels and MCP remain later adapters, not current product claims. See [payment-channels.md](payment-channels.md), [live-setup.md](live-setup.md) and the repository verification report for demonstrated versus pending evidence.
+Payment channels remain a later adapter. The current MCP bridge is local stdio only and uses the existing guard and ledger; it is not a public transport. See [payment-channels.md](payment-channels.md), [mcp.md](mcp.md), [live-setup.md](live-setup.md) and the repository verification report for demonstrated versus pending evidence.
 
 ## Runtime ownership and hard deadlines
 

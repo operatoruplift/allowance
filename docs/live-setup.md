@@ -19,6 +19,10 @@ Set `APP_ORIGIN` to the exact browser origin. Hosted mode requires HTTPS, secure
 7. Set `DAILY_USDC_CEILING`, `MAX_RUN_ALLOWANCE` and a prepared `DEMO_WALLET`. For the central scenario use a 0.040000 run allowance, 0.020000 per-request cap, at least 0.030000 available test USDC, two permitted tools, and a fresh policy expiry. Allow a modest test SOL reserve for setup and any payer-funded fees; do not use unbounded priority fees.
 8. Set `LIVE_PAYMENTS_ENABLED=true` only after reviewing this setup. Run `npm run preflight`. A successful support response is not a successful settlement; treat every failed/missing readiness item as unavailable.
 
+## External agent mode
+
+External agents use the local stdio bridge documented in [mcp.md](mcp.md). Keep `MCP_ENABLED=false` until the operator is ready to authorize a particular run. After a fresh readiness check, create `POST /api/external-runs` from the authenticated operator session, pass its one-time grant token to a local `npm run mcp` child process, and keep the token private. This mode bypasses the built-in OpenAI runner but retains the same exact catalog, ledger reservations, guarded signer, replay identity and reconciliation. Logout, stop, expiry and session loss revoke the grant. Creating a grant is authorization for that frozen run; it is not evidence of a payment or settlement.
+
 Payment fees, rent and LLM costs are outside the tool-price total. Devnet tokens have no monetary value; no real funds are needed for this demonstration. A server-managed development signer and application limits do not protect against a fully compromised server.
 
 ## Data configuration

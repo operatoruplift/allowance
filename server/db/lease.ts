@@ -40,3 +40,10 @@ export function acquireServiceLease(db: Database.Database, now: () => number = D
     },
   };
 }
+
+/** Used by a local adapter that shares the already-running service lease. */
+export function assertServiceLeaseActive(db: Database.Database, now: () => number = Date.now) {
+  const row = db.prepare('SELECT expires FROM service_lease WHERE singleton=1').get() as
+    { expires: number } | undefined;
+  if (!row || row.expires <= now()) throw new Error('Allowance service ownership is not active.');
+}

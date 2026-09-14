@@ -1,5 +1,5 @@
 import { loadConfig, type Config } from './config.js';
-import { acquireServiceLease } from './db/lease.js';
+import { acquireServiceLease, assertServiceLeaseActive } from './db/lease.js';
 import { openDatabase } from './db/index.js';
 import { Ledger } from './policy/ledger.js';
 import { SolanaDataClient } from './data/solana.js';
@@ -7,12 +7,17 @@ import { createPaymentService } from './payments/index.js';
 import { AgentRunner, openaiModel } from './agent/runner.js';
 export async function createRuntime(
   config: Config = loadConfig(),
-  options: { recover?: boolean; exclusive?: boolean } = {}
+  options: { recover?: boolean; exclusive?: boolean; shared?: boolean } = {}
 ) {
   const db = openDatabase(config.databasePath);
   const lease =
     (options.exclusive ?? options.recover !== false) ? acquireServiceLease(db) : undefined;
-  const ledger = new Ledger(db, config, Date.now, lease?.assert);
+  const ledger = new Ledger(
+    db,
+    config,
+    Date.now,
+    lease?.assert || (options.shared ? () => assertServiceLeaseActive(db) : undefined)
+  );
   if (options.recover !== false) ledger.recoverStartup();
   const heartbeat = lease
     ? setInterval(() => {
