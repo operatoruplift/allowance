@@ -21,14 +21,14 @@ The baseline still showed the earlier curved-A identity, a pink geometric hero b
 | Decorative motion behavior | `DecorativeFilm` | Same-origin muted autoplay, continuous playback and poster fallback; no manual pause control | Focused media test plus full browser suite | **Verified locally** |
 | Feature structure and responsive reflow | `.feature-grid`, `.run-unfolds` | 2×2 desktop cells, one-column mobile stack, no fixed artboard overflow | 1440/1024/390/320 screenshots; 200% zoom; journey and hosted tests | **Verified locally** |
 | Public rehearsal boundary | `scripts/build-rehearsal.ts`, generated `.vercel/output` | Static, clearly labeled, no API/model/payment execution, `connect-src 'none'`, same-origin media only | Build output CSP; browser request capture; hosted suite; route reload checks | **Verified locally** |
-| Public comparison | Vercel deployment `dpl_34cQeJh8x2GSUudFSeSCrMY9yeYe` | Public parity with candidate after explicit deployment request | Read-only route checks, asset hashes, public hosted browser suite and recovery fixture | **Verified for static rehearsal** |
+| Public comparison | Vercel deployment `dpl_5GUx2RBXe42U2TuymVkVkNGgg7f7` | Public parity with candidate after explicit deployment request | Read-only route checks, asset hashes, public hosted browser suite, media playback and recovery fixture | **Verified for static rehearsal** |
 | Public/private route inventory | SPA routes `/`, `/demo`, `/developers`, `/brand`, `/login`, `/app`, `/runs/:id`, unknown route | Each route should render a truthful surface and reload | Local route sweep: all returned 200, no overflow or fetch/XHR; private static routes explain backend boundary | **Verified locally** |
 | Rehearsal accounting | Existing fixture runner and receipt | Exact `0.040000` allowance, `0.010000` snapshot, `0.020000` explanation, `0.010000` remaining; separate `0.020000` denied probe; deterministic settlement-unknown recovery | Browser export assertions, no signatures/explorer links, empty/failure/reset/recovery scenarios | **Verified in controlled fixtures** |
 | Durable operator/auth/ledger/policy | Existing server runtime, auth, ledger, policy and runner | Owner-scoped sessions, durable holds, bounded agent and guarded tool catalog | 80 Vitest tests; controlled auth browser journey; source inspection | **Verified by automated tests; live runtime unconfigured** |
 | x402 Solana exact payment path | Existing `server/payments`, merchants and official x402 v2 adapter | Challenge, policy reservation, signing journal, facilitator submission, chain evidence and receipt | Unit/integration tests and preflight; no funded smoke | **Implemented; live evidence externally blocked** |
 | MCP stdio adapter | Existing `server/mcp.ts` and tests | JSON-RPC stdout hygiene, scoped grants, no second ledger | MCP test suite in `npm test`; source inspection | **Verified by automated tests** |
 | Brand/social kit | Generated `/brand` route and `public/brand` | Profiles, wallpapers, headers, ads/backgrounds, SVG/PNG/ZIP downloads | 26 manifest assets; brand browser suite; generated ZIP | **Verified locally** |
-| Mainnet, payment channels, remote MCP, new providers | Not part of this implementation | Remain clearly deferred | Documentation and route copy | **Deliberately deferred** |
+| Mainnet live settlement, payment channels, remote MCP, new providers | Static UI labels the public surface “Mainnet preview”; live signer/facilitator path remains the configured devnet engine | Never claim a preview or fixture as a mainnet transaction | Deployment evidence and readiness boundary | **Preview shipped; live settlement blocked by configuration** |
 
 ## Gaps fixed
 
@@ -70,7 +70,7 @@ The audit did not run `npm run setup:operator`, enable `LIVE_PAYMENTS_ENABLED`, 
 7. `OPENAI_API_KEY` and explicit `OPENAI_MODEL` for autonomous runs;
 8. prepared `DEMO_WALLET` data for repeatable read tools.
 
-Docker is not available in this environment, so container execution remains externally blocked. Payment Channels, mainnet and remote MCP remain deferred by scope.
+Docker is not available in this environment, so container execution remains externally blocked. Payment Channels and remote MCP remain deferred by scope. Mainnet live settlement remains blocked until a reviewed mainnet payer, merchant, facilitator, RPC and funding configuration is supplied; the public site is explicitly a no-spend preview.
 
 ## Reproducible checks
 
@@ -98,9 +98,9 @@ The local Vite preview used for the route sweep was `http://127.0.0.1:4328`. The
 
 ## Public status and deployment boundary
 
-The explicitly requested production deployment is READY at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployment `dpl_34cQeJh8x2GSUudFSeSCrMY9yeYe`, built from source commit `47c9661`. Public verification returned HTTP 200 for the repaired favicon, canonical symbol, both films and brand ZIP; `/api/health` remains HTTP 404. The response CSP keeps `connect-src 'none'` and allows only same-origin media. All nine checked public asset hashes match the local static build. The public recovery fixture preserved an interrupted run and `settled-but-result-unavailable` receipt with no external requests. The public HTML now carries the reusable product description and the demo copy explicitly names useful purchases, a separate denial and recovery. The public site remains a deterministic static rehearsal with no backend, signer or model runtime.
+The explicitly requested production deployment is READY at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployment `dpl_5GUx2RBXe42U2TuymVkVkNGgg7f7`, built from source commit `819cf52`. Public verification returned HTTP 200 for the cache-busted A mark favicon, both films and brand ZIP; `/api/health` remains HTTP 404. The response CSP keeps `connect-src 'none'` and allows only same-origin media. Public browser checks confirm no film-control elements, autoplaying media, mainnet-preview copy, readable receipt statements and the guided `/demo` flow, with no external requests. The public site remains a deterministic static rehearsal with no backend, signer or model runtime.
 
-Deployment evidence and public screenshots are recorded in [final production deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-16-final.json) and [production recovery](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-16-recovery.png). The earlier landing, media, console, receipt and print captures remain available under `evidence/production-2026-09-15-*`.
+Deployment evidence and public screenshots are recorded in [UI refresh deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-16-ui-refresh.json), [final production deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-16-final.json) and [production recovery](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-16-recovery.png). The refreshed landing, demo, brand and print captures remain available under `evidence/`.
 
 ## Source provenance
 
@@ -108,8 +108,8 @@ The selected media are locally served derivatives of the supplied Axiom and Cons
 
 ## Commit and build identifiers
 
-Baseline audit commit before the repair: `9fbac6b` (`Stabilize MCP stdio integration test`). The current implementation commit is `47c9661` (`Refresh product descriptions and rehearsal messaging`); documentation and evidence commits follow it. The reproducible build outputs are the hashes listed above; generated brand kit manifest version is `2026-09-15`.
+Baseline audit commit before the repair: `9fbac6b` (`Stabilize MCP stdio integration test`). The current implementation commit is `819cf52` (`Refine mainnet preview and animated product UI`). The reproducible build outputs are recorded in the UI refresh deployment evidence; generated brand kit manifest version is `2026-09-15`.
 
 ## Remaining blockers
 
-The implementation and controlled evidence are complete locally and the static rehearsal is deployed. The remaining blockers are external: operator/payment/model credentials and devnet funding for real x402 evidence, plus Docker availability for container checks. No simulated receipt is presented as an onchain transaction.
+The implementation and controlled evidence are complete locally and the static rehearsal is deployed. The remaining blockers are external: operator/payment/model credentials, a reviewed mainnet payment configuration and funding for live x402 evidence, plus Docker availability for container checks. The current persistent engine remains explicitly devnet-configured; the public mainnet preview does not perform payments. No simulated receipt is presented as an onchain transaction.

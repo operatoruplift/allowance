@@ -1,0 +1,70 @@
+{
+  "recordedAt": "2026-09-15T18:34:56.130Z",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "public deterministic rehearsal and brand library only",
+  "deploymentId": "dpl_5GUx2RBXe42U2TuymVkVkNGgg7f7",
+  "inspectUrl": "https://vercel.com/operatoruplift/allowanceonsolana/5GUx2RBXe42U2TuymVkVkNGgg7f7",
+  "productionUrl": "https://allowanceonsolana-b8jjwt3sc-operatoruplift.vercel.app",
+  "sourceCommit": "819cf52",
+  "workingTreeBuild": false,
+  "buildCommand": "npm run build:rehearsal",
+  "checks": {
+    "indexStatus": 200,
+    "metadataDescription": true,
+    "faviconPath": "/allowance-a.svg?v=2",
+    "filmControls": 0,
+    "mainnetPreview": true,
+    "receiptCopy": true,
+    "demoGuide": true,
+    "connectSrc": "'none'",
+    "mediaSrc": "'self'",
+    "externalRequests": []
+  },
+  "assetHashes": {
+    "/index.html": {
+      "status": 200,
+      "bytes": 833,
+      "sha256": "9244d08c9ed281d56598cb6e5dfabe8988b0c6862c46f36bc8a9201be754c63c"
+    },
+    "/allowance-a.svg?v=2": {
+      "status": 200,
+      "bytes": 275,
+      "sha256": "46b47ecda01d3b864dd4cc3e5462ecf44984466c0116e326f62b0ee442465e3c"
+    },
+    "/assets/index-B9aQod4b.js": {
+      "status": 200,
+      "bytes": 427933,
+      "sha256": "f860eaf7f1434dd72f2f214e7482d09ac53669b034fa8c6265dbb9d4ca49e8c7"
+    },
+    "/assets/index-CzggqMDW.css": {
+      "status": 200,
+      "bytes": 97483,
+      "sha256": "85a2b8f92713b025e034bd3234e6c3e4908da0fdaf639b175eaebf5c47491e36"
+    },
+    "/media/allowance-cloud.mp4": {
+      "status": 200,
+      "bytes": 204438,
+      "sha256": "c25902c354b098b422e7074e0473edc01419df096e85de64485a9898594388d7"
+    },
+    "/media/allowance-mountains.mp4": {
+      "status": 200,
+      "bytes": 329623,
+      "sha256": "68c1720c5603022f91542afaf676dd2fb715467af924ca129412c867b8d789ba"
+    },
+    "/brand/allowance-brand-kit.zip": {
+      "status": 200,
+      "bytes": 1699238,
+      "sha256": "90500498b4a16407012b9f81c0154a1dac660c53bb220460e3b5f1d618834608"
+    }
+  },
+  "mediaPlayback": {
+    "src": "https://allowanceonsolana.vercel.app/media/allowance-cloud.mp4",
+    "readyState": 4,
+    "currentTimeSeconds": 1.941314,
+    "paused": false,
+    "autoplay": true
+  },
+  "realAllowanceMainnetSettlement": "not performed",
+  "paidModelCall": "not performed",
+  "note": "The public deployment is static rehearsal only. No signing, RPC, facilitator, model, or onchain payment request is made."
+}
