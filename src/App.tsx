@@ -1324,7 +1324,8 @@ function HostedConsole() {
         <h2>Live runs need a persistent backend.</h2>
         <p>
           This Vercel site hosts the public rehearsal and developer guide. Operator sign-in, actual
-          AI agent runs, and devnet payments are available only on a separately configured server.
+          AI agent runs, and live mainnet payments are available only on a separately configured
+          server. This public surface stays a no-spend mainnet preview.
         </p>
         <div className="notice">
           <Info size={19} />
@@ -2293,7 +2294,7 @@ function Developers() {
       <section className="card setup-guide">
         <div className="card-heading">
           <Terminal size={19} />
-          <h2>From rehearsal to devnet</h2>
+          <h2>From rehearsal to mainnet</h2>
         </div>
         <div className="setup-grid">
           <div>
@@ -2311,23 +2312,24 @@ function Developers() {
             <span className="section-index">02</span>
             <h3>Connect the development pieces</h3>
             <p>
-              Configure a dedicated low-balance devnet payer, a different merchant recipient, Solana
-              RPC, a compatible facilitator, and your server-only OpenAI credentials and model.
+              Configure a dedicated low-balance mainnet payer, a different merchant recipient,
+              Solana RPC, a compatible facilitator, and your server-only OpenAI credentials and
+              model. Keep this public rehearsal disabled until every prerequisite is reviewed.
             </p>
             <p>
-              Check devnet USDC mint and decimals, required token accounts, facilitator support, and
-              SOL reserves with <code>npm run preflight</code>.
+              Check the mainnet USDC mint and decimals, required token accounts, facilitator
+              support, and SOL reserves with <code>npm run preflight</code>.
             </p>
           </div>
           <div>
             <span className="section-index">03</span>
             <h3>Verify a real run</h3>
             <p>
-              The opt-in <code>npm run smoke:devnet</code> command requires explicit configuration
-              and test funding. See the README for the authorization flag and complete setup.
+              The opt-in live smoke command requires explicit mainnet configuration and funding.
+              See the README for the authorization flag and complete setup.
             </p>
             <p>
-              A working fixture or an unpaid 402 response is separate from evidence of real devnet
+              A working fixture or an unpaid 402 response is separate from evidence of real mainnet
               settlement.
             </p>
           </div>
