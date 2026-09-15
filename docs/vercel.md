@@ -10,6 +10,10 @@ The complete live application remains a single persistent Express service with S
 
 On September 14, 2026, the current red Allowance build was deployed to production as `dpl_82MNDYsm16aFHG8RG6hfAWdMDnAm` and aliased to [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The deployment remains the static rehearsal/brand surface; no backend, SQLite database, signer, MCP process, OpenAI key, or payment endpoint is deployed to Vercel. Four hosted browser journeys passed, `/favicon-red.svg` returned 200 as `image/svg+xml`, and the deployed static asset hashes are recorded in [production-deployment-2026-09-14.json](../evidence/production-deployment-2026-09-14.json).
 
+## Latest production deployment
+
+On September 15, 2026, after explicit user approval, the repaired A14_RED candidate was promoted as `dpl_2PH5GUh1Cefaxc2WtEJbkeAS96Xb` and aliased to [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). Four hosted browser journeys passed against the public URL. The updated boundary-and-dot favicon, canonical symbol, Axiom and Constellation films, posters and regenerated brand kit are live. Nine checked asset hashes match the local static build; `connect-src 'none'` remains enforced and `/api/health` returns 404. The deployment is still a deterministic rehearsal with no backend, signer, MCP process, OpenAI key or payment endpoint. Evidence is in [production-deployment-2026-09-15.json](../evidence/production-deployment-2026-09-15.json) and the matched public screenshots under `evidence/production-2026-09-15-*`.
+
 ## Build and publish
 
 The static build uses Vercel's [Build Output API](https://vercel.com/docs/build-output-api/configuration). Its only outputs are `config.json` and static assets. Build-time `VITE_REHEARSAL_ONLY=true` removes the private route components from the published bundle. The build does not load `.env` files. Normal `npm run build` and `npm start` continue to build and serve the complete backend application.

@@ -1,0 +1,105 @@
+{
+  "recordedAt": "2026-09-15T08:03:56.567083Z",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "public deterministic rehearsal and brand library only",
+  "deploymentId": "dpl_2PH5GUh1Cefaxc2WtEJbkeAS96Xb",
+  "inspectUrl": "https://vercel.com/operatoruplift/allowanceonsolana/2PH5GUh1Cefaxc2WtEJbkeAS96Xb",
+  "productionUrl": "https://allowanceonsolana-85e99njme-operatoruplift.vercel.app",
+  "sourceCommit": "d21d157",
+  "workingTreeBuild": false,
+  "buildCommand": "npm run build:rehearsal",
+  "checks": {
+    "hostedBrowserJourneys": 4,
+    "indexStatus": 200,
+    "faviconPath": "/favicon-red.svg",
+    "faviconStatus": 200,
+    "faviconContentType": "image/svg+xml",
+    "cloudFilmStatus": 200,
+    "mountainFilmStatus": 200,
+    "brandZipStatus": 200,
+    "apiHealthStatus": 404,
+    "connectSrc": "none",
+    "mediaSrc": "self"
+  },
+  "assetSha256": {
+    "/index.html": {
+      "status": "downloaded",
+      "sha256": "3f5148996a1cb00783f85b5735a0bee05d9ff69cb7e444ff6d90ec201e12e2d2",
+      "bytes": 813,
+      "localSha256": "3f5148996a1cb00783f85b5735a0bee05d9ff69cb7e444ff6d90ec201e12e2d2",
+      "matchesLocal": true
+    },
+    "/favicon-red.svg": {
+      "status": "downloaded",
+      "sha256": "b79df0879348ec9aa7ffa6efda921220eb30398faad4d053ff999f823e557360",
+      "bytes": 339,
+      "localSha256": "b79df0879348ec9aa7ffa6efda921220eb30398faad4d053ff999f823e557360",
+      "matchesLocal": true
+    },
+    "/allowance-symbol.svg": {
+      "status": "downloaded",
+      "sha256": "4c45cf746eeb8c80bf8269aab77221ff313430cf44dba58c4dfc441877d52f57",
+      "bytes": 268,
+      "localSha256": "4c45cf746eeb8c80bf8269aab77221ff313430cf44dba58c4dfc441877d52f57",
+      "matchesLocal": true
+    },
+    "/allowance-wordmark.svg": {
+      "status": "downloaded",
+      "sha256": "a2db608d6a0a0b6008e5e291391204ba6902f0281fd0e1c10af79fc4d537bbf9",
+      "bytes": 3473,
+      "localSha256": "a2db608d6a0a0b6008e5e291391204ba6902f0281fd0e1c10af79fc4d537bbf9",
+      "matchesLocal": true
+    },
+    "/assets/index-CyFl39WC.css": {
+      "status": "downloaded",
+      "sha256": "b5167461e92afb6379345cfa42703d55919b4403123979c84a16f62d4b7e13c8",
+      "bytes": 92756,
+      "localSha256": "b5167461e92afb6379345cfa42703d55919b4403123979c84a16f62d4b7e13c8",
+      "matchesLocal": true
+    },
+    "/assets/index-Cqzsk8oK.js": {
+      "status": "downloaded",
+      "sha256": "45cc7b30f9fb61b553d34b75a6d034569627eeffb1b9084e40abc82e28bea397",
+      "bytes": 424583,
+      "localSha256": "45cc7b30f9fb61b553d34b75a6d034569627eeffb1b9084e40abc82e28bea397",
+      "matchesLocal": true
+    },
+    "/media/allowance-cloud.mp4": {
+      "status": "downloaded",
+      "sha256": "c25902c354b098b422e7074e0473edc01419df096e85de64485a9898594388d7",
+      "bytes": 204438,
+      "localSha256": "c25902c354b098b422e7074e0473edc01419df096e85de64485a9898594388d7",
+      "matchesLocal": true
+    },
+    "/media/allowance-mountains.mp4": {
+      "status": "downloaded",
+      "sha256": "68c1720c5603022f91542afaf676dd2fb715467af924ca129412c867b8d789ba",
+      "bytes": 329623,
+      "localSha256": "68c1720c5603022f91542afaf676dd2fb715467af924ca129412c867b8d789ba",
+      "matchesLocal": true
+    },
+    "/brand/allowance-brand-kit.zip": {
+      "status": "downloaded",
+      "sha256": "90500498b4a16407012b9f81c0154a1dac660c53bb220460e3b5f1d618834608",
+      "bytes": 1699238,
+      "localSha256": "90500498b4a16407012b9f81c0154a1dac660c53bb220460e3b5f1d618834608",
+      "matchesLocal": true
+    }
+  },
+  "realAllowanceDevnetSettlement": "not performed",
+  "paidModelCall": "not performed",
+  "mediaPlayback": {
+    "url": "https://allowanceonsolana.vercel.app/",
+    "cloud": {
+      "readyState": 4,
+      "currentTimeSeconds": 3.865018,
+      "paused": false
+    },
+    "mountains": {
+      "readyState": 4,
+      "currentTimeSeconds": 2.813085,
+      "paused": false
+    },
+    "externalRequests": []
+  }
+}

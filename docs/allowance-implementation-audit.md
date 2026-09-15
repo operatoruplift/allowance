@@ -3,11 +3,11 @@
 **Audit date:** 15 September 2026  
 **Repository:** `/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance`  
 **Selected composition:** A14_RED — A1 Constellation + A4 Axiom in red  
-**Audit mode:** local production and static rehearsal builds, controlled browser fixtures, read-only comparison with the existing public Vercel rehearsal. No funded transaction, paid model request, or deployment was initiated during this audit.
+**Audit mode:** local production and static rehearsal builds, controlled browser fixtures, read-only comparison with the public Vercel rehearsal. No funded transaction or paid model request was initiated; production deployment was performed afterward only when explicitly requested.
 
 ## Finding at a glance
 
-The baseline still showed the earlier curved-A identity, a pink geometric hero backdrop, a single horizontal feature row, and no selected source films. The repaired local candidate now uses the selected boundary-and-dot mark, red/paper system, Axiom cloud film with the existing interactive receipt, Constellation mountain strip, 2×2 feature cells, local Figtree/Geist Mono files, and motion controls that pause when offscreen, hidden, or reduced-motion is requested. The public Vercel site remains the previous static rehearsal and therefore still has the old favicon/mark and no new films; it was intentionally not redeployed under the audit instruction.
+The baseline still showed the earlier curved-A identity, a pink geometric hero backdrop, a single horizontal feature row, and no selected source films. The repaired candidate now uses the selected boundary-and-dot mark, red/paper system, Axiom cloud film with the existing interactive receipt, Constellation mountain strip, 2×2 feature cells, local Figtree/Geist Mono files, and motion controls that pause when offscreen, hidden, or reduced-motion is requested. After the audit was complete, the explicitly requested production deployment promoted this candidate to the public static rehearsal.
 
 ## Requirements matrix
 
@@ -21,7 +21,7 @@ The baseline still showed the earlier curved-A identity, a pink geometric hero b
 | Decorative motion behavior | `DecorativeFilm` | Pause control; offscreen, hidden-tab and reduced-motion pausing; cleanup | Focused media test plus full browser suite; recording | **Verified locally** |
 | Feature structure and responsive reflow | `.feature-grid`, `.run-unfolds` | 2×2 desktop cells, one-column mobile stack, no fixed artboard overflow | 1440/1024/390/320 screenshots; 200% zoom; journey and hosted tests | **Verified locally** |
 | Public rehearsal boundary | `scripts/build-rehearsal.ts`, generated `.vercel/output` | Static, clearly labeled, no API/model/payment execution, `connect-src 'none'`, same-origin media only | Build output CSP; browser request capture; hosted suite; route reload checks | **Verified locally** |
-| Public comparison | Existing Vercel deployment `dpl_82MNDYsm16aFHG8RG6hfAWdMDnAm` | Public parity with candidate only after explicit deployment request | Read-only `curl` and prior production evidence | **Partially implemented / intentionally undeployed** |
+| Public comparison | Vercel deployment `dpl_2PH5GUh1Cefaxc2WtEJbkeAS96Xb` | Public parity with candidate after explicit deployment request | Read-only `curl`, asset hashes and public hosted browser suite | **Verified for static rehearsal** |
 | Public/private route inventory | SPA routes `/`, `/demo`, `/developers`, `/brand`, `/login`, `/app`, `/runs/:id`, unknown route | Each route should render a truthful surface and reload | Local route sweep: all returned 200, no overflow or fetch/XHR; private static routes explain backend boundary | **Verified locally** |
 | Rehearsal accounting | Existing fixture runner and receipt | Exact `0.040000` allowance, `0.010000` snapshot, `0.020000` explanation, `0.010000` remaining; separate `0.020000` denied probe | Browser export assertions, no signatures/explorer links, empty/failure/reset scenarios | **Verified in controlled fixtures** |
 | Durable operator/auth/ledger/policy | Existing server runtime, auth, ledger, policy and runner | Owner-scoped sessions, durable holds, bounded agent and guarded tool catalog | 79 Vitest tests; controlled auth browser journey; source inspection | **Verified by automated tests; live runtime unconfigured** |
@@ -81,7 +81,7 @@ Checks run against the local candidate:
 - `npm run build` — passed; Vite client assets: CSS `index-CyFl39WC.css`, JS `index-Cz-gLUGE.js`.
 - `npm run build:rehearsal` — passed; static assets: CSS `index-CyFl39WC.css`, JS `index-Cqzsk8oK.js`; output states no backend functions, signing or model runtime.
 - `npm run test:browser` — **5 browser journeys passed**, including the new film/motion test.
-- `npm run test:hosted` — **4 local static-rehearsal journeys passed**.
+- `npm run test:hosted` — **4 local static-rehearsal journeys passed** and **4 public-production journeys passed** against `https://allowanceonsolana.vercel.app`.
 - `npm run preflight` — passed as a read-only command and reported the missing live prerequisites above.
 - Font checks — loaded Figtree and Geist Mono confirmed with `document.fonts.check`.
 - 200% zoom — `document.documentElement.scrollWidth === innerWidth` at a 640px viewport; no horizontal overflow.
@@ -97,9 +97,9 @@ The local Vite preview used for the route sweep was `http://127.0.0.1:4328`. The
 
 ## Public status and deployment boundary
 
-Read-only production comparison on 15 September returned HTTP 200 for the public home page and old `/favicon-red.svg`, HTTP 404 for the new `/media/allowance-cloud.mp4`, and HTTP 404 for `/api/health`. The deployed favicon still contains the earlier curved-A SVG, which is expected because the current audit explicitly did not authorize a new deployment. The public site remains a deterministic static rehearsal with no backend, signer or model runtime. The local candidate has not been promoted, and no local commit is evidence of deployed parity.
+The explicitly requested production deployment is READY at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployment `dpl_2PH5GUh1Cefaxc2WtEJbkeAS96Xb`. Public verification returned HTTP 200 for the repaired favicon, canonical symbol, both films and brand ZIP; `/api/health` remains HTTP 404. The response CSP keeps `connect-src 'none'` and allows only same-origin media. All nine checked public asset hashes match the local static build. The public site remains a deterministic static rehearsal with no backend, signer or model runtime.
 
-The previous production deployment is recorded in [production-deployment-2026-09-14.json](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-14.json) as deployment `dpl_82MNDYsm16aFHG8RG6hfAWdMDnAm`. A later explicit deployment request is required before promoting this repaired candidate.
+Deployment evidence and public screenshots are recorded in [production-deployment-2026-09-15.json](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-15.json), [production landing](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-15-landing-desktop.png), [production media playback](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-15-media-desktop.png), [production console](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-15-console-desktop.png), [production receipt](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-15-receipt.png) and [production print](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-15-rehearsal-print.pdf).
 
 ## Source provenance
 
@@ -111,4 +111,4 @@ Baseline audit commit before the repair: `9fbac6b` (`Stabilize MCP stdio integra
 
 ## Remaining blockers
 
-The implementation and controlled evidence are complete locally. The remaining blockers are external: operator/payment/model credentials and devnet funding for real x402 evidence; Docker availability for container checks; and an explicit deployment request for production parity. No simulated receipt is presented as an onchain transaction.
+The implementation and controlled evidence are complete locally and the static rehearsal is deployed. The remaining blockers are external: operator/payment/model credentials and devnet funding for real x402 evidence, plus Docker availability for container checks. No simulated receipt is presented as an onchain transaction.
