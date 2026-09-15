@@ -32,8 +32,6 @@ import {
   LoaderCircle,
   LockKeyhole,
   Menu,
-  Pause,
-  Play,
   ReceiptText,
   RotateCcw,
   ShieldCheck,
@@ -61,7 +59,7 @@ import BrandKit from './BrandKit';
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="brand" aria-label="Allowance home">
-      <img src="/allowance-symbol.svg" width="33" height="33" alt="" aria-hidden="true" />
+      <img src="/allowance-a.svg" width="33" height="33" alt="" aria-hidden="true" />
       {!compact && (
         <span>
           Allowance<span className="brand-period">.</span>
@@ -112,7 +110,7 @@ function Header() {
           <ShieldCheck size={21} />
           <span>
             {rehearsalOnly || pathname === '/' || pathname === '/demo' || pathname === '/brand'
-              ? 'Public rehearsal · No real payments'
+              ? 'Public rehearsal · Mainnet preview · No real payments'
               : 'Application policies · Devnet payments'}
           </span>
           <Link
@@ -148,7 +146,7 @@ function Footer() {
         <span>Built for Solana agentic payments</span>
         <span className="small muted">
           {rehearsalOnly
-            ? 'Public rehearsal · Fixture receipts · No onchain payments'
+            ? 'Public rehearsal · Mainnet preview · Fixture receipts · No onchain payments'
             : 'First-party tools · Devnet payments · Working product name'}
         </span>
       </div>
@@ -157,18 +155,19 @@ function Footer() {
 }
 function NetworkPills({
   mode = 'rehearsal',
-  data = 'devnet',
+  data = 'mainnet preview',
 }: {
   mode?: 'rehearsal' | 'live';
   data?: string;
 }) {
+  const paymentLabel = mode === 'rehearsal' ? 'mainnet preview' : 'devnet';
   return (
     <div className="network-pills">
       <span className="pill">
         <span className={mode === 'live' ? 'status-dot' : 'status-dot quiet'} />
         {mode === 'live' ? 'Live execution' : 'Rehearsal'}
       </span>
-      <span>Payments: devnet</span>
+      <span>Payments: {paymentLabel}</span>
       <span className="pill-divider">/</span>
       <span>Data: {data}</span>
     </div>
@@ -244,7 +243,7 @@ function BudgetMeter({
       <div className="budget-title">
         <span className="eyebrow">Your allowance</span>
         <span className="currency-label">
-          USDC <span>· devnet</span>
+          USDC <span>· {run.mode === 'rehearsal' ? 'mainnet preview' : 'devnet'}</span>
         </span>
       </div>
       <div className="budget-total">
@@ -293,7 +292,7 @@ function LandingReceipt() {
     <div className="hero-receipt-wrap">
       <div className="receipt-floating-note">
         <span className="note-line" />
-        Small budget. Full picture.
+        <span>Small budget. Full picture.</span>
       </div>
       <div className="hero-receipt">
         <div className="receipt-top">
@@ -376,9 +375,9 @@ function LandingReceipt() {
       <div className="receipt-caption">
         <ArrowDownLeft size={18} />
         <span>
-          Every purchase has a purpose.
+          <strong>Every purchase has a purpose.</strong>
           <br />
-          Every limit has the final say.
+          <strong>Every limit has the final say.</strong>
         </span>
       </div>
     </div>
@@ -397,57 +396,12 @@ function DecorativeFilm({
   className?: string;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [ready, setReady] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const visibleRef = useRef(false);
-  const manualPauseRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const playIfAllowed = () => {
-      if (!video || media.matches || document.hidden || !visibleRef.current || manualPauseRef.current)
-        return;
-      void video.play().catch(() => undefined);
-    };
-    const applyMotionPreference = () => {
-      setReducedMotion(media.matches);
-      if (media.matches || document.hidden) video.pause();
-      else playIfAllowed();
-    };
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        visibleRef.current = Boolean(entry?.isIntersecting);
-        if (visibleRef.current) playIfAllowed();
-        else video.pause();
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(video);
-    media.addEventListener('change', applyMotionPreference);
-    document.addEventListener('visibilitychange', applyMotionPreference);
-    applyMotionPreference();
-    return () => {
-      observer.disconnect();
-      media.removeEventListener('change', applyMotionPreference);
-      document.removeEventListener('visibilitychange', applyMotionPreference);
-      video.pause();
-    };
+    void video.play().catch(() => undefined);
   }, []);
-
-  const togglePlayback = () => {
-    const video = videoRef.current;
-    if (!video || reducedMotion) return;
-    if (video.paused) {
-      manualPauseRef.current = false;
-      void video.play().catch(() => undefined);
-    } else {
-      manualPauseRef.current = true;
-      video.pause();
-    }
-  };
 
   return (
     <div className={`decorative-film ${className ?? ''}`} data-film={label}>
@@ -459,24 +413,12 @@ function DecorativeFilm({
         muted
         loop
         playsInline
-        preload="metadata"
+        autoPlay
+        preload="auto"
         aria-label={label}
-        onCanPlay={() => setReady(true)}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
+        onCanPlay={(event) => void event.currentTarget.play().catch(() => undefined)}
       />
       <div className="film-scrim" aria-hidden="true" />
-      <button
-        type="button"
-        className="film-control"
-        onClick={togglePlayback}
-        disabled={!ready || reducedMotion}
-        aria-label={reducedMotion ? `${label} paused for reduced motion` : `${playing ? 'Pause' : 'Play'} ${label}`}
-        title={reducedMotion ? 'Paused for reduced motion' : undefined}
-      >
-        {playing ? <Pause size={14} /> : <Play size={14} />}
-        <span>{reducedMotion ? 'Motion off' : playing ? 'Pause film' : 'Play film'}</span>
-      </button>
     </div>
   );
 }
@@ -644,12 +586,12 @@ function Landing() {
                 {':  "0.020000"\n'}
                 <span className="code-green">services</span>
                 {':    ["wallet_snapshot",\n              "transaction_explain"]\n'}
-                <span className="code-muted">// Devnet USDC. Exact payments. Clear receipts.</span>
+                <span className="code-muted">// Mainnet-ready policy. Exact payments. Clear receipts.</span>
               </code>
             </pre>
             <div className="terminal-foot">
               <Terminal size={14} />
-              Server-managed devnet signer · Application-enforced limits
+              Server-managed signer · Application-enforced limits
             </div>
           </div>
         </section>
@@ -736,6 +678,18 @@ function Demo() {
           </span>
         </div>
       </div>
+      <section className="demo-guide" aria-label="How to use the working example">
+        <div className="demo-guide-heading">
+          <div className="eyebrow">A quick guided tour</div>
+          <p>Choose a fixture, watch the budget move, then open the receipt for the exact reason behind each decision.</p>
+        </div>
+        <ol className="demo-guide-steps">
+          <li><span>01</span><b>Choose an outcome</b><small>Try the standard run, a failure, or recovery.</small></li>
+          <li><span>02</span><b>Run the fixture</b><small>See useful tool purchases and one separate denial.</small></li>
+          <li><span>03</span><b>Read the receipt</b><small>Expand any row to inspect status, cost, and evidence.</small></li>
+          <li><span>04</span><b>Reconcile recovery</b><small>Resolve an unknown settlement without making a duplicate charge.</small></li>
+        </ol>
+      </section>
       <div className="workspace-grid">
         <section className="card composer">
           <div className="card-heading">
@@ -774,9 +728,10 @@ function Demo() {
             </div>
             <ToolList />
             <div className="demo-scenario">
-              <label htmlFor="scenario">Explore an outcome</label>
+              <label htmlFor="scenario">Choose a fixture<span>Each option demonstrates a different guarded outcome.</span></label>
               <select
                 id="scenario"
+                aria-describedby="scenario-help"
                 value={scenario}
                 disabled={step !== null}
                 onChange={(e) => {
@@ -789,6 +744,7 @@ function Demo() {
                 <option value="failure">Service failure before signing</option>
                 <option value="ambiguous">Settlement unknown, then reconcile</option>
               </select>
+              <small id="scenario-help">No wallet, model, RPC, signing, or payment request is made from this page.</small>
             </div>
             <button
               className="button button-primary full-width"
@@ -848,7 +804,7 @@ function Demo() {
         <span>
           {rehearsalOnly
             ? 'Ready to explore actual agent runs?'
-            : 'Ready to connect real devnet tools?'}
+            : 'Ready to connect configured tools?'}
         </span>
         <Link to="/app" className="text-link">
           {rehearsalOnly ? 'About live runs' : 'Open the operator console'}{' '}
@@ -1201,7 +1157,10 @@ function RunDetails({
       >
         <div className="receipt-table-head">
           <h3>Purchase receipt</h3>
-          <span>Amounts in devnet USDC {run.mode === 'rehearsal' && '· simulated'}</span>
+          <span>
+            Amounts in {run.mode === 'rehearsal' ? 'mainnet preview' : 'devnet'} USDC{' '}
+            {run.mode === 'rehearsal' && '· simulated'}
+          </span>
         </div>
         {run.purchases.length ? (
           run.purchases.map((p) => (
@@ -1323,7 +1282,7 @@ function RunDetails({
         <Logo />
         <h2>Allowance receipt</h2>
         <p>
-          Run {run.id} · Execution: {run.mode} · Payments: devnet · Data: {run.dataNetwork}
+          Run {run.id} · Execution: {run.mode} · Payments: {run.mode === 'rehearsal' ? 'mainnet preview' : 'devnet'} · Data: {run.mode === 'rehearsal' ? 'mainnet preview' : run.dataNetwork}
         </p>
         {run.mode === 'rehearsal' && (
           <p>Deterministic fixture. No real signatures, payments, RPC calls or model calls.</p>
@@ -2163,7 +2122,7 @@ const result = await runtime.payments.runPaidTool(
   { address: walletAddress },
 );
 
-// Requires explicit devnet setup. A retry must keep
+// Requires explicit network setup. A retry must keep
 // the same request ID to recover the same purchase.`;
 function Developers() {
   const [copied, setCopied] = useState(false);
@@ -2197,7 +2156,7 @@ function Developers() {
           <div>
             <b>This site hosts the public rehearsal.</b> The architecture and endpoints below
             describe the separately configured persistent backend. This static deployment does not
-            run an agent, expose paid APIs, or verify devnet payments.
+            run an agent, expose paid APIs, or verify live payments.
           </div>
         </div>
       )}
@@ -2217,27 +2176,27 @@ function Developers() {
             <Info size={16} />
             <p>
               The sample merchants are first-party demonstration services. Controls are enforced by
-              the application using a server-managed devnet signer.
+              the application using a server-managed signer and a fixed payment network.
             </p>
           </div>
         </div>
         <div className="flow-diagram" aria-label="Payment flow">
-          <span>
+          <span data-step="1">
             <Sparkles size={17} />
             Agent proposes
           </span>
           <ArrowDown size={17} />
-          <span className="flow-guard">
+          <span className="flow-guard" data-step="2">
             <ShieldCheck size={17} />
             Policy checks + reserves
           </span>
           <ArrowDown size={17} />
-          <span>
+          <span data-step="3">
             <KeyRound size={17} />
             x402 exact payment
           </span>
           <ArrowDown size={17} />
-          <span>
+          <span data-step="4">
             <ReceiptText size={17} />
             Settled receipt + tool result
           </span>
@@ -2256,7 +2215,7 @@ function Developers() {
                   {i === 0 ? <Wallet size={23} /> : <FileText size={23} />}
                 </span>
                 <span className="tool-price">
-                  {formatMoney(tool.price)} <small>devnet USDC</small>
+                  {formatMoney(tool.price)} <small>mainnet-ready USDC</small>
                 </span>
               </div>
               <h3>{tool.title}</h3>

@@ -79,13 +79,13 @@ test('mobile and reduced-motion layout, empty history, service failure and reset
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true
   );
-  await page.getByLabel('Explore an outcome').selectOption('empty');
+  await page.getByLabel('Choose a fixture').selectOption('empty');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible({
     timeout: 15000,
   });
   await expect(page.getByText(/represents a wallet with no SOL balance/)).toBeVisible();
-  await page.getByLabel('Explore an outcome').selectOption('failure');
+  await page.getByLabel('Choose a fixture').selectOption('failure');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Fixture service failure', {
     timeout: 15000,
@@ -119,7 +119,7 @@ test('deterministic recovery keeps an ambiguous hold until the original intent i
   page,
 }) => {
   await page.goto('/demo');
-  await page.getByLabel('Explore an outcome').selectOption('ambiguous');
+  await page.getByLabel('Choose a fixture').selectOption('ambiguous');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByText(/settlement evidence is unknown/)).toBeVisible({ timeout: 15000 });
   await expect(page.getByRole('button', { name: 'Reconcile fixture hold' })).toBeVisible();

@@ -7,7 +7,7 @@
 
 ## Finding at a glance
 
-The baseline still showed the earlier curved-A identity, a pink geometric hero backdrop, a single horizontal feature row, and no selected source films. The repaired candidate now uses the selected boundary-and-dot mark, red/paper system, Axiom cloud film with the existing interactive receipt, Constellation mountain strip, 2×2 feature cells, local Figtree/Geist Mono files, and motion controls that pause when offscreen, hidden, or reduced-motion is requested. After the audit was complete, the explicitly requested production deployment promoted this candidate to the public static rehearsal.
+The baseline still showed the earlier curved-A identity, a pink geometric hero backdrop, a single horizontal feature row, and no selected source films. The repaired candidate now uses the selected boundary-and-dot A mark, red/paper system, Axiom cloud film with the existing interactive receipt, Constellation mountain strip, 2×2 feature cells, local Figtree/Geist Mono files, and continuously autoplaying decorative media without manual pause controls. After the audit was complete, the explicitly requested production deployment promoted this candidate to the public static rehearsal.
 
 ## Requirements matrix
 
@@ -18,7 +18,7 @@ The baseline still showed the earlier curved-A identity, a pink geometric hero b
 | Local Figtree and Geist Mono | `src/styles.css` and bundled font files | Loaded fonts used by display/body and technical metadata | `document.fonts.status === "loaded"`; `check('600 48px Figtree')`; `check('500 14px "Geist Mono"')`; computed body family | **Verified locally** |
 | Hero copy and 54/46 cloud/receipt stage | `LandingReceipt` plus `.hero-media-stage` | “Give your agent a budget.”, supporting sentence, working `/demo` and `/developers`, one legible interactive receipt | Landing journey, keyboard CTA, screenshot and no live-request assertion | **Verified locally** |
 | Axiom cloud and Constellation mountain source media | `public/media/allowance-cloud.{mp4,png}`, `allowance-mountains.{mp4,png}` | Matching locally served films/posters with visible cloud/peaks | `media.spec.ts` checks local `src`, ready state, advancing `currentTime`, crop is visible in screenshots; motion recording | **Verified locally** |
-| Decorative motion behavior | `DecorativeFilm` | Pause control; offscreen, hidden-tab and reduced-motion pausing; cleanup | Focused media test plus full browser suite; recording | **Verified locally** |
+| Decorative motion behavior | `DecorativeFilm` | Same-origin muted autoplay, continuous playback and poster fallback; no manual pause control | Focused media test plus full browser suite | **Verified locally** |
 | Feature structure and responsive reflow | `.feature-grid`, `.run-unfolds` | 2×2 desktop cells, one-column mobile stack, no fixed artboard overflow | 1440/1024/390/320 screenshots; 200% zoom; journey and hosted tests | **Verified locally** |
 | Public rehearsal boundary | `scripts/build-rehearsal.ts`, generated `.vercel/output` | Static, clearly labeled, no API/model/payment execution, `connect-src 'none'`, same-origin media only | Build output CSP; browser request capture; hosted suite; route reload checks | **Verified locally** |
 | Public comparison | Vercel deployment `dpl_34cQeJh8x2GSUudFSeSCrMY9yeYe` | Public parity with candidate after explicit deployment request | Read-only route checks, asset hashes, public hosted browser suite and recovery fixture | **Verified for static rehearsal** |
@@ -36,10 +36,10 @@ The baseline still showed the earlier curved-A identity, a pink geometric hero b
 - Replaced the pink geometric hero backdrop with the selected locally served Axiom cloud film and poster, while retaining the existing receipt state and interaction.
 - Added the selected Constellation mountain film/poster below “How a run unfolds.”
 - Changed the feature treatment from a single horizontal row to ruled 2×2 desktop cells with mobile stacking.
-- Added accessible pause/play controls, offscreen pausing, hidden-tab pausing, reduced-motion behavior and cleanup for both decorative films.
+- Added same-origin muted autoplay for both decorative films; the product request removes manual pause controls and keeps motion running through reduced-motion/browser visibility changes.
 - Added `media-src 'self'` to the server and static-rehearsal CSP while keeping the rehearsal `connect-src 'none'` boundary.
 - Regenerated the 26-asset brand kit and manifest at version `2026-09-15`.
-- Added `tests/browser/media.spec.ts`, including advancing playback, local-source isolation, manual pause/play, offscreen pausing, reduced motion and hidden-tab pause coverage.
+- Added `tests/browser/media.spec.ts`, including advancing playback, local-source isolation, autoplay, no-control coverage and reduced-motion playback coverage.
 - Added an ambiguous settlement fixture with an explicit reconcile action; recovery stays interrupted, preserves `settled-but-result-unavailable`, clears the original hold once, and never invents a second signature or delivery result.
 - Corrected stale verification language that called the selected mark a curved A.
 
@@ -47,13 +47,13 @@ The baseline still showed the earlier curved-A identity, a pink geometric hero b
 
 The local candidate was swept at `http://127.0.0.1:4328` after the static build. `/`, `/demo`, `/developers`, `/brand`, `/login`, `/app`, `/runs/audit`, and an unknown path all rendered HTTP 200 without horizontal overflow. The private paths present the static backend boundary in rehearsal mode; they do not impersonate login or live runs.
 
-- **Landing:** header navigation, skip link, rehearsal disclosure, `/demo` CTA, `/developers` link, receipt scenario buttons and film pause controls work. Cloud playback advances and the cloud pauses after scrolling away.
+- **Landing:** header navigation, skip link, rehearsal disclosure, `/demo` CTA, `/developers` link, receipt scenario buttons and continuously autoplaying local films work. The A mark is cache-busted in both masthead and favicon.
 - **Rehearsal:** run, receipt expansion, boundary probe, scenario selector, reset/reload, export JSON and print are covered. Export asserts `mode: rehearsal`, exact integer accounting, no signature and a separately labeled denied probe.
 - **Developers:** guide navigation and code/policy sections render without service calls.
 - **Brand:** category filters, accessible preview dialog, focus return, full-size image, PNG download, ZIP download and narrow-phone layout are covered.
 - **Private routes:** local controlled auth exercises password access, refresh persistence, stop, export, owner-scoped receipt and recovery. Static rehearsal routes explain that a persistent backend is required and expose no password field.
 - **Unknown route:** renders the truthful missing-page/receipt shell rather than a blank page.
-- **Motion controls:** each film has a named button with a 44px-class target, pauses offscreen and in a hidden tab, and disables itself under reduced motion while preserving the poster/content.
+- **Motion:** each film has a local poster fallback, `autoPlay`, `muted`, `loop`, and `playsInline`; no pause film button is rendered by design.
 
 ## Payment, auth, agent and MCP semantics
 
