@@ -27,6 +27,7 @@ const securityHeaders = {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
+    "media-src 'self'",
     "connect-src 'none'",
     "object-src 'none'",
     "base-uri 'none'",

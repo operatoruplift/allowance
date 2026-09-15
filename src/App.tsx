@@ -32,6 +32,8 @@ import {
   LoaderCircle,
   LockKeyhole,
   Menu,
+  Pause,
+  Play,
   ReceiptText,
   RotateCcw,
   ShieldCheck,
@@ -382,6 +384,102 @@ function LandingReceipt() {
     </div>
   );
 }
+
+function DecorativeFilm({
+  src,
+  poster,
+  label,
+  className,
+}: {
+  src: string;
+  poster: string;
+  label: string;
+  className?: string;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const visibleRef = useRef(false);
+  const manualPauseRef = useRef(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const playIfAllowed = () => {
+      if (!video || media.matches || document.hidden || !visibleRef.current || manualPauseRef.current)
+        return;
+      void video.play().catch(() => undefined);
+    };
+    const applyMotionPreference = () => {
+      setReducedMotion(media.matches);
+      if (media.matches || document.hidden) video.pause();
+      else playIfAllowed();
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visibleRef.current = Boolean(entry?.isIntersecting);
+        if (visibleRef.current) playIfAllowed();
+        else video.pause();
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(video);
+    media.addEventListener('change', applyMotionPreference);
+    document.addEventListener('visibilitychange', applyMotionPreference);
+    applyMotionPreference();
+    return () => {
+      observer.disconnect();
+      media.removeEventListener('change', applyMotionPreference);
+      document.removeEventListener('visibilitychange', applyMotionPreference);
+      video.pause();
+    };
+  }, []);
+
+  const togglePlayback = () => {
+    const video = videoRef.current;
+    if (!video || reducedMotion) return;
+    if (video.paused) {
+      manualPauseRef.current = false;
+      void video.play().catch(() => undefined);
+    } else {
+      manualPauseRef.current = true;
+      video.pause();
+    }
+  };
+
+  return (
+    <div className={`decorative-film ${className ?? ''}`} data-film={label}>
+      <video
+        ref={videoRef}
+        className="decorative-film-video"
+        src={src}
+        poster={poster}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-label={label}
+        onCanPlay={() => setReady(true)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+      />
+      <div className="film-scrim" aria-hidden="true" />
+      <button
+        type="button"
+        className="film-control"
+        onClick={togglePlayback}
+        disabled={!ready || reducedMotion}
+        aria-label={reducedMotion ? `${label} paused for reduced motion` : `${playing ? 'Pause' : 'Play'} ${label}`}
+        title={reducedMotion ? 'Paused for reduced motion' : undefined}
+      >
+        {playing ? <Pause size={14} /> : <Play size={14} />}
+        <span>{reducedMotion ? 'Motion off' : playing ? 'Pause film' : 'Play film'}</span>
+      </button>
+    </div>
+  );
+}
 function Landing() {
   return (
     <>
@@ -397,20 +495,17 @@ function Landing() {
               Agent autonomy. With an allowance.
             </div>
             <h1>
-              Give your agent
-              <br />a <span>budget.</span>
+              Give your agent a <span>budget.</span>
             </h1>
             <p className="hero-subtext">
-              Let it buy the tools it needs.
-              <br />
-              See where every cent went.
+              Let it buy the tools it needs. See where every cent went.
             </p>
             <div className="hero-actions">
               <Link to="/demo" className="button button-primary">
                 Try the example <ArrowUpRight size={18} />
               </Link>
               <Link to="/developers" className="text-link">
-                For developers <ArrowRight size={16} />
+                See how it works <ArrowRight size={16} />
               </Link>
             </div>
             <div className="hero-reassurance">
@@ -426,7 +521,37 @@ function Landing() {
               </span>
             </div>
           </div>
-          <LandingReceipt />
+          <div className="hero-media-stage">
+            <DecorativeFilm
+              className="cloud-film"
+              src="/media/allowance-cloud.mp4"
+              poster="/media/allowance-cloud-poster.png"
+              label="Axiom cloud film"
+            />
+            <LandingReceipt />
+          </div>
+        </section>
+        <section className="run-unfolds page-width" aria-labelledby="run-unfolds-title">
+          <div className="run-unfolds-copy">
+            <div>
+              <div className="eyebrow">How a run unfolds</div>
+              <h2 id="run-unfolds-title">From a prompt to a more useful tomorrow.</h2>
+            </div>
+            <Link className="text-link" to="/demo">
+              See the working example <ArrowRight size={16} />
+            </Link>
+          </div>
+          <ol className="run-unfolds-steps">
+            <li><span>01</span><b>Set the allowance</b><small>Choose the boundary first.</small></li>
+            <li><span>02</span><b>Let the agent request tools</b><small>Only useful, permitted work.</small></li>
+            <li><span>03</span><b>Review the receipt</b><small>See every decision and result.</small></li>
+          </ol>
+          <DecorativeFilm
+            className="mountain-film"
+            src="/media/allowance-mountains.mp4"
+            poster="/media/allowance-mountains-poster.png"
+            label="Constellation mountain film"
+          />
         </section>
         <section className="principles page-width" aria-label="How Allowance works">
           <div className="section-label">

@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-13",
+  "version": "2026-09-15",
   "name": "Allowance — Red edition",
   "palette": [
     {
@@ -32,7 +32,7 @@
     {
       "id": "symbol-red",
       "title": "The symbol · red",
-      "description": "Transparent background. The original curved Allowance mark, ready for your own layouts.",
+      "description": "Transparent background. The original boundary-and-dot Allowance mark, ready for your own layouts.",
       "category": "logos",
       "width": 1024,
       "height": 1024,
@@ -56,7 +56,7 @@
     {
       "id": "symbol-white",
       "title": "The symbol · white",
-      "description": "Transparent background. The original curved Allowance mark, ready for your own layouts.",
+      "description": "Transparent background. The original boundary-and-dot Allowance mark, ready for your own layouts.",
       "category": "logos",
       "width": 1024,
       "height": 1024,
@@ -80,7 +80,7 @@
     {
       "id": "symbol-ink",
       "title": "The symbol · ink",
-      "description": "Transparent background. The original curved Allowance mark, ready for your own layouts.",
+      "description": "Transparent background. The original boundary-and-dot Allowance mark, ready for your own layouts.",
       "category": "logos",
       "width": 1024,
       "height": 1024,
@@ -176,7 +176,7 @@
     {
       "id": "wallpaper-phone-red",
       "title": "Phone wallpaper · red",
-      "description": "A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.",
+      "description": "A calm top third leaves room for your clock. The boundary-and-dot mark sits below the lock-screen controls.",
       "category": "wallpapers",
       "width": 1080,
       "height": 1920,
@@ -188,7 +188,7 @@
     {
       "id": "wallpaper-phone-paper",
       "title": "Phone wallpaper · paper",
-      "description": "A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.",
+      "description": "A calm top third leaves room for your clock. The boundary-and-dot mark sits below the lock-screen controls.",
       "category": "wallpapers",
       "width": 1080,
       "height": 1920,
@@ -200,7 +200,7 @@
     {
       "id": "wallpaper-phone-ink",
       "title": "Phone wallpaper · ink",
-      "description": "A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.",
+      "description": "A calm top third leaves room for your clock. The boundary-and-dot mark sits below the lock-screen controls.",
       "category": "wallpapers",
       "width": 1080,
       "height": 1920,

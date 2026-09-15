@@ -1,6 +1,6 @@
 # Allowance brand kit — red edition
 
-26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical two-path Allowance mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
+26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical boundary-and-dot Allowance mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
 
 ## Save an image to your phone
 

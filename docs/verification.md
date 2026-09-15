@@ -89,7 +89,7 @@ A persistent backend hosting target remains to be selected. Operator credentials
 
 ## Red interface and brand library — September 13, 2026
 
-The new curved-A symbol, red/paper palette, local Figtree/Geist Mono typography and ruled interface are implemented across public and private routes. `/brand` contains 26 compositions in PNG and outlined SVG, category filtering, accessible previews, individual downloads, full-size image links, palette copying and a complete ZIP. The kit includes profiles, headers, phone/4K wallpapers, social artwork and backgrounds, with font licenses and a reproducible local generator.
+The selected boundary-and-dot mark, red/paper palette, local Figtree/Geist Mono typography and ruled interface are implemented across public and private routes. `/brand` contains 26 compositions in PNG and outlined SVG, category filtering, accessible previews, individual downloads, full-size image links, palette copying and a complete ZIP. The kit includes profiles, headers, phone/4K wallpapers, social artwork and backgrounds, with font licenses and a reproducible local generator.
 
 The design follow-up passed lint, frontend/backend TypeScript, all 75 controlled tests, normal and static builds, four normal browser journeys (41.2 seconds), and four local hosted journeys (35.8 seconds). The first brand test run found a Node ESM JSON import incompatibility; the native import attribute fixed it, and the full hosted suite then passed. No paid API or payment test was used.
 

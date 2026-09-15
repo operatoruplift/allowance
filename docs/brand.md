@@ -2,7 +2,7 @@
 
 Updated September 13, 2026. Allowance is a working product name; trademark availability has not been assessed.
 
-The current symbol is an original two-piece curved A inspired by the user's red phone reference. A rising curved stroke and smaller wedge share a baseline. It replaces the earlier ceiling-and-dot symbol. The red/paper palette and ruled editorial interface take direction from the supplied mockup. The reference phone photograph and third-party cloud/mountain films are not distributed as Allowance artwork.
+The current symbol is the original open-bottom boundary-and-dot mark: a single path `M7 23V7H25V23` with a dot centered at `(16,21)`. It is designed to remain legible at favicon and social-avatar sizes. The red/paper palette and ruled editorial interface take direction from the supplied mockup. The selected cloud and mountain films are included as locally served, documented derivatives of the supplied sources.
 
 The canonical source is `public/allowance-symbol.svg`. `public/allowance-wordmark.svg` and `public/favicon.svg` use the same symbol. The wordmark and downloadable SVGs contain outlined lettering so their appearance does not depend on installed fonts; edit the generator to change copy. Keep symbol proportions, clear space and the supplied contrasting color variants.
 

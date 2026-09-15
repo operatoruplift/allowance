@@ -16,10 +16,12 @@ const soft = '#FBECEE';
 const muted = '#6F6163';
 const line = '#E3D5D4';
 const symbol = await fs.readFile(path.join(root, 'public/allowance-symbol.svg'), 'utf8');
-const symbolPaths = [...symbol.matchAll(/<path\s+d="([^"]+)"\s*\/?\s*>/g)].map((match) => match[1]);
-if (symbolPaths.length !== 2 || !symbol.includes('viewBox="0 0 256 256"')) {
-  throw new Error('Expected the canonical 256 × 256 Allowance symbol with two paths.');
+const symbolPaths = [...symbol.matchAll(/<path[^>]*\sd="([^"]+)"[^>]*>/g)].map((match) => match[1]);
+const symbolCircle = symbol.match(/<circle\s+cx="([^"]+)"\s+cy="([^"]+)"\s+r="([^"]+)"/);
+if (symbolPaths.length !== 1 || !symbolCircle || !symbol.includes('M7 23V7H25V23')) {
+  throw new Error('Expected the canonical boundary-and-dot Allowance symbol.');
 }
+const canonicalCircle = symbolCircle;
 
 function font(file: string, weight: number) {
   const loaded = openSync(path.join(output, 'fonts', file));
@@ -71,7 +73,7 @@ function text(
 }
 
 function mark(x: number, y: number, size: number, color: string, opacity = 1) {
-  return `<g fill="${color}" opacity="${opacity}" transform="translate(${x} ${y}) scale(${size / 256})">${symbolPaths.map((d) => `<path d="${d}"/>`).join('')}</g>`;
+  return `<g opacity="${opacity}" transform="translate(${x} ${y}) scale(${size / 32})"><path d="${symbolPaths[0]}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${canonicalCircle[1]}" cy="${canonicalCircle[2]}" r="${canonicalCircle[3]}" fill="${color}"/></g>`;
 }
 function lockup(x: number, y: number, width: number, color: string) {
   return `<g transform="translate(${x} ${y}) scale(${width / 1024})">${mark(0, 0, 224, color)}${text('Allowance.', 280, 166, 147, color)}</g>`;
@@ -167,7 +169,7 @@ for (const [name, color, backdrop] of [
   add(
     `symbol-${name}`,
     `The symbol · ${name}`,
-    'Transparent background. The original curved Allowance mark, ready for your own layouts.',
+    'Transparent background. The original boundary-and-dot Allowance mark, ready for your own layouts.',
     'logos',
     1024,
     1024,
@@ -259,7 +261,7 @@ for (const [name, background, foreground, accent] of [
   add(
     `wallpaper-phone-${name}`,
     `Phone wallpaper · ${name}`,
-    'A calm top third leaves room for your clock. The curved mark sits below the lock-screen controls.',
+    'A calm top third leaves room for your clock. The boundary-and-dot mark sits below the lock-screen controls.',
     'wallpapers',
     1080,
     1920,
@@ -478,7 +480,7 @@ await fs.writeFile(
   path.join(output, 'README.md'),
   `# Allowance brand kit — red edition
 
-26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical two-path Allowance mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
+26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical boundary-and-dot Allowance mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
 
 ## Save an image to your phone
 
@@ -516,7 +518,7 @@ Run **npm run brand:generate** in the source repository after installing depende
 `
 );
 const manifest = {
-  version: '2026-09-13',
+  version: '2026-09-15',
   name: 'Allowance — Red edition',
   palette: [
     { name: 'Brand red', hex: red },

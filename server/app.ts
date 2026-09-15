@@ -45,6 +45,7 @@ export function createApp(
           styleSrc: ["'self'", "'unsafe-inline'"],
           fontSrc: ["'self'"],
           imgSrc: ["'self'", 'data:'],
+          mediaSrc: ["'self'"],
           connectSrc: config.production
             ? ["'self'"]
             : ["'self'", 'ws://localhost:*', 'ws://127.0.0.1:*'],
