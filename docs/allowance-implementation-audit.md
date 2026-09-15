@@ -79,8 +79,8 @@ Checks run against the local candidate:
 - `npm run lint` — passed.
 - `npm run typecheck` — passed.
 - `npm test` — **80 tests passed across 9 files**.
-- `npm run build` — passed; Vite client assets: CSS `index-CWx8gozJ.css`, JS `index-D_r6nPGZ.js`.
-- `npm run build:rehearsal` — passed; static assets: CSS `index-CWx8gozJ.css`, JS `index-DxKKhOV0.js`; output states no backend functions, signing or model runtime.
+- `npm run build` — passed; Vite client assets: CSS `index-CWx8gozJ.css`, JS `index-Cv_VEV6F.js`.
+- `npm run build:rehearsal` — passed; static assets: CSS `index-CWx8gozJ.css`, JS `index-CSL8X9GE.js`; output states no backend functions, signing or model runtime.
 - `npm run test:browser` — **6 browser journeys passed**, including film/motion and deterministic recovery.
 - `npm run test:hosted` — **4 local static-rehearsal journeys passed** and **4 public-production journeys passed** against `https://allowanceonsolana.vercel.app`.
 - `npm run preflight` — passed as a read-only command and reported the missing live prerequisites above.
@@ -98,9 +98,9 @@ The local Vite preview used for the route sweep was `http://127.0.0.1:4328`. The
 
 ## Public status and deployment boundary
 
-The explicitly requested production deployment is READY at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployment `dpl_AHkuAUhTqPcLJfJXshWCG1LWfRLs`, built from source commit `48432f6`. Public verification returned HTTP 200 for the repaired favicon, canonical symbol, both films and brand ZIP; `/api/health` remains HTTP 404. The response CSP keeps `connect-src 'none'` and allows only same-origin media. All nine checked public asset hashes match the local static build. The public recovery fixture preserved an interrupted run and `settled-but-result-unavailable` receipt with no external requests. The public site remains a deterministic static rehearsal with no backend, signer or model runtime.
+The explicitly requested production deployment is READY at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployment `dpl_34cQeJh8x2GSUudFSeSCrMY9yeYe`, built from source commit `47c9661`. Public verification returned HTTP 200 for the repaired favicon, canonical symbol, both films and brand ZIP; `/api/health` remains HTTP 404. The response CSP keeps `connect-src 'none'` and allows only same-origin media. All nine checked public asset hashes match the local static build. The public recovery fixture preserved an interrupted run and `settled-but-result-unavailable` receipt with no external requests. The public HTML now carries the reusable product description and the demo copy explicitly names useful purchases, a separate denial and recovery. The public site remains a deterministic static rehearsal with no backend, signer or model runtime.
 
-Deployment evidence and public screenshots are recorded in [final production deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-15-final.json) and [production recovery](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-15-recovery.png). The earlier landing, media, console, receipt and print captures remain available under `evidence/production-2026-09-15-*`.
+Deployment evidence and public screenshots are recorded in [final production deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-16-final.json) and [production recovery](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-16-recovery.png). The earlier landing, media, console, receipt and print captures remain available under `evidence/production-2026-09-15-*`.
 
 ## Source provenance
 
@@ -108,7 +108,7 @@ The selected media are locally served derivatives of the supplied Axiom and Cons
 
 ## Commit and build identifiers
 
-Baseline audit commit before the repair: `9fbac6b` (`Stabilize MCP stdio integration test`). The current implementation commit is `48432f6` (`Add truthful ambiguous settlement recovery fixture`); documentation and evidence commits follow it. The reproducible build outputs are the hashes listed above; generated brand kit manifest version is `2026-09-15`.
+Baseline audit commit before the repair: `9fbac6b` (`Stabilize MCP stdio integration test`). The current implementation commit is `47c9661` (`Refresh product descriptions and rehearsal messaging`); documentation and evidence commits follow it. The reproducible build outputs are the hashes listed above; generated brand kit manifest version is `2026-09-15`.
 
 ## Remaining blockers
 

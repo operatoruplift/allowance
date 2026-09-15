@@ -1,0 +1,198 @@
+{
+  "recordedAt": "2026-09-15T17:54:11.255Z",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "public deterministic rehearsal and brand library only",
+  "deploymentId": "dpl_34cQeJh8x2GSUudFSeSCrMY9yeYe",
+  "inspectUrl": "https://vercel.com/operatoruplift/allowanceonsolana/34cQeJh8x2GSUudFSeSCrMY9yeYe",
+  "productionUrl": "https://allowanceonsolana-iwqqk9qo9-operatoruplift.vercel.app",
+  "sourceCommit": "47c9661",
+  "workingTreeBuild": false,
+  "buildCommand": "npm run build:rehearsal",
+  "checks": {
+    "hostedBrowserJourneys": 4,
+    "indexStatus": 200,
+    "metadataDescription": true,
+    "faviconPath": "/favicon-red.svg",
+    "faviconStatus": 200,
+    "faviconContentType": "image/svg+xml",
+    "cloudFilmStatus": 200,
+    "mountainFilmStatus": 200,
+    "brandZipStatus": 200,
+    "apiHealthStatus": 404,
+    "connectSrc": "'none'",
+    "mediaSrc": "'self'"
+  },
+  "assetSha256": {
+    "/index.html": {
+      "status": "downloaded",
+      "sha256": "4d9c8b2d087597a4bcd241dea4d5c09bb529833aab81de3b6cb337cd92b5dcb7",
+      "bytes": 830,
+      "localSha256": "4d9c8b2d087597a4bcd241dea4d5c09bb529833aab81de3b6cb337cd92b5dcb7",
+      "matchesLocal": true
+    },
+    "/favicon-red.svg": {
+      "status": "downloaded",
+      "sha256": "b79df0879348ec9aa7ffa6efda921220eb30398faad4d053ff999f823e557360",
+      "bytes": 339,
+      "localSha256": "b79df0879348ec9aa7ffa6efda921220eb30398faad4d053ff999f823e557360",
+      "matchesLocal": true
+    },
+    "/allowance-symbol.svg": {
+      "status": "downloaded",
+      "sha256": "4c45cf746eeb8c80bf8269aab77221ff313430cf44dba58c4dfc441877d52f57",
+      "bytes": 268,
+      "localSha256": "4c45cf746eeb8c80bf8269aab77221ff313430cf44dba58c4dfc441877d52f57",
+      "matchesLocal": true
+    },
+    "/allowance-wordmark.svg": {
+      "status": "downloaded",
+      "sha256": "a2db608d6a0a0b6008e5e291391204ba6902f0281fd0e1c10af79fc4d537bbf9",
+      "bytes": 3473,
+      "localSha256": "a2db608d6a0a0b6008e5e291391204ba6902f0281fd0e1c10af79fc4d537bbf9",
+      "matchesLocal": true
+    },
+    "/assets/index-CWx8gozJ.css": {
+      "status": "downloaded",
+      "sha256": "72ab18ec7920269a1f0f134f30b07cd048e11a671809a88f466a9806bb1711a7",
+      "bytes": 93047,
+      "localSha256": "72ab18ec7920269a1f0f134f30b07cd048e11a671809a88f466a9806bb1711a7",
+      "matchesLocal": true
+    },
+    "/assets/index-CSL8X9GE.js": {
+      "status": "downloaded",
+      "sha256": "593f56f606e7a0890c97e5fffe619d31a366bb6d072da6d4f1a269f0124a52c7",
+      "bytes": 427431,
+      "localSha256": "593f56f606e7a0890c97e5fffe619d31a366bb6d072da6d4f1a269f0124a52c7",
+      "matchesLocal": true
+    },
+    "/media/allowance-cloud.mp4": {
+      "status": "downloaded",
+      "sha256": "c25902c354b098b422e7074e0473edc01419df096e85de64485a9898594388d7",
+      "bytes": 204438,
+      "localSha256": "c25902c354b098b422e7074e0473edc01419df096e85de64485a9898594388d7",
+      "matchesLocal": true
+    },
+    "/media/allowance-mountains.mp4": {
+      "status": "downloaded",
+      "sha256": "68c1720c5603022f91542afaf676dd2fb715467af924ca129412c867b8d789ba",
+      "bytes": 329623,
+      "localSha256": "68c1720c5603022f91542afaf676dd2fb715467af924ca129412c867b8d789ba",
+      "matchesLocal": true
+    },
+    "/brand/allowance-brand-kit.zip": {
+      "status": "downloaded",
+      "sha256": "90500498b4a16407012b9f81c0154a1dac660c53bb220460e3b5f1d618834608",
+      "bytes": 1699238,
+      "localSha256": "90500498b4a16407012b9f81c0154a1dac660c53bb220460e3b5f1d618834608",
+      "matchesLocal": true
+    }
+  },
+  "realAllowanceDevnetSettlement": "not performed",
+  "paidModelCall": "not performed",
+  "mediaPlayback": {
+    "url": "https://allowanceonsolana.vercel.app/",
+    "videos": [
+      {
+        "src": "https://allowanceonsolana.vercel.app/media/allowance-cloud.mp4",
+        "readyState": 4,
+        "currentTimeSeconds": 1.952872,
+        "paused": false
+      },
+      {
+        "src": "https://allowanceonsolana.vercel.app/media/allowance-mountains.mp4",
+        "readyState": 4,
+        "currentTimeSeconds": 1.118264,
+        "paused": false
+      }
+    ],
+    "externalRequests": []
+  },
+  "routeChecks": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/demo",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/developers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/brand",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/app",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/runs/audit",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/does-not-exist",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/session",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/merchant/wallet-snapshot",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "status": 405
+    },
+    {
+      "method": "POST",
+      "path": "/api/session",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/merchant/wallet-snapshot",
+      "status": 404
+    }
+  ],
+  "recoveryFixture": {
+    "publicBrowserCheck": "passed",
+    "status": "interrupted",
+    "report": "Recovery report",
+    "purchase": "settled-but-result-unavailable",
+    "duplicateSignature": false,
+    "externalRequests": []
+  },
+  "preflight": {
+    "dataReadiness": true,
+    "livePaymentReadiness": false,
+    "modelReadiness": false,
+    "signing": false,
+    "settlement": false,
+    "recordedAt": "2026-09-15T17:54:11.255Z"
+  }
+}
