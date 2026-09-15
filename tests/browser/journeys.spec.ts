@@ -114,3 +114,27 @@ test('mobile and reduced-motion layout, empty history, service failure and reset
     true
   );
 });
+
+test('deterministic recovery keeps an ambiguous hold until the original intent is reconciled', async ({
+  page,
+}) => {
+  await page.goto('/demo');
+  await page.getByLabel('Explore an outcome').selectOption('ambiguous');
+  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await expect(page.getByText(/settlement evidence is unknown/)).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('button', { name: 'Reconcile fixture hold' })).toBeVisible();
+  await page.getByRole('button', { name: 'Reconcile fixture hold' }).click();
+  await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
+  await expect(page.getByText('Original hold reconciled')).toBeVisible();
+  await expect(page.locator('.progress-finished')).toContainText('Run interrupted');
+  await expect(page.locator('.progress-finished')).not.toContainText(
+    'Task finished within its allowance.'
+  );
+  await expect(page.locator('.report-card .amber-pill')).toHaveText('Recovery report');
+  await expect(page.locator('.receipt-card')).toContainText('Settled · result unavailable');
+  await expect(page.locator('.receipt-card')).toContainText('Held');
+  await expect(page.locator('.receipt-card')).toContainText('0.000000');
+  await expect(page.locator('.report-card')).toContainText('no RPC, signing, or paid request');
+  await expect(page.locator('.purchase-entry')).toHaveCount(1);
+  await expect(page.locator('.purchase-status-icon.amber-text')).toHaveCount(1);
+});

@@ -483,6 +483,11 @@ strong {
   color: #99564c;
   border-color: #f2ddd6;
 }
+.amber-pill {
+  background: #fcf7ed;
+  color: var(--amber);
+  border-color: #eadfc9;
+}
 .subtle-pill {
   background: var(--background);
   color: var(--secondary);
@@ -4565,6 +4570,11 @@ select {
   color: var(--green);
   border-color: #d6e7dc;
 }
+.amber-pill {
+  background: #fcf7ed;
+  color: var(--amber);
+  border-color: #eadfc9;
+}
 .progress-finished,
 .progress-steps .done b {
   color: var(--green);
@@ -4593,6 +4603,21 @@ select {
 .probe-completed .probe-symbol {
   background: #f2d7dc;
   color: var(--accent);
+}
+.recovery-card {
+  background: #fcf7ed;
+  border-color: #eadfc9;
+}
+.recovery-card .probe-symbol {
+  color: var(--amber);
+  background: #f4ead6;
+}
+.recovery-card h3 {
+  color: var(--ink);
+}
+.recovery-card .button {
+  color: var(--amber);
+  border-color: #ddc89d;
 }
 .probe-completed h3,
 .timeline li.probe-event b {

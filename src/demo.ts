@@ -7,7 +7,7 @@ import {
   type PurchaseDTO,
 } from '../shared/domain';
 
-export type DemoScenario = 'standard' | 'empty' | 'failure';
+export type DemoScenario = 'standard' | 'empty' | 'failure' | 'ambiguous';
 const AT = '2026-09-12T00:00:00.000Z';
 export function createDemo(): RunDTO {
   return {
@@ -95,6 +95,24 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
       event(
         'Service unavailable',
         'Fixture: failure occurred before any signature. Reservation released.',
+        'system'
+      );
+      return run;
+    }
+    if (scenario === 'ambiguous') {
+      run.purchases[0].status = 'settlement-unknown';
+      run.purchases[0].serviceOutcome = 'pending';
+      run.purchases[0].deliveryState = 'pending';
+      run.purchases[0].reason =
+        'Simulated timeout after signing. The original intent remains held until reconciliation.';
+      run.held = '10000';
+      run.remaining = '30000';
+      run.status = 'interrupted';
+      run.error =
+        'Fixture timeout after signing: settlement evidence is unknown. Reconcile the original intent; no second signature is created.';
+      event(
+        'Settlement unknown · held',
+        'Fixture: the response timed out after signing. The original 0.010000 remains held for recovery.',
         'system'
       );
       return run;
@@ -221,5 +239,34 @@ export function demoProbe(previous: RunDTO): RunDTO {
       'Same policy decision as the backend, using deterministic inputs: 0.020000 exceeds 0.010000 remaining. No reservation or signature created. Agent trace is unchanged.',
     source: 'policy-probe',
   });
+  return run;
+}
+
+export function reconcileDemo(previous: RunDTO): RunDTO {
+  const run = structuredClone(previous);
+  const purchase = run.purchases.find((item) => item.status === 'settlement-unknown');
+  if (!purchase) return run;
+  purchase.status = 'settled-but-result-unavailable';
+  purchase.serviceOutcome = 'unavailable';
+  purchase.deliveryState = 'unavailable';
+  purchase.reason =
+    'Fixture reconciliation recovered the original settlement report. No second signature was created and no paid result was delivered.';
+  run.settled = '10000';
+  run.held = '0';
+  run.remaining = '30000';
+  run.status = 'interrupted';
+  run.error =
+    'Fixture recovery completed with settlement reported but delivery unavailable. The original hold was reconciled without a second signature.';
+  run.events.push({
+    id: run.events.length + 1,
+    at: AT,
+    kind: 'recovery',
+    title: 'Original hold reconciled',
+    detail:
+      'Fixture recovery checked the original intent and cleared the hold without creating a second signature. Delivery remains unavailable.',
+    source: 'system',
+  });
+  run.report =
+    'The wallet snapshot entered a deterministic settlement-unknown state after a simulated timeout. Reconciliation recovered the original settlement report and cleared 0.010000 USDC from held to settled without retrying the payment.\n\nThe paid result was unavailable, so no wallet facts are inferred. This is a deterministic recovery fixture with no RPC, signing, or paid request.';
   return run;
 }

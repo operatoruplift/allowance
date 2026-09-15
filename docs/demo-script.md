@@ -1,16 +1,16 @@
-# Two-minute demo script
+# 90-second demo script
 
 Use the **rehearsal script** until a genuine Allowance devnet run has been recorded. Read-only RPC evidence and successful fixture tests are not settled purchase evidence. Put the recording date in the video and its description. Do not edit model decisions to fit this script.
 
 | Time      | Screen/action                                      | Narration                                                                                                                                                                                     |
 | --------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0:00–0:15 | Landing, then “Try the example”                    | “Allowance lets a developer give an agent a task and a spending ceiling. These two tools are our first-party sample merchants.”                                                               |
-| 0:15–0:35 | `/demo`, visible rehearsal label                   | “This is a deterministic rehearsal. No signing, paid request or model call occurs. The allowance is 0.040000 devnet USDC, with a 0.020000 per-request cap.”                                   |
-| 0:35–0:55 | Wallet snapshot and transaction explanation events | “The example purchases a wallet snapshot for 0.010000 and an explanation for 0.020000. In live mode, both tools return validated Solana RPC facts over actual x402 HTTP endpoints.”           |
-| 0:55–1:15 | Amount breakdown and policy probe                  | “That leaves 0.010000. This separate policy probe proposes another 0.020000 purchase. The same guard denies it before signing. It does not consume the remaining allowance.”                  |
-| 1:15–1:35 | Report, unsupported markers and receipt export     | “The report cites the returned facts and names limitations. Settled charges, held funds and service delivery are distinct. This rehearsal receipt deliberately has no transaction signature.” |
-| 1:35–1:50 | Operator readiness and developer guide             | “The live path requires operator login, a dedicated devnet signer, a trusted facilitator, funded token accounts and a configured model. Controls live outside the model.”                     |
-| 1:50–2:00 | Receipt and closing view                           | “The source includes durable recovery, focused tests and a reusable paid-tool wrapper. Real end-to-end devnet settlement evidence is still pending.”                                          |
+| 0:00–0:10 | Landing, then “Try the example”                    | “Allowance lets a developer give an agent a task and a spending ceiling. These two tools are our first-party sample merchants.” |
+| 0:10–0:23 | `/demo`, visible rehearsal label                   | “This is a deterministic rehearsal. No signing, paid request or model call occurs. The allowance is 0.040000 devnet USDC, with a 0.020000 per-request cap.” |
+| 0:23–0:40 | Wallet snapshot and transaction explanation events | “The example purchases a wallet snapshot for 0.010000 and an explanation for 0.020000. In live mode, both tools return validated Solana RPC facts over actual x402 HTTP endpoints.” |
+| 0:40–0:53 | Amount breakdown and policy probe                  | “That leaves 0.010000. This separate policy probe proposes another 0.020000 purchase. The same guard denies it before signing and does not consume the allowance.” |
+| 0:53–1:05 | Report, unsupported markers and receipt export     | “The report cites the returned facts and names limitations. Settled charges, held funds and service delivery are distinct. This rehearsal receipt deliberately has no transaction signature.” |
+| 1:05–1:20 | Recovery scenario selector, then reconcile         | “The recovery fixture times out after signing. The original amount stays held until reconciliation, which clears the hold without creating a second signature or inventing delivery.” |
+| 1:20–1:30 | Operator readiness and closing                      | “The live path requires operator login, a dedicated devnet signer, a trusted facilitator, funded token accounts and a configured model. The source includes recovery tests and an exact-payment wrapper.” |
 
 ## Replace only after a real live recording
 

@@ -54,7 +54,7 @@ import {
   type ToolName,
 } from '../shared/domain';
 import { api, downloadJSON, type Session } from './api';
-import { createDemo, demoProbe, fixtureStep, type DemoScenario } from './demo';
+import { createDemo, demoProbe, fixtureStep, reconcileDemo, type DemoScenario } from './demo';
 import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
 
@@ -787,6 +787,7 @@ function Demo() {
                 <option value="standard">Two purchases + a budget boundary</option>
                 <option value="empty">Wallet with no transaction history</option>
                 <option value="failure">Service failure before signing</option>
+                <option value="ambiguous">Settlement unknown, then reconcile</option>
               </select>
             </div>
             <button
@@ -839,6 +840,7 @@ function Demo() {
       <RunDetails
         run={run}
         probe={() => setRun((old) => demoProbe(old))}
+        reconcile={() => setRun((old) => reconcileDemo(old))}
         exportReceipt={() => downloadJSON(run, 'allowance-rehearsal-receipt.json')}
         probePending={false}
       />
@@ -910,7 +912,17 @@ function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; p
         <span className="section-index">02</span>
         <h2>Run progress</h2>
         <span
-          className={`pill ${run.status === 'failed' ? 'red-pill' : finished ? 'green-pill' : 'subtle-pill'}`}
+          className={`pill ${
+            run.status === 'completed'
+              ? 'green-pill'
+              : run.status === 'failed'
+                ? 'red-pill'
+                : run.status === 'interrupted'
+                  ? 'amber-pill'
+                  : finished
+                    ? 'green-pill'
+                    : 'subtle-pill'
+          }`}
         >
           {run.status === 'running' && <LoaderCircle size={12} className="spin" />}
           {run.status}
@@ -974,6 +986,7 @@ function PurchaseRow({ purchase, demo }: { purchase: PurchaseDTO; demo: boolean 
   const [expanded, setExpanded] = useState(false);
   const blocked = purchase.status === 'denied';
   const held = ['reserved', 'submitted', 'settlement-unknown'].includes(purchase.status);
+  const deliveryUnavailable = purchase.status === 'settled-but-result-unavailable';
   return (
     <div className={`purchase-entry ${blocked ? 'denied-entry' : ''}`}>
       <button
@@ -982,11 +995,15 @@ function PurchaseRow({ purchase, demo }: { purchase: PurchaseDTO; demo: boolean 
         aria-expanded={expanded}
       >
         <span
-          className={`purchase-status-icon ${blocked ? 'red-text' : held ? 'amber-text' : 'green-text'}`}
+          className={`purchase-status-icon ${
+            blocked ? 'red-text' : held || deliveryUnavailable ? 'amber-text' : 'green-text'
+          }`}
         >
           {blocked ? (
             <ShieldCheck size={19} />
           ) : held ? (
+            <CircleDashed size={19} />
+          ) : deliveryUnavailable ? (
             <CircleDashed size={19} />
           ) : (
             <CheckCheck size={19} />
@@ -1001,7 +1018,7 @@ function PurchaseRow({ purchase, demo }: { purchase: PurchaseDTO; demo: boolean 
         </span>
         <span className="purchase-amount">
           <b>{formatMoney(purchase.amount)}</b>
-          <small className={blocked ? 'red-text' : held ? 'amber-text' : ''}>
+          <small className={blocked ? 'red-text' : held || deliveryUnavailable ? 'amber-text' : ''}>
             {statusLabel(purchase)}
           </small>
         </span>
@@ -1085,11 +1102,13 @@ function PurchaseRow({ purchase, demo }: { purchase: PurchaseDTO; demo: boolean 
 function RunDetails({
   run,
   probe,
+  reconcile,
   exportReceipt,
   probePending,
 }: {
   run: RunDTO;
   probe: () => void;
+  reconcile?: () => void;
   exportReceipt: () => void;
   probePending: boolean;
 }) {
@@ -1097,6 +1116,7 @@ function RunDetails({
   const probed = run.purchases.some((p) => p.source === 'policy-probe');
   const probeReady =
     run.status === 'completed' && run.settled === '30000' && run.remaining === '10000' && !probed;
+  const unresolved = run.purchases.some((purchase) => purchase.status === 'settlement-unknown');
   return (
     <div className="run-details">
       {run.error && <ErrorBox>{run.error}</ErrorBox>}
@@ -1247,6 +1267,25 @@ function RunDetails({
           )}
         </section>
       ) : null}
+      {unresolved && reconcile ? (
+        <section className="probe-card recovery-card">
+          <div className="probe-symbol">
+            <CircleDashed size={22} />
+          </div>
+          <div>
+            <span className="eyebrow">Deterministic recovery</span>
+            <h3>Reconcile the original hold.</h3>
+            <p>
+              The fixture timed out after signing. Reconcile the original intent to clear the
+              hold; this never creates a second signature or invents delivery.
+            </p>
+          </div>
+          <button className="button button-outline" onClick={reconcile}>
+            <RotateCcw size={16} />
+            Reconcile fixture hold
+          </button>
+        </section>
+      ) : null}
       {run.report && (
         <section className="card report-card">
           <div className="report-heading">
@@ -1257,8 +1296,12 @@ function RunDetails({
               <div className="eyebrow">The useful part</div>
               <h2>Your wallet activity brief</h2>
             </div>
-            <span className="pill green-pill">
-              {run.mode === 'rehearsal' ? 'Fixture report' : 'Final report'}
+            <span className={`pill ${run.status === 'completed' ? 'green-pill' : 'amber-pill'}`}>
+              {run.status === 'completed'
+                ? run.mode === 'rehearsal'
+                  ? 'Fixture report'
+                  : 'Final report'
+                : 'Recovery report'}
             </span>
           </div>
           <div className="report-text">
