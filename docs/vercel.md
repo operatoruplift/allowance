@@ -6,7 +6,7 @@ On September 13, the red identity and [brand library](https://allowanceonsolana.
 
 The complete live application remains a single persistent Express service with SQLite. Follow [live setup](live-setup.md) and the README's Docker volume instructions to operate it on a server with persistent storage. Do not configure payer keys, operator credentials, or provider keys in the Vercel project.
 
-## Latest production deployment
+## Previous production deployment
 
 On September 14, 2026, the current red Allowance build was deployed to production as `dpl_82MNDYsm16aFHG8RG6hfAWdMDnAm` and aliased to [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The deployment remains the static rehearsal/brand surface; no backend, SQLite database, signer, MCP process, OpenAI key, or payment endpoint is deployed to Vercel. Four hosted browser journeys passed, `/favicon-red.svg` returned 200 as `image/svg+xml`, and the deployed static asset hashes are recorded in [production-deployment-2026-09-14.json](../evidence/production-deployment-2026-09-14.json).
 
