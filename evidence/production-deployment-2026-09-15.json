@@ -101,5 +101,85 @@
       "paused": false
     },
     "externalRequests": []
+  },
+  "routeChecks": [
+    {
+      "method": "GET",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/demo",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/developers",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/brand",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/app",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/runs/audit",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/does-not-exist",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/api/session",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/merchant/wallet-snapshot",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/",
+      "status": 405
+    },
+    {
+      "method": "POST",
+      "path": "/api/session",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/merchant/wallet-snapshot",
+      "status": 404
+    }
+  ],
+  "preflight": {
+    "dataReadiness": true,
+    "livePaymentReadiness": false,
+    "modelReadiness": false,
+    "signing": false,
+    "settlement": false,
+    "recordedAt": "2026-09-15T08:07:54.351Z"
   }
 }
