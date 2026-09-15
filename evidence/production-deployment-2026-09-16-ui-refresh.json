@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-09-15T18:34:56.130Z",
+  "recordedAt": "2026-09-15T18:40:40.870Z",
   "url": "https://allowanceonsolana.vercel.app",
   "mode": "public deterministic rehearsal and brand library only",
-  "deploymentId": "dpl_5GUx2RBXe42U2TuymVkVkNGgg7f7",
-  "inspectUrl": "https://vercel.com/operatoruplift/allowanceonsolana/5GUx2RBXe42U2TuymVkVkNGgg7f7",
-  "productionUrl": "https://allowanceonsolana-b8jjwt3sc-operatoruplift.vercel.app",
-  "sourceCommit": "819cf52",
+  "deploymentId": "dpl_wkBdsvHWKVCNDg4xA6DFuAy3ULQE",
+  "inspectUrl": "https://vercel.com/operatoruplift/allowanceonsolana/wkBdsvHWKVCNDg4xA6DFuAy3ULQE",
+  "productionUrl": "https://allowanceonsolana-d139512iy-operatoruplift.vercel.app",
+  "sourceCommit": "fc4f093",
   "workingTreeBuild": false,
   "buildCommand": "npm run build:rehearsal",
   "checks": {
@@ -14,8 +14,13 @@
     "faviconPath": "/allowance-a.svg?v=2",
     "filmControls": 0,
     "mainnetPreview": true,
+    "mainnetDemo": true,
     "receiptCopy": true,
     "demoGuide": true,
+    "flow": {
+      "steps": 4,
+      "animated": "flowStep"
+    },
     "connectSrc": "'none'",
     "mediaSrc": "'self'",
     "externalRequests": []
@@ -24,17 +29,17 @@
     "/index.html": {
       "status": 200,
       "bytes": 833,
-      "sha256": "9244d08c9ed281d56598cb6e5dfabe8988b0c6862c46f36bc8a9201be754c63c"
+      "sha256": "dead9727b32a2248becaae69bb80feb45929c5aaa1f0444fece9874c5b71c06a"
     },
     "/allowance-a.svg?v=2": {
       "status": 200,
       "bytes": 275,
       "sha256": "46b47ecda01d3b864dd4cc3e5462ecf44984466c0116e326f62b0ee442465e3c"
     },
-    "/assets/index-B9aQod4b.js": {
+    "/assets/index-Cokwz19z.js": {
       "status": 200,
-      "bytes": 427933,
-      "sha256": "f860eaf7f1434dd72f2f214e7482d09ac53669b034fa8c6265dbb9d4ca49e8c7"
+      "bytes": 428030,
+      "sha256": "afc43aad9111d275153ea74b3b384410b2e383c78d072313ad2fcc200489defd"
     },
     "/assets/index-CzggqMDW.css": {
       "status": 200,
@@ -60,7 +65,7 @@
   "mediaPlayback": {
     "src": "https://allowanceonsolana.vercel.app/media/allowance-cloud.mp4",
     "readyState": 4,
-    "currentTimeSeconds": 1.941314,
+    "currentTimeSeconds": 3.071956,
     "paused": false,
     "autoplay": true
   },
