@@ -2,6 +2,10 @@
 
 **Give your agent a budget.** A small, single-operator application for buying useful Solana data with exact x402 devnet USDC payments, with spending decisions enforced outside the model.
 
+**Short description:** Allowance gives an AI agent a fixed, human-approved budget to buy useful Solana data through exact x402 payments, with every decision and receipt visible.
+
+**Full description:** Allowance is a developer console for bounded agent payments on Solana. An operator freezes a task, allowance, per-request cap, approved tools and expiry. A bounded agent can request the two first-party data tools—`wallet_snapshot` and `transaction_explain`—but application code keeps control of prices, recipients, mint, network, signing and the durable ledger. Receipts separate reserved funds, settlement evidence, chain verification and service delivery, including honest recovery when a signed request becomes ambiguous. The public site rehearses that workflow with exact fixtures; the persistent backend is required for real x402 devnet execution. See the [complete product description](docs/product-description.md).
+
 The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution requires explicit setup. **No real Allowance devnet settlement is claimed in this delivery.** See [verification](docs/verification.md) for the exact evidence obtained and remaining setup.
 
 The public rehearsal is live at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The [Vercel deployment guide](docs/vercel.md) documents its separate static build. Live operator access and payments continue to require the persistent backend described below.
@@ -31,7 +35,7 @@ Production startup is **`npm start`**; Express serves `dist/client` and runs the
 | Route         | Use                                                                           |
 | ------------- | ----------------------------------------------------------------------------- |
 | `/`           | Landing and interactive receipt preview                                       |
-| `/demo`       | Isolated deterministic rehearsal, including empty history and service failure |
+| `/demo`       | Isolated deterministic rehearsal, including empty, failure and ambiguous recovery fixtures |
 | `/login`      | Single-operator password login                                                |
 | `/app`        | Authenticated readiness checks and task/policy composer                       |
 | `/runs/:id`   | Private durable run, report, JSON export, print view and stop                 |
@@ -115,7 +119,8 @@ The red brand edition includes 26 compositions in full-size PNG and outlined SVG
 
 `src` contains the original React UI; `shared` contains validated contracts and money handling. `server/auth`, `agent`, `policy`, `payments`, `merchant`, `data`, and `db` form one Express service. [Architecture](docs/architecture.md) explains trust boundaries; [the reusable example](examples/paid-tool.ts) demonstrates calling the guarded buyer outside the sample agent.
 
-- [Two-minute demo script](docs/demo-script.md)
+- [90-second demo script](docs/demo-script.md)
+- [Product descriptions](docs/product-description.md)
 - [Submission draft](docs/submission.md), pending live settlement evidence and final event rules
 - [Verification report](docs/verification.md)
 - [Local external-agent MCP runbook](docs/mcp.md)
@@ -123,4 +128,4 @@ The red brand edition includes 26 compositions in full-size PNG and outlined SVG
 - [Brand assets and tokens](docs/brand.md)
 - [Sources, SDK reuse and licenses](docs/sources.md)
 
-Allowance is a working product name; trademark availability has not been assessed. Original application code and artwork use the MIT license. Third-party dependencies retain their own licenses.
+Payment Channels and remote MCP are future adapters. The local stdio MCP bridge is implemented and uses the same application service, policy, ledger and receipts. Allowance is a working product name; trademark availability has not been assessed. Original application code and artwork use the MIT license. Third-party dependencies retain their own licenses.

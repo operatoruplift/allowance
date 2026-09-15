@@ -722,7 +722,7 @@ function Demo() {
         title="A little budget. Useful work."
         action={<NetworkPills />}
       >
-        Explain a wallet. Watch the spending boundary do its job.
+        Authorize a boundary. Rehearse useful purchases, a separate denial, and an honest recovery.
       </PageHeading>
       <div className="notice rehearsal-notice">
         <Sparkles size={18} />

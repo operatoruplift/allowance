@@ -8,9 +8,11 @@ The [Agentic Payments hackathon page](https://hackathons.solana.com/hackathons/a
 
 ## Project description
 
-**Give your agent a budget.** Allowance is a small developer tool for purchasing useful Solana wallet information through x402. A developer sets a task, spending ceiling, per-request maximum, expiry and approved tools. A bounded agent proposes tool calls; application code validates requests and reserves funds before the backend signer can act.
+**Short description:** Allowance gives an AI agent a fixed, human-approved budget to buy useful Solana data through exact x402 payments, with every decision and receipt visible.
 
-The initial workflow summarizes a wallet, explains its latest transaction and considers a second explanation if the budget permits. Our two first-party sample APIs provide a 0.010000 devnet USDC wallet snapshot and a 0.020000 transaction explanation grounded in validated RPC data. They are demonstration merchants, not independent merchant adoption.
+**Full description:** Allowance is a small developer console for purchasing useful Solana wallet information through x402 without handing an agent an unrestricted wallet. An operator freezes a task, spending ceiling, per-request maximum, expiry and approved tools. A bounded agent proposes tool calls; application code validates requests and reserves funds before the backend signer can act. Receipts make authorization, holds, settlement evidence, chain proof and service delivery readable, including conservative recovery when a signed request becomes ambiguous.
+
+The initial workflow summarizes a wallet, explains its latest transaction and considers a second explanation if the budget permits. Our two first-party sample APIs provide a 0.010000 devnet USDC wallet snapshot and a 0.020000 transaction explanation grounded in validated RPC data. They are demonstration merchants, not independent merchant adoption. The local stdio MCP bridge exposes the same guarded service to an authorized external agent.
 
 The central example authorizes 0.040000, accounts for 0.030000 in two purchases, then rejects a separately labeled 0.020000 policy probe with 0.010000 left. The always-available rehearsal demonstrates this with deterministic fixtures. A real agent trace is retained as observed and may skip the unaffordable purchase itself.
 
@@ -31,4 +33,4 @@ The design separates authorization, held reservation, submission uncertainty, se
 
 Deployment requires one persistent Node/Express service, SQLite on persistent disk and one app instance. `/demo` works without accounts or credentials. Live execution additionally requires the operator credentials, dedicated devnet signer, a separate merchant recipient, verified existing token accounts, pinned facilitator fee sponsor and a configured OpenAI model/API key. See [live-setup.md](live-setup.md).
 
-Payment channels and MCP are future adapters. They are not claimed as implemented features. No user, revenue, volume, uptime, saved-fee, market-adoption or production-security claims are made.
+Payment Channels and remote MCP are future adapters. The local stdio MCP bridge is implemented and covered by the controlled test suite. No user, revenue, volume, uptime, saved-fee, market-adoption or production-security claims are made.
