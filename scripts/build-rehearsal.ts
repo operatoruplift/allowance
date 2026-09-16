@@ -35,6 +35,9 @@ const securityHeaders = {
     "frame-ancestors 'none'",
   ].join('; '),
   'X-Content-Type-Options': 'nosniff',
+  // frame-ancestors above is the modern control; this covers older browsers
+  // that ignore it, so the rehearsal can never be framed.
+  'X-Frame-Options': 'DENY',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
