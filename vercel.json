@@ -3,6 +3,5 @@
   "framework": null,
   "buildCommand": "npm run build:rehearsal",
   "outputDirectory": ".vercel/output/static",
-  "installCommand": "npm ci",
-  "public": false
+  "installCommand": "npm ci"
 }
