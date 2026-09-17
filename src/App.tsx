@@ -414,7 +414,7 @@ function DecorativeFilm({
         loop
         playsInline
         autoPlay
-        preload="auto"
+        preload="metadata"
         aria-label={label}
         onCanPlay={(event) => void event.currentTarget.play().catch(() => undefined)}
       />
@@ -467,7 +467,7 @@ function Landing() {
             <DecorativeFilm
               className="cloud-film"
               src="/media/allowance-cloud.mp4"
-              poster="/media/allowance-cloud-poster.png"
+              poster="/media/allowance-cloud-poster.jpg"
               label="Axiom cloud film"
             />
             <LandingReceipt />
@@ -491,7 +491,7 @@ function Landing() {
           <DecorativeFilm
             className="mountain-film"
             src="/media/allowance-mountains.mp4"
-            poster="/media/allowance-mountains-poster.png"
+            poster="/media/allowance-mountains-poster.jpg"
             label="Constellation mountain film"
           />
         </section>
