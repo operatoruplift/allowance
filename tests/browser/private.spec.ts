@@ -136,6 +136,10 @@ test('controlled real auth: saved run survives refresh, stops, exports, and stay
   await page.reload();
   await expect(page.getByText(task, { exact: true })).toBeVisible();
   const receipt = await workspace.exportReceipt();
+  await expect(
+    page.getByText(`Payments: ${receipt.paymentNetwork}`, { exact: true })
+  ).toBeVisible();
+  await expect(page.locator('.currency-label')).toContainText(receipt.paymentNetwork);
   expect(receipt).toMatchObject({
     id: runId,
     task,

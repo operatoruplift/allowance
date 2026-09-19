@@ -12,7 +12,12 @@ import {
   isValidPaymentId,
   paymentIdentifierResourceServerExtension,
 } from '@x402/extensions/payment-identifier';
-import { CATALOG, PAYMENT_NETWORK, USDC_MINT, type ToolName } from '../../shared/domain.js';
+import {
+  CATALOG,
+  PAYMENT_CHAINS,
+  type PaymentNetwork,
+  type ToolName,
+} from '../../shared/domain.js';
 import type { DataTools } from '../payments/contracts.js';
 import {
   canonicalRequest,
@@ -59,6 +64,7 @@ export function recordRecoveredSettlement(
 
 export function createMerchant(options: {
   db: Database.Database;
+  network: PaymentNetwork;
   origin: string;
   recipient: string;
   sponsor: string;
@@ -67,6 +73,7 @@ export function createMerchant(options: {
   isReady: () => Promise<boolean>;
 }) {
   const { db, origin, recipient, sponsor, facilitator, data } = options;
+  const chain = PAYMENT_CHAINS[options.network];
   initializeMerchantStore(db);
   let inFlight = 0;
   let windowStart = Date.now();
@@ -82,11 +89,9 @@ export function createMerchant(options: {
     const ip = req.ip ?? 'unknown';
     const bucket = ipWindows.get(ip) ?? { start: now, count: 0 };
     if (inFlight >= 2 || admitted >= 24 || bucket.count >= 8) {
-      res
-        .status(429)
-        .json({
-          error: 'Merchant verification capacity reached. Retry the same payment identity later.',
-        });
+      res.status(429).json({
+        error: 'Merchant verification capacity reached. Retry the same payment identity later.',
+      });
       return false;
     }
     const count = db
@@ -141,6 +146,11 @@ export function createMerchant(options: {
         );
       try {
         const settled = await facilitator.settle(payload, requirements);
+        if (settled.success && settled.network !== chain.network)
+          throw new PaymentError(
+            'network',
+            'Facilitator returned settlement on a different network.'
+          );
         db.prepare('UPDATE merchant_receipts SET status=?, settle_json=? WHERE id=?').run(
           settled.success ? 'settled' : 'unknown',
           JSON.stringify(settled),
@@ -157,19 +167,19 @@ export function createMerchant(options: {
     },
   };
   const resourceServer = new x402ResourceServer(durableFacilitator)
-    .register(PAYMENT_NETWORK, new ExactSvmScheme())
+    .register(chain.network, new ExactSvmScheme())
     .registerExtension(paymentIdentifierResourceServerExtension);
   const routes: RoutesConfig = {};
   for (const tool of CATALOG) {
     routes[`POST ${tool.path}`] = {
       accepts: {
         scheme: 'exact',
-        network: PAYMENT_NETWORK,
+        network: chain.network,
         payTo: recipient,
         maxTimeoutSeconds: 60,
         price: (context) => ({
           amount: tool.price,
-          asset: USDC_MINT,
+          asset: chain.mint,
           extra: {
             memo: paymentMemo(
               context.adapter.getHeader('x-payment-id') ?? '',
@@ -224,8 +234,8 @@ export function createMerchant(options: {
                 throw new PaymentError('binding', 'Payment identifier or resource mismatch.');
               const expected: PaymentRequirements = {
                 scheme: 'exact',
-                network: PAYMENT_NETWORK,
-                asset: USDC_MINT,
+                network: chain.network,
+                asset: chain.mint,
                 amount: tool.price,
                 payTo: recipient,
                 maxTimeoutSeconds: 60,
@@ -249,6 +259,7 @@ export function createMerchant(options: {
                 sponsor,
                 recipient,
                 amount: tool.price,
+                mint: chain.mint,
                 memo: paymentMemo(id, canonical.hash),
               });
               const payloadHash = sha256(JSON.stringify(payload));
@@ -259,11 +270,9 @@ export function createMerchant(options: {
                   existing.payload_hash !== payloadHash ||
                   existing.payer !== payer
                 ) {
-                  res
-                    .status(409)
-                    .json({
-                      error: 'Payment identifier conflicts with the original signed request.',
-                    });
+                  res.status(409).json({
+                    error: 'Payment identifier conflicts with the original signed request.',
+                  });
                   return;
                 }
                 if (existing.status === 'settled' && existing.settle_json) {
@@ -275,29 +284,23 @@ export function createMerchant(options: {
                     res.json(JSON.parse(existing.result_json));
                     return;
                   }
-                  res
-                    .status(503)
-                    .json({
-                      error: 'Payment settled, but its result is unavailable.',
-                      paymentStatus: 'settled-but-result-unavailable',
-                    });
+                  res.status(503).json({
+                    error: 'Payment settled, but its result is unavailable.',
+                    paymentStatus: 'settled-but-result-unavailable',
+                  });
                   return;
                 }
-                res
-                  .status(409)
-                  .json({
-                    error: 'Original payment is pending or needs reconciliation.',
-                    paymentStatus: 'settlement-unknown',
-                  });
+                res.status(409).json({
+                  error: 'Original payment is pending or needs reconciliation.',
+                  paymentStatus: 'settlement-unknown',
+                });
                 return;
               }
               if (!admit(req, res)) return;
               if (!(await options.isReady())) {
-                res
-                  .status(503)
-                  .json({
-                    error: 'Devnet payment service is not configured or preflight has failed.',
-                  });
+                res.status(503).json({
+                  error: 'Payment service is not configured or preflight has failed.',
+                });
                 return;
               }
               db.prepare(
@@ -314,11 +317,9 @@ export function createMerchant(options: {
               res.locals.paymentIdentifier = id;
             }
             if (!header && !(await options.isReady())) {
-              res
-                .status(503)
-                .json({
-                  error: 'Devnet payment service is not configured or preflight has failed.',
-                });
+              res.status(503).json({
+                error: 'Payment service is not configured or preflight has failed.',
+              });
               return;
             }
             await initialize();
@@ -366,12 +367,10 @@ export function createMerchant(options: {
               throw new PaymentError('receipt', 'Verified receipt is unavailable.');
             res.json(result);
           } catch {
-            res
-              .status(503)
-              .json({
-                error:
-                  'Upstream data is unavailable. This signed request needs reconciliation before another payment.',
-              });
+            res.status(503).json({
+              error:
+                'Upstream data is unavailable. This signed request needs reconciliation before another payment.',
+            });
           }
         }
       );

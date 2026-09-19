@@ -140,6 +140,7 @@ export type DataErrorCode =
   | 'INVALID_RPC_RESPONSE'
   | 'RPC_RESPONSE_TOO_LARGE'
   | 'NETWORK_MISMATCH'
+  | 'NETWORK_NOT_ENABLED'
   | 'TRANSACTION_NOT_FOUND'
   | 'TRANSACTION_METADATA_UNAVAILABLE';
 export class SolanaDataError extends Error {
@@ -296,18 +297,15 @@ export class SolanaDataClient {
   private readonly endpoint: string;
   private readonly fetcher: typeof fetch;
   private readonly timeout: number;
+  private readonly mainnetReadEnabled: boolean;
   private sequence = 0;
   private networkVerifiedAt = 0;
 
   constructor(options: SolanaDataOptions = {}) {
     this.cluster = options.cluster ?? 'devnet';
-    if (
-      this.cluster !== 'devnet' &&
-      (this.cluster !== 'mainnet-beta' || options.allowMainnetReadOnly !== true)
-    )
-      throw new Error(
-        'Mainnet data requires explicit read-only opt-in. Payments must remain devnet.'
-      );
+    if (this.cluster !== 'devnet' && this.cluster !== 'mainnet-beta')
+      throw new Error('Unsupported Solana data network.');
+    this.mainnetReadEnabled = options.allowMainnetReadOnly === true;
     const url = new URL(
       options.rpcUrl ??
         (this.cluster === 'devnet' ? DEVNET_RPC : 'https://api.mainnet-beta.solana.com')
@@ -324,6 +322,11 @@ export class SolanaDataClient {
   }
 
   private async rpc<T>(method: string, params: unknown[], schema: z.ZodType<T>): Promise<T> {
+    if (this.cluster === 'mainnet-beta' && !this.mainnetReadEnabled)
+      throw new SolanaDataError(
+        'NETWORK_NOT_ENABLED',
+        'Mainnet data reads require ALLOW_MAINNET_READ_ONLY=true.'
+      );
     const id = ++this.sequence;
     try {
       const response = await this.fetcher(this.endpoint, {

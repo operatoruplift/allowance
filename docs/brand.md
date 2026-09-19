@@ -1,10 +1,10 @@
 # Allowance brand — red edition
 
-Updated September 13, 2026. Allowance is a working product name; trademark availability has not been assessed.
+Updated September 19, 2026. Allowance is a working product name; trademark availability has not been assessed.
 
-The current symbol is the original open-bottom boundary-and-dot mark: a single path `M7 23V7H25V23` with a dot centered at `(16,21)`. It is designed to remain legible at favicon and social-avatar sizes. The red/paper palette and ruled editorial interface take direction from the supplied mockup. The selected cloud and mountain films are included as locally served, documented derivatives of the supplied sources.
+The current symbol is the user's requested two-part curved A, restored from the original vector artwork. The curved left stroke and separate triangular right stroke match the supplied red logo reference. This supersedes the boundary-and-dot mark in the earlier design handoff. The red/paper palette and ruled editorial interface remain. The selected cloud and mountain films are included as locally served, documented derivatives of the supplied sources.
 
-The canonical source is `public/allowance-symbol.svg`. `public/allowance-wordmark.svg` and `public/favicon.svg` use the same symbol. The wordmark and downloadable SVGs contain outlined lettering so their appearance does not depend on installed fonts; edit the generator to change copy. Keep symbol proportions, clear space and the supplied contrasting color variants.
+The canonical source is `public/allowance-symbol.svg`. The header/footer alias `public/allowance-a.svg`, wordmark, SVG/PNG favicons, Apple touch icon, web manifest icons, social sharing image and downloadable kit use the same symbol. Browser icon URLs are versioned to replace cached artwork. The wordmark and downloadable SVGs contain outlined lettering so their appearance does not depend on installed fonts; edit the generator to change copy. Keep symbol proportions, clear space and the supplied contrasting color variants.
 
 ## Colors and typography
 

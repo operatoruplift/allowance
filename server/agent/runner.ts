@@ -34,7 +34,7 @@ export const MODEL_TOOLS: OpenAI.Responses.FunctionTool[] = [
     type: 'function',
     name: 'wallet_snapshot',
     description:
-      'First-party sample merchant. 0.010000 devnet USDC. Bounded Solana RPC facts: SOL balance and recent signatures.',
+      'First-party sample merchant. 0.010000 USDC. Bounded Solana RPC facts: SOL balance and recent signatures.',
     strict: true,
     parameters: {
       type: 'object',
@@ -49,7 +49,7 @@ export const MODEL_TOOLS: OpenAI.Responses.FunctionTool[] = [
     type: 'function',
     name: 'transaction_explain',
     description:
-      'First-party sample merchant. 0.020000 devnet USDC. Explain facts about one signature returned by the wallet snapshot, with limited instruction decoding.',
+      'First-party sample merchant. 0.020000 USDC. Explain facts about one signature returned by the wallet snapshot, with limited instruction decoding.',
     strict: true,
     parameters: {
       type: 'object',
@@ -118,7 +118,7 @@ export class AgentRunner {
       const input: ResponseInputItem[] = [
         {
           role: 'user',
-          content: `Task: ${first.task}\nWallet: ${first.wallet}\nData network: ${first.dataNetwork}. Payments: devnet.\nPolicy (read only): ${JSON.stringify(first.policy)}\nApproved prices in micro-USDC: ${JSON.stringify(CATALOG.map((t) => ({ tool: t.name, amount: t.price })))}`,
+          content: `Task: ${first.task}\nWallet: ${first.wallet}\nData network: ${first.dataNetwork}. Payments: ${first.paymentNetwork}.\nPolicy (read only): ${JSON.stringify(first.policy)}\nApproved prices in micro-USDC: ${JSON.stringify(CATALOG.map((t) => ({ tool: t.name, amount: t.price })))}`,
         },
       ];
       let proposedCalls = 0;

@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { USDC_MINT, isBase58Bytes } from '../../shared/domain.js';
+import { PAYMENT_CHAINS, isBase58Bytes, type PaymentNetwork } from '../../shared/domain.js';
 import { TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import { decodePaymentTransaction, expectedAccounts, PaymentError, sha256 } from './guard.js';
 import type { PaymentPayload } from '@x402/core/types';
-import { DEVNET_GENESIS } from '../data/solana.js';
+import { getBase58Decoder } from '@solana/kit';
 export async function boundedJson(response: Response, maxBytes = 1_000_000): Promise<unknown> {
   if (!response.body)
     throw new PaymentError('empty-response', 'Service returned an empty response.');
@@ -33,6 +33,7 @@ const accountSchema = z.object({
 export class PaymentRpc {
   constructor(
     readonly url: string,
+    readonly network: PaymentNetwork,
     private fetcher: typeof fetch = fetch
   ) {}
   async call(method: string, params: unknown[]): Promise<unknown> {
@@ -52,12 +53,22 @@ export class PaymentRpc {
       throw new PaymentError('rpc-error', 'Payment RPC could not complete the bounded read.');
     return body.result;
   }
+  get chain() {
+    return PAYMENT_CHAINS[this.network];
+  }
+  async assertNetwork() {
+    if ((await this.call('getGenesisHash', [])) !== this.chain.genesisHash)
+      throw new PaymentError('network', `Payment RPC is not Solana ${this.network}.`);
+  }
   async preflight(payer: string, recipient: string) {
-    if ((await this.call('getGenesisHash', [])) !== DEVNET_GENESIS)
-      throw new PaymentError('network', 'Payment RPC is not Solana devnet.');
-    const { source, destination } = await expectedAccounts(payer, recipient);
+    await this.assertNetwork();
+    if (payer === recipient) throw new PaymentError('recipient', 'Payer and merchant must differ.');
+    const { source, destination } = await expectedAccounts(payer, recipient, this.chain.mint);
     const [mint, sourceAccount, destinationAccount, balance] = await Promise.all([
-      this.call('getAccountInfo', [USDC_MINT, { encoding: 'jsonParsed', commitment: 'confirmed' }]),
+      this.call('getAccountInfo', [
+        this.chain.mint,
+        { encoding: 'jsonParsed', commitment: 'confirmed' },
+      ]),
       this.call('getAccountInfo', [source, { encoding: 'jsonParsed', commitment: 'confirmed' }]),
       this.call('getAccountInfo', [
         destination,
@@ -74,7 +85,7 @@ export class PaymentRpc {
     )
       throw new PaymentError(
         'mint',
-        'Configured mint must be the initialized Circle devnet SPL USDC mint with six decimals.'
+        `Configured mint must be initialized Circle ${this.network} SPL USDC with six decimals.`
       );
     const src = accountSchema.parse(z.object({ value: z.unknown() }).parse(sourceAccount).value);
     const dst = accountSchema.parse(
@@ -87,7 +98,7 @@ export class PaymentRpc {
       if (
         a.owner !== TOKEN_PROGRAM_ADDRESS ||
         a.data.parsed.type !== 'account' ||
-        a.data.parsed.info.mint !== USDC_MINT ||
+        a.data.parsed.info.mint !== this.chain.mint ||
         a.data.parsed.info.owner !== owner ||
         a.data.parsed.info.state !== 'initialized'
       )
@@ -103,6 +114,7 @@ export class PaymentRpc {
     return { usdc: token.amount, sol: String(sol), source, destination };
   }
   async validateLifetimeAndFee(message: Uint8Array, blockhash: string, maxFeeLamports: number) {
+    await this.assertNetwork();
     const [valid, fee] = await Promise.all([
       this.call('isBlockhashValid', [blockhash, { commitment: 'confirmed' }]),
       this.call('getFeeForMessage', [
@@ -134,6 +146,17 @@ export class PaymentRpc {
     feeSponsor: string;
   } | null> {
     if (!isBase58Bytes(signature, 64)) return null;
+    await this.assertNetwork();
+    if (
+      payload.accepted.network !== this.chain.network ||
+      payload.accepted.asset !== this.chain.mint ||
+      payload.accepted.payTo !== recipient ||
+      payload.accepted.amount !== amount
+    )
+      throw new PaymentError(
+        'network',
+        'Settlement proof does not match the configured payment network and terms.'
+      );
     const raw = await this.call('getTransaction', [
       signature,
       { encoding: 'base64', commitment: 'confirmed', maxSupportedTransactionVersion: 0 },
@@ -163,23 +186,27 @@ export class PaymentRpc {
       ...payload,
       payload: { transaction: tx.transaction[0] },
     });
-    if (sha256(original.message) !== sha256(landed.message)) return null;
+    if (
+      sha256(original.message) !== sha256(landed.message) ||
+      getBase58Decoder().decode(landed.signatures[0]) !== signature
+    )
+      return null;
     const payer = original.decoded.signers[1],
       sponsor = original.decoded.signers[0];
-    const { source, destination } = await expectedAccounts(payer, recipient);
+    const { source, destination } = await expectedAccounts(payer, recipient, this.chain.mint);
     const delta = (ata: string, owner: string) => {
       const index = landed.decoded.keys.indexOf(ata);
       const before = tx.meta.preTokenBalances.find(
         (b) =>
           b.accountIndex === index &&
-          b.mint === USDC_MINT &&
+          b.mint === this.chain.mint &&
           b.owner === owner &&
           b.uiTokenAmount.decimals === 6
       );
       const after = tx.meta.postTokenBalances.find(
         (b) =>
           b.accountIndex === index &&
-          b.mint === USDC_MINT &&
+          b.mint === this.chain.mint &&
           b.owner === owner &&
           b.uiTokenAmount.decimals === 6
       );
@@ -203,8 +230,19 @@ export class PaymentRpc {
     };
   }
   async findSettlement(payload: PaymentPayload, amount: string, recipient: string) {
+    await this.assertNetwork();
+    if (
+      payload.accepted.network !== this.chain.network ||
+      payload.accepted.asset !== this.chain.mint ||
+      payload.accepted.payTo !== recipient ||
+      payload.accepted.amount !== amount
+    )
+      throw new PaymentError(
+        'network',
+        'Cannot reconcile payment on a different network or recipient.'
+      );
     const { decoded } = decodePaymentTransaction(payload);
-    const { source } = await expectedAccounts(decoded.signers[1], recipient);
+    const { source } = await expectedAccounts(decoded.signers[1], recipient, this.chain.mint);
     const recent = z
       .array(z.object({ signature: z.string(), err: z.unknown().nullable() }))
       .max(12)

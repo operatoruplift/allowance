@@ -1,12 +1,12 @@
 # Allowance
 
-**Give your agent a budget.** A small, single-operator application for buying useful Solana data with exact x402 devnet USDC payments, with spending decisions enforced outside the model.
+**Give your agent a budget.** A small, single-operator application for buying useful Solana data with exact x402 USDC payments on Solana, with spending decisions enforced outside the model.
 
 **Short description:** Allowance gives an AI agent a fixed, human-approved budget to buy useful Solana data through exact x402 payments, with every decision and receipt visible.
 
-**Full description:** Allowance is a developer console for bounded agent payments on Solana. An operator freezes a task, allowance, per-request cap, approved tools and expiry. A bounded agent can request the two first-party data tools—`wallet_snapshot` and `transaction_explain`—but application code keeps control of prices, recipients, mint, network, signing and the durable ledger. Receipts separate reserved funds, settlement evidence, chain verification and service delivery, including honest recovery when a signed request becomes ambiguous. The public site rehearses that workflow with exact fixtures; the persistent backend is required for real x402 devnet execution. See the [complete product description](docs/product-description.md).
+**Full description:** Allowance is a developer console for bounded agent payments on Solana. An operator freezes a task, allowance, per-request cap, approved tools and expiry. A bounded agent can request the two first-party data tools—`wallet_snapshot` and `transaction_explain`—but application code keeps control of prices, recipients, mint, network, signing and the durable ledger. Receipts separate reserved funds, settlement evidence, chain verification and service delivery, including honest recovery when a signed request becomes ambiguous. The public site rehearses that workflow with exact fixtures; the persistent backend is required for real x402 execution. See the [complete product description](docs/product-description.md).
 
-The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution requires explicit setup. **No real Allowance devnet settlement is claimed in this delivery.** See [verification](docs/verification.md) for the exact evidence obtained and remaining setup.
+The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution requires explicit setup. **No real Allowance mainnet or devnet settlement is claimed in this delivery.** See [verification](docs/verification.md) for the exact evidence obtained and remaining setup.
 
 The public rehearsal is live at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The [Vercel deployment guide](docs/vercel.md) documents its separate static build. Live operator access and payments continue to require the persistent backend described below.
 
@@ -51,7 +51,7 @@ npm run setup:operator
 
 The terminal command hides password input and writes an Argon2id hash and random session secret into ignored `.env` with mode 0600. Restart the service after setup. It rotates the session secret, invalidating old sessions. No public registration exists. Authentication unconfigured means live APIs are closed.
 
-See [live setup](docs/live-setup.md) for dedicated **devnet** payer and recipient setup, test SOL, Circle devnet USDC, required associated token accounts, pinned facilitator fee sponsor, and a repeatable data wallet. Configure `OPENAI_API_KEY` and an explicit `OPENAI_MODEL`. The example `gpt-5-mini` is listed in [official documentation](https://developers.openai.com/api/docs/models/gpt-5-mini); account access has not been tested. There is no fallback model ID.
+See [live setup](docs/live-setup.md) for dedicated payer and recipient setup, network-specific SOL and native Circle USDC, required associated token accounts, pinned facilitator fee sponsor, and a repeatable data wallet. Mainnet is the default setup, with live payments disabled. Devnet remains an explicit testing option; existing receipts retain their original network. Configure `OPENAI_API_KEY` and an explicit `OPENAI_MODEL`. The example `gpt-5-mini` is listed in [official documentation](https://developers.openai.com/api/docs/models/gpt-5-mini); account access has not been tested. There is no fallback model ID.
 
 ```sh
 npm run preflight
@@ -64,21 +64,25 @@ For a separately authorized external agent, set `MCP_ENABLED=true`, create an au
 The standalone opt-in integration check starts its own local merchant listener; stop `npm run dev` first. This command performs scripted real payments, independent of an autonomous model trace:
 
 ```sh
+# Only after configuring and explicitly authorizing this real-USDC spend:
+npm run smoke:mainnet -- --confirm-mainnet-spend
+
+# Separate testing alternative: set PAYMENT_NETWORK=devnet first.
 npm run smoke:devnet -- --confirm-devnet-spend
 ```
 
-It requires `LIVE_PAYMENTS_ENABLED=true`, all payment configuration, and `DEMO_WALLET` with at least two available transactions. It buys the wallet snapshot and latest transaction facts, then performs a separately labeled policy probe. It writes genuine dated evidence only if executed. Running it without the flag exits without creating a signer or runtime. Do not retry uncertain payments with new IDs. No live payment command was authorized or executed during this implementation.
+Each command rejects the wrong payment network and requires its explicit confirmation flag. Mainnet also requires `MAINNET_PAYMENTS_ACKNOWLEDGED=true`. Both require `LIVE_PAYMENTS_ENABLED=true`, all payment configuration, and `DEMO_WALLET` with at least two available transactions. The scripted two-purchase scenario spends up to 0.030000 USDC; its separate 0.020000 probe must be denied before signing. It buys the wallet snapshot and latest transaction facts, then performs a separately labeled policy probe. It writes genuine dated evidence only if executed. Running it without the flag exits without creating a signer or runtime. Do not retry uncertain payments with new IDs. No live payment command was authorized or executed during this implementation.
 
 ## Controls and recovery
 
 - USDC is represented as bounded integer micro-units and decimal strings at the API boundary. `0.04` is exactly `40000`.
-- An immutable policy binds budget, per-call maximum, tools, exact destination, recipient, devnet network/mint, expiry and call limit. The shared UTC daily ceiling applies across runs. Outstanding holds count even when the day changes.
+- An immutable policy binds budget, per-call maximum, tools, exact destination, recipient, selected network/mint, expiry and call limit. The shared UTC daily ceiling applies across runs. Outstanding holds count even when the day changes.
 - SQLite `BEGIN IMMEDIATE` transactions reserve before signing. Unique purchase identity and canonical request hashes prevent repeated signing. Database failure denies new payments.
 - The guarded signer checks the actual transaction and durably records a signing claim before invoking the key. Uncertain outcomes remain held and freeze the payer. A rejected or crashed signer after this boundary is conservatively uncertain.
 - A successful facilitator response, chain verification and returned service result are separate evidence. Replayed purchased responses reuse the same signed identity and never require a new signature.
 - Stop or expiry prevents new signatures. Already signed work can settle afterward. Restart restores receipts and reconciliation; it does **not** restart the old model authorization. A new run remains subject to the shared daily ceiling.
 
-This is a **server-managed development signer with application-enforced controls**. A compromised server can defeat those controls. There is no custom onchain budget program, smart-wallet claim, payment channel, mainnet payment support, or independent merchant adoption. Both initial merchants are first-party sample services.
+This is a **server-managed signer with application-enforced controls**. A compromised server can defeat those controls. There is no custom onchain budget program, smart-wallet claim, payment channel, or independent merchant adoption. Both initial merchants are first-party sample services.
 
 ## Tests
 
@@ -88,7 +92,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-`check` runs lint, TypeScript, controlled unit/integration tests, and the production build. Tests use deterministic adapters and isolated SQLite databases. They do not spend or call paid APIs. The HTTP payment test traverses the actual middleware with controlled facilitator/signing adapters. The opt-in command above is a **separate** devnet smoke test. Browser screenshots and dated read-only findings are in `evidence/`.
+`check` runs lint, TypeScript, controlled unit/integration tests, and the production build. Tests use deterministic adapters and isolated SQLite databases. They do not spend or call paid APIs. The HTTP payment test traverses the actual middleware with controlled facilitator/signing adapters. The opt-in smoke commands above are **separate funded checks**, not part of the automated suite. Browser screenshots and dated read-only findings are in `evidence/`.
 
 ## Docker and persistent disk
 
@@ -102,14 +106,14 @@ docker run --name allowance --restart unless-stopped \
   -e APP_ORIGIN=https://allowance.example \
   -e HOST=0.0.0.0 -e PROXY_HOPS=1 \
   -e DATABASE_PATH=/data/allowance.sqlite \
-  -e PAYER_SECRET_FILE=/run/secrets/devnet-payer.json \
+  -e PAYER_SECRET_FILE=/run/secrets/allowance-payer.json \
   -p 127.0.0.1:4318:4318 \
   --mount type=volume,src=allowance-data,dst=/data \
-  --mount type=bind,src=/absolute/path/to/devnet-payer.json,dst=/run/secrets/devnet-payer.json,readonly \
+  --mount type=bind,src=/absolute/path/to/allowance-payer.json,dst=/run/secrets/allowance-payer.json,readonly \
   allowance
 ```
 
-Place one HTTPS reverse proxy in front of the bound local port. `.env.docker` is ignored by git. Docker env files take literal values: omit the surrounding single quotes from the Argon2 hash generated in `.env` when copying it to `.env.docker`. Do not copy key files into the image. The image runs as the unprivileged `node` user; ensure that user can read the mounted devnet key. For rehearsal-only hosting, omit the secret mount and leave live payments disabled.
+Place one HTTPS reverse proxy in front of the bound local port. `.env.docker` is ignored by git. Docker env files take literal values: omit the surrounding single quotes from the Argon2 hash generated in `.env` when copying it to `.env.docker`. Do not copy key files into the image. The image runs as the unprivileged `node` user; ensure that user can read the mounted dedicated key. For rehearsal-only hosting, omit the secret mount and leave live payments disabled.
 
 Back up SQLite with its backup API while running, or stop the service and copy the entire volume. Keep secrets and backups private. Do not run multiple replicas. Preserve the disk across upgrades. The schema migration version is recorded in `schema_migrations`; payment cache tables are created by the payment module.
 

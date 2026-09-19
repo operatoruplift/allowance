@@ -17,7 +17,7 @@ if (config.production) {
 }
 const server = app.listen(config.port, config.host, () => {
   process.stdout.write(
-    `Allowance available at ${config.origin}. Rehearsal: /demo. Live spending requires operator configuration and devnet opt-in.\n`
+    `Allowance available at ${config.origin}. Rehearsal: /demo. Live spending requires operator configuration and explicit network opt-in.\n`
   );
 });
 server.on('error', () => {

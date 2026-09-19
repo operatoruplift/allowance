@@ -17,11 +17,9 @@ const muted = '#6F6163';
 const line = '#E3D5D4';
 const symbol = await fs.readFile(path.join(root, 'public/allowance-symbol.svg'), 'utf8');
 const symbolPaths = [...symbol.matchAll(/<path[^>]*\sd="([^"]+)"[^>]*>/g)].map((match) => match[1]);
-const symbolCircle = symbol.match(/<circle\s+cx="([^"]+)"\s+cy="([^"]+)"\s+r="([^"]+)"/);
-if (symbolPaths.length !== 1 || !symbolCircle || !symbol.includes('M7 23V7H25V23')) {
-  throw new Error('Expected the canonical boundary-and-dot Allowance symbol.');
+if (symbolPaths.length !== 2 || !symbol.includes('viewBox="0 0 256 256"')) {
+  throw new Error('Expected the canonical two-part A symbol in a 256 × 256 viewBox.');
 }
-const canonicalCircle = symbolCircle;
 
 function font(file: string, weight: number) {
   const loaded = openSync(path.join(output, 'fonts', file));
@@ -73,7 +71,7 @@ function text(
 }
 
 function mark(x: number, y: number, size: number, color: string, opacity = 1) {
-  return `<g opacity="${opacity}" transform="translate(${x} ${y}) scale(${size / 32})"><path d="${symbolPaths[0]}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${canonicalCircle[1]}" cy="${canonicalCircle[2]}" r="${canonicalCircle[3]}" fill="${color}"/></g>`;
+  return `<g opacity="${opacity}" fill="${color}" transform="translate(${x} ${y}) scale(${size / 256})">${symbolPaths.map((d) => `<path d="${d}"/>`).join('')}</g>`;
 }
 function lockup(x: number, y: number, width: number, color: string) {
   return `<g transform="translate(${x} ${y}) scale(${width / 1024})">${mark(0, 0, 224, color)}${text('Allowance.', 280, 166, 147, color)}</g>`;
@@ -169,7 +167,7 @@ for (const [name, color, backdrop] of [
   add(
     `symbol-${name}`,
     `The symbol · ${name}`,
-    'Transparent background. The original boundary-and-dot Allowance mark, ready for your own layouts.',
+    'Transparent background. The two-part curved A mark, ready for your own layouts.',
     'logos',
     1024,
     1024,
@@ -261,7 +259,7 @@ for (const [name, background, foreground, accent] of [
   add(
     `wallpaper-phone-${name}`,
     `Phone wallpaper · ${name}`,
-    'A calm top third leaves room for your clock. The boundary-and-dot mark sits below the lock-screen controls.',
+    'A calm top third leaves room for your clock. The curved A mark sits below the lock-screen controls.',
     'wallpapers',
     1080,
     1920,
@@ -439,6 +437,25 @@ for (const category of new Set(compositions.map(({ asset }) => asset.category)))
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ deviceScaleFactor: 1 });
+  const favicon = await fs.readFile(path.join(root, 'public/favicon-red.svg'), 'utf8');
+  for (const [filename, size] of [
+    ['favicon-32.png', 32],
+    ['apple-touch-icon.png', 180],
+    ['allowance-icon-192.png', 192],
+    ['allowance-icon-512.png', 512],
+  ] as const) {
+    await page.setViewportSize({ width: size, height: size });
+    await page.setContent(
+      `<style>body{margin:0}svg{display:block;width:100vw;height:100vh}</style>${favicon}`
+    );
+    await page.screenshot({ path: path.join(root, 'public', filename), omitBackground: true });
+  }
+  const shareImage = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="${red}"/>${lockup(64, 48, 330, paper)}${lines(['Give your agent', 'a budget.'], 64, 260, 86, paper)}${text('Useful tools. Clear limits. Every decision recorded.', 68, 451, 27, paper, regular)}${rule(64, 518, 1136, 518, paper, 0.3)}${label('AI AGENT SPENDING CONTROLS ON SOLANA', 68, 560, paper, 17)}${mark(827, 168, 300, paper)}</svg>`;
+  await page.setViewportSize({ width: 1200, height: 630 });
+  await page.setContent(
+    `<style>body{margin:0}svg{display:block;width:100vw;height:100vh}</style>${shareImage}`
+  );
+  await page.screenshot({ path: path.join(root, 'public/allowance-share.png') });
   for (const { source, asset } of compositions) {
     await fs.writeFile(path.join(root, 'public', asset.svg), source);
     await page.setViewportSize({ width: asset.width, height: asset.height });
@@ -480,7 +497,7 @@ await fs.writeFile(
   path.join(output, 'README.md'),
   `# Allowance brand kit — red edition
 
-26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical boundary-and-dot Allowance mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
+26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical two-part curved A mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
 
 ## Save an image to your phone
 
@@ -518,7 +535,7 @@ Run **npm run brand:generate** in the source repository after installing depende
 `
 );
 const manifest = {
-  version: '2026-09-15',
+  version: '2026-09-19',
   name: 'Allowance — Red edition',
   palette: [
     { name: 'Brand red', hex: red },
@@ -531,7 +548,10 @@ const manifest = {
   zip: '/brand/allowance-brand-kit.zip',
   assets: compositions.map(({ asset }) => asset),
 };
-await fs.writeFile(path.join(output, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+const manifestJSON = `${JSON.stringify(manifest, null, 2)}\n`;
+await fs.writeFile(path.join(output, 'manifest.json'), manifestJSON);
+// Bundle catalog data locally; importing from Vite's public directory is unsupported.
+await fs.writeFile(path.join(root, 'src/brand-manifest.json'), manifestJSON);
 const zipEntries = [
   'README.md',
   'manifest.json',

@@ -95,7 +95,7 @@ export function createApp(
       readiness.filter((item) => item.name !== 'OpenAI agent').every((item) => item.ready);
     return {
       tools: CATALOG,
-      paymentNetwork: 'devnet',
+      paymentNetwork: config.paymentNetwork,
       dataNetwork: config.dataNetwork,
       ready: readiness.every((x) => x.ready) && Date.now() - preflightAt < 60000,
       externalReady,
@@ -119,7 +119,7 @@ export function createApp(
   app.get('/api/health', (_req, res) => {
     try {
       db.prepare('SELECT 1').get();
-      res.json({ ok: true, service: 'Allowance', paymentNetwork: 'devnet' });
+      res.json({ ok: true, service: 'Allowance', paymentNetwork: config.paymentNetwork });
     } catch {
       res.status(503).json({ ok: false });
     }

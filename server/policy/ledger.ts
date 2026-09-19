@@ -2,8 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import type Database from 'better-sqlite3';
 import {
   CATALOG,
-  PAYMENT_NETWORK,
-  USDC_MINT,
+  PAYMENT_CHAINS,
+  paymentNetworkName,
   parseMoney,
   units,
   type CreateRunInput,
@@ -154,8 +154,8 @@ export class Ledger implements PaymentLedger {
       allowedTools: input.allowedTools,
       origin: this.config.origin,
       recipient: this.config.recipient,
-      network: PAYMENT_NETWORK,
-      mint: USDC_MINT,
+      network: PAYMENT_CHAINS[this.config.paymentNetwork].network,
+      mint: PAYMENT_CHAINS[this.config.paymentNetwork].mint,
       expiresAt: new Date(this.now() + input.expiresInMinutes * 60000).toISOString(),
       runtimeExpiresAt: new Date(this.now() + this.config.maxRuntimeMs).toISOString(),
       callLimit: 4,
@@ -187,7 +187,7 @@ export class Ledger implements PaymentLedger {
           id,
           'authorization',
           'Allowance authorized',
-          `${input.allowance} devnet USDC. Policy version 1 is immutable.`,
+          `${input.allowance} ${this.config.paymentNetwork} USDC. Policy version 1 is immutable.`,
           'policy'
         );
       })
@@ -241,7 +241,7 @@ export class Ledger implements PaymentLedger {
       status: run.status,
       mode: 'live',
       executionMode: run.execution_mode,
-      paymentNetwork: 'devnet',
+      paymentNetwork: paymentNetworkName(policy.network),
       dataNetwork: run.data_network,
       createdAt: run.created_at,
       policy,
@@ -431,6 +431,14 @@ export class Ledger implements PaymentLedger {
     const intent = this.intentRow(id);
     const run = this.runRow(intent.run_id);
     const policy = JSON.parse(run.policy) as Policy;
+    const chain = PAYMENT_CHAINS[this.config.paymentNetwork];
+    if (
+      policy.network !== chain.network ||
+      policy.mint !== chain.mint ||
+      policy.recipient !== this.config.recipient ||
+      policy.origin !== this.config.origin
+    )
+      throw new PolicyError('Runtime payment configuration differs from the immutable policy.');
     if (
       intent.status !== 'reserved' ||
       (intent.signed_identity && JSON.parse(intent.signed_identity).phase !== 'signing')
@@ -577,16 +585,14 @@ export class Ledger implements PaymentLedger {
             "UPDATE intents SET status='delivered',result=?,service_outcome='delivered' WHERE id=?"
           )
           .run(json, id);
-        this.db
-          .prepare('UPDATE intents SET evidence=? WHERE id=?')
-          .run(
-            JSON.stringify({
-              ...evidence,
-              deliveryState: 'delivered',
-              resultHash: resultHash(result),
-            }),
-            id
-          );
+        this.db.prepare('UPDATE intents SET evidence=? WHERE id=?').run(
+          JSON.stringify({
+            ...evidence,
+            deliveryState: 'delivered',
+            resultHash: resultHash(result),
+          }),
+          id
+        );
       })
       .immediate();
     this.event(

@@ -25,8 +25,12 @@ import {
   verifyPayerSignature,
 } from '../server/payments/guard.js';
 import { PaymentRpc } from '../server/payments/rpc.js';
-import { DEVNET_GENESIS } from '../server/data/solana.js';
-import { PAYMENT_NETWORK, USDC_MINT } from '../shared/domain.js';
+import {
+  PAYMENT_CHAINS,
+  PAYMENT_NETWORK,
+  USDC_MINT,
+  type PaymentNetwork,
+} from '../shared/domain.js';
 const servers: Server[] = [];
 const dbs: ReturnType<typeof openDatabase>[] = [];
 afterEach(async () => {
@@ -49,20 +53,27 @@ async function listen(app: express.Express) {
 }
 async function setup(
   options: {
+    network?: PaymentNetwork;
+    rpcNetwork?: PaymentNetwork;
+    facilitatorNetwork?: PaymentNetwork;
     dropResponse?: boolean;
     throwAfterSettlement?: boolean;
     scheme?: PaymentAdapters['scheme'];
   } = {}
 ) {
+  const network = options.network ?? 'devnet';
+  const chain = PAYMENT_CHAINS[network];
   const key = await createKeyPairSignerFromPrivateKeyBytes(new Uint8Array(32).fill(7));
   const recipientKey = await createKeyPairSignerFromPrivateKeyBytes(new Uint8Array(32).fill(8));
   const sponsorKey = await createKeyPairSignerFromPrivateKeyBytes(new Uint8Array(32).fill(9));
   const payer = String(key.address),
     recipient = String(recipientKey.address),
     sponsor = String(sponsorKey.address);
-  const accounts = await expectedAccounts(payer, recipient);
+  const accounts = await expectedAccounts(payer, recipient, chain.mint);
   const state = {
     balance: '1000000',
+    genesisHash: PAYMENT_CHAINS[options.rpcNetwork ?? network].genesisHash as string,
+    supportedNetwork: PAYMENT_CHAINS[options.facilitatorNetwork ?? network].network,
     facilitatorAvailable: true,
     dropResponse: options.dropResponse ?? false,
     throwAfterSettlement: options.throwAfterSettlement ?? false,
@@ -87,15 +98,15 @@ async function setup(
     const { method, params } = req.body as { method: string; params: unknown[] };
     rpcCalls.push(method);
     let result: unknown;
-    if (method === 'getGenesisHash') result = DEVNET_GENESIS;
+    if (method === 'getGenesisHash') result = state.genesisHash;
     else if (method === 'getAccountInfo') {
       const account = params[0];
       const encoding = (params[1] as { encoding?: string })?.encoding;
       const info =
-        account === USDC_MINT
+        account === chain.mint
           ? { decimals: 6, isInitialized: true }
           : {
-              mint: USDC_MINT,
+              mint: chain.mint,
               owner: account === accounts.source ? payer : recipient,
               state: 'initialized',
               tokenAmount: { amount: state.balance, decimals: 6 },
@@ -112,7 +123,7 @@ async function setup(
             encoding === 'base64'
               ? [mint, 'base64']
               : {
-                  parsed: { type: account === USDC_MINT ? 'mint' : 'account', info },
+                  parsed: { type: account === chain.mint ? 'mint' : 'account', info },
                   program: 'spl-token',
                   space: 82,
                 },
@@ -143,7 +154,7 @@ async function setup(
     lastPayload = payload;
     state.landed = true;
     if (state.throwAfterSettlement) throw Error('Controlled response loss after broadcast.');
-    return { success: true, transaction: signature, network: PAYMENT_NETWORK, payer: sponsor };
+    return { success: true, transaction: signature, network: chain.network, payer: sponsor };
   });
   const facilitator: FacilitatorClient = {
     verify,
@@ -155,7 +166,7 @@ async function setup(
           {
             x402Version: 2,
             scheme: 'exact',
-            network: PAYMENT_NETWORK,
+            network: state.supportedNetwork,
             extra: { feePayer: sponsor },
           },
         ],
@@ -168,7 +179,11 @@ async function setup(
   const signer: TransactionPartialSigner = { address: key.address, signTransactions: sign };
   const db = openDatabase(':memory:');
   dbs.push(db);
-  const rootConfig = loadConfig({ APP_ORIGIN: origin, MERCHANT_RECIPIENT: recipient });
+  const rootConfig = loadConfig({
+    PAYMENT_NETWORK: network,
+    APP_ORIGIN: origin,
+    MERCHANT_RECIPIENT: recipient,
+  });
   const ledger = new Ledger(db, rootConfig);
   const run = ledger.createRun({
     wallet: payer,
@@ -181,6 +196,7 @@ async function setup(
   ledger.setStatus(run.id, 'running');
   const config = {
     enabled: true,
+    network,
     merchantOrigin: origin,
     recipient,
     rpcUrl: `${origin}/rpc`,
@@ -212,7 +228,7 @@ async function setup(
     }
     return response;
   };
-  const rpc = new PaymentRpc(`${origin}/rpc`);
+  const rpc = new PaymentRpc(`${origin}/rpc`, network);
   const adapters: PaymentAdapters = {
     signer,
     facilitator,
@@ -444,6 +460,8 @@ describe('strict challenge and transaction guards', () => {
     'rejects changed %s before signing',
     async (field) => {
       const expected = {
+        network: PAYMENT_NETWORK,
+        mint: USDC_MINT,
         url: 'https://merchant.test/merchant/wallet-snapshot',
         amount: '10000',
         recipient: 'recipient',
@@ -476,6 +494,8 @@ describe('strict challenge and transaction guards', () => {
     const payload = s.lastPayload()!;
     const bytes = decodePaymentTransaction(payload).message;
     const expected = {
+      network: PAYMENT_NETWORK,
+      mint: USDC_MINT,
       payer: s.payer,
       sponsor: s.sponsor,
       recipient: s.recipient,
@@ -502,6 +522,8 @@ describe('strict challenge and transaction guards', () => {
   });
   it('never treats maxTimeoutSeconds as an absolute challenge timestamp', () => {
     const expected = {
+      network: PAYMENT_NETWORK,
+      mint: USDC_MINT,
       url: 'https://merchant.test/merchant/wallet-snapshot',
       amount: '10000',
       recipient: 'recipient',
@@ -562,4 +584,217 @@ describe('strict challenge and transaction guards', () => {
     expect(s.sign).not.toHaveBeenCalled();
     expect(s.ledger.getRun(s.run.id).held).toBe('0');
   });
+});
+
+describe('mainnet exact payment boundaries with controlled adapters', () => {
+  it('uses mainnet challenge, native mint, immutable policy and SDK transfer without claiming a live settlement', async () => {
+    const s = await setup({ network: 'mainnet' });
+    await s.service.runPaidTool(s.run.id, 'mainnet_fixture_0001', 'wallet_snapshot', {
+      address: s.payer,
+    });
+    const run = s.ledger.getRun(s.run.id);
+    expect(run).toMatchObject({
+      paymentNetwork: 'mainnet',
+      settled: '10000',
+      policy: { network: PAYMENT_CHAINS.mainnet.network, mint: PAYMENT_CHAINS.mainnet.mint },
+    });
+    expect(s.lastPayload()?.accepted).toMatchObject({
+      network: PAYMENT_CHAINS.mainnet.network,
+      asset: PAYMENT_CHAINS.mainnet.mint,
+    });
+    expect(decodePaymentTransaction(s.lastPayload()!).decoded.keys).toContain(
+      PAYMENT_CHAINS.mainnet.mint
+    );
+    expect(run.purchases[0].chainVerified).toBe(false);
+  });
+  it.each([{ rpcNetwork: 'devnet' as const }, { facilitatorNetwork: 'devnet' as const }])(
+    'rejects mismatched readiness before signing (%o)',
+    async (wrong) => {
+      const s = await setup({ network: 'mainnet', ...wrong });
+      expect((await s.service.readiness()).ready).toBe(false);
+      await expect(
+        s.service.runPaidTool(s.run.id, 'wrong_network_0001', 'wallet_snapshot', {
+          address: s.payer,
+        })
+      ).rejects.toThrow(/unavailable/);
+      expect(s.sign).not.toHaveBeenCalled();
+      expect(s.settle).not.toHaveBeenCalled();
+    }
+  );
+  it('rejects RPC cluster changes after preflight, before the payer signature', async () => {
+    const s = await setup({ network: 'mainnet' });
+    expect((await s.service.readiness()).ready).toBe(true);
+    s.state.genesisHash = PAYMENT_CHAINS.devnet.genesisHash;
+    await expect(
+      s.service.runPaidTool(s.run.id, 'changed_rpc_00001', 'wallet_snapshot', { address: s.payer })
+    ).rejects.toThrow(/not Solana mainnet/);
+    expect(s.sign).not.toHaveBeenCalled();
+  });
+  it('rejects a devnet challenge under a mainnet authorization', () => {
+    const expected = {
+      network: PAYMENT_CHAINS.mainnet.network,
+      mint: PAYMENT_CHAINS.mainnet.mint,
+      url: 'https://merchant.test/merchant/wallet-snapshot',
+      amount: '10000',
+      recipient: 'recipient',
+      sponsor: 'sponsor',
+      memo: 'memo',
+    };
+    const required: PaymentRequired = {
+      x402Version: 2,
+      resource: { url: expected.url },
+      accepts: [
+        {
+          scheme: 'exact',
+          network: PAYMENT_CHAINS.devnet.network,
+          asset: PAYMENT_CHAINS.devnet.mint,
+          amount: expected.amount,
+          payTo: expected.recipient,
+          maxTimeoutSeconds: 60,
+          extra: { feePayer: expected.sponsor, memo: expected.memo },
+        },
+      ],
+      extensions: { 'payment-identifier': {} },
+    };
+    expect(() => validateRequirements(required, expected)).toThrow(/approved catalog/);
+  });
+  it('preserves an uncertain devnet hold and refuses to replay it through a mainnet runtime', async () => {
+    const s = await setup({ throwAfterSettlement: true });
+    await expect(
+      s.service.runPaidTool(s.run.id, 'devnet_old_hold_01', 'wallet_snapshot', { address: s.payer })
+    ).rejects.toThrow();
+    const networkFetch = vi.fn<typeof fetch>();
+    const changed = await createPaymentService(
+      { ...s.config, network: 'mainnet' },
+      s.ledger,
+      s.data,
+      { ...s.adapters, rpc: new PaymentRpc(`${s.origin}/rpc`, 'mainnet'), fetch: networkFetch }
+    );
+    await changed.reconcile();
+    await expect(
+      changed.runPaidTool(s.run.id, 'devnet_old_hold_01', 'wallet_snapshot', { address: s.payer })
+    ).rejects.toThrow(/original network/);
+    expect(networkFetch).not.toHaveBeenCalled();
+    expect(s.sign).toHaveBeenCalledTimes(1);
+    expect(s.ledger.getRun(s.run.id)).toMatchObject({
+      paymentNetwork: 'devnet',
+      held: '10000',
+      settled: '0',
+    });
+    expect(s.db.prepare('SELECT attempts FROM buyer_replays').get()).toEqual({ attempts: 0 });
+  });
+  it('rejects independent chain proof using a payload from another network before fetching a transaction', async () => {
+    const s = await setup();
+    await s.service.runPaidTool(s.run.id, 'devnet_proof_0001', 'wallet_snapshot', {
+      address: s.payer,
+    });
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async () => new Response(JSON.stringify({ result: PAYMENT_CHAINS.mainnet.genesisHash }))
+      );
+    const mainnetRpc = new PaymentRpc('https://rpc.example', 'mainnet', fetcher);
+    await expect(
+      mainnetRpc.evidence(signature, s.lastPayload()!, '10000', s.recipient)
+    ).rejects.toThrow(/network/);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+});
+
+it('verifies exact mainnet token deltas and transaction identity using a controlled RPC fixture', async () => {
+  const s = await setup({ network: 'mainnet' });
+  await s.service.runPaidTool(s.run.id, 'mainnet_rpc_proof01', 'wallet_snapshot', {
+    address: s.payer,
+  });
+  const payload = s.lastPayload()!;
+  const decoded = decodePaymentTransaction(payload);
+  const accounts = await expectedAccounts(s.payer, s.recipient, PAYMENT_CHAINS.mainnet.mint);
+  const landed = Buffer.from(String(payload.payload.transaction), 'base64');
+  landed.fill(31, 1, 65); // Controlled sponsor signature matches the RPC query identity.
+  const balance = (account: string, owner: string, amount: string) => ({
+    accountIndex: decoded.decoded.keys.indexOf(account),
+    owner,
+    mint: PAYMENT_CHAINS.mainnet.mint,
+    uiTokenAmount: { amount, decimals: 6 },
+  });
+  const transaction = {
+    slot: 100,
+    transaction: [landed.toString('base64'), 'base64'],
+    meta: {
+      err: null,
+      fee: 10001,
+      preTokenBalances: [
+        balance(accounts.source, s.payer, '20000'),
+        balance(accounts.destination, s.recipient, '10000'),
+      ],
+      postTokenBalances: [
+        balance(accounts.source, s.payer, '10000'),
+        balance(accounts.destination, s.recipient, '20000'),
+      ],
+    },
+  };
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(async (_input, init) => {
+    const { method } = JSON.parse(String(init?.body));
+    return new Response(
+      JSON.stringify({
+        result: method === 'getGenesisHash' ? PAYMENT_CHAINS.mainnet.genesisHash : transaction,
+      })
+    );
+  });
+  const rpc = new PaymentRpc('https://controlled-rpc.example', 'mainnet', fetcher);
+  await expect(rpc.evidence(signature, payload, '10000', s.recipient)).resolves.toMatchObject({
+    chainVerified: true,
+    signature,
+    feeLamports: '10001',
+  });
+  transaction.meta.postTokenBalances[1].uiTokenAmount.amount = '19999';
+  await expect(rpc.evidence(signature, payload, '10000', s.recipient)).resolves.toBeNull();
+  transaction.meta.postTokenBalances[1].uiTokenAmount.amount = '20000';
+  await expect(rpc.evidence(otherSignature, payload, '10000', s.recipient)).resolves.toBeNull();
+});
+
+it('reconciles mainnet despite more than one batch of unreconciled historical devnet rows', async () => {
+  const s = await setup({ network: 'mainnet', throwAfterSettlement: true });
+  await expect(
+    s.service.runPaidTool(s.run.id, 'mainnet_recovery01', 'wallet_snapshot', { address: s.payer })
+  ).rejects.toThrow();
+  // Retained historical rows must be filtered before the bounded 20-purchase batch.
+  const original = s.db.prepare('SELECT * FROM buyer_replays').get() as Record<string, unknown>;
+  const historicalTerms = {
+    ...JSON.parse(String(original.requirements_json)),
+    network: PAYMENT_CHAINS.devnet.network,
+    asset: PAYMENT_CHAINS.devnet.mint,
+  };
+  for (let index = 0; index < 25; index++) {
+    const row = {
+      ...original,
+      intent_id: `aaa_devnet_${index}`,
+      request_id: `aaa_devnet_${index}`,
+      requirements_json: JSON.stringify(historicalTerms),
+    };
+    s.db
+      .prepare(
+        `INSERT INTO buyer_replays (${Object.keys(row).join(',')}) VALUES (${Object.keys(row)
+          .map(() => '?')
+          .join(',')})`
+      )
+      .run(...Object.values(row));
+  }
+  vi.spyOn(s.rpc, 'findSettlement').mockResolvedValue({
+    signature,
+    chainVerified: true,
+    slot: 123,
+    feeLamports: '10001',
+    feeSponsor: s.sponsor,
+  });
+  await s.service.reconcile();
+  expect(s.ledger.getRun(s.run.id)).toMatchObject({ settled: '10000', held: '0' });
+  expect(s.sign).toHaveBeenCalledTimes(1);
+  expect(
+    s.db
+      .prepare(
+        "SELECT SUM(attempts) AS attempts FROM buyer_replays WHERE intent_id LIKE 'aaa_devnet_%'"
+      )
+      .get()
+  ).toEqual({ attempts: 0 });
 });

@@ -48,18 +48,26 @@ import {
   formatMoney,
   type AppConfigDTO,
   type PurchaseDTO,
+  type PaymentNetwork,
   type RunDTO,
   type ToolName,
 } from '../shared/domain';
 import { api, downloadJSON, type Session } from './api';
-import { createDemo, demoProbe, fixtureStep, reconcileDemo, type DemoScenario } from './demo';
+import {
+  createDemo,
+  demoProbe,
+  fixtureStep,
+  reconcileDemo,
+  stopDemo,
+  type DemoScenario,
+} from './demo';
 import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <Link to="/" className="brand" aria-label="Allowance home">
-      <img src="/allowance-a.svg" width="33" height="33" alt="" aria-hidden="true" />
+      <img src="/allowance-a.svg?v=3" width="33" height="33" alt="" aria-hidden="true" />
       {!compact && (
         <span>
           Allowance<span className="brand-period">.</span>
@@ -111,7 +119,7 @@ function Header() {
           <span>
             {rehearsalOnly || pathname === '/' || pathname === '/demo' || pathname === '/brand'
               ? 'Public rehearsal · Mainnet preview · No real payments'
-              : 'Application policies · Devnet payments'}
+              : 'Application policies · Network shown per run'}
           </span>
           <Link
             className="header-console-link"
@@ -147,7 +155,7 @@ function Footer() {
         <span className="small muted">
           {rehearsalOnly
             ? 'Public rehearsal · Mainnet preview · Fixture receipts · No onchain payments'
-            : 'First-party tools · Devnet payments · Working product name'}
+            : 'First-party tools · Network-bound payments · Durable receipts'}
         </span>
       </div>
     </footer>
@@ -155,12 +163,14 @@ function Footer() {
 }
 function NetworkPills({
   mode = 'rehearsal',
-  data = 'mainnet preview',
+  data,
+  payment,
 }: {
   mode?: 'rehearsal' | 'live';
   data?: string;
+  payment?: PaymentNetwork;
 }) {
-  const paymentLabel = mode === 'rehearsal' ? 'mainnet preview' : 'devnet';
+  const paymentLabel = mode === 'rehearsal' ? 'mainnet preview' : (payment ?? 'checking');
   return (
     <div className="network-pills">
       <span className="pill">
@@ -169,7 +179,7 @@ function NetworkPills({
       </span>
       <span>Payments: {paymentLabel}</span>
       <span className="pill-divider">/</span>
-      <span>Data: {data}</span>
+      <span>Data: {mode === 'rehearsal' ? 'example only' : (data ?? 'checking')}</span>
     </div>
   );
 }
@@ -229,7 +239,7 @@ function BudgetMeter({
   run,
   compact = false,
 }: {
-  run: Pick<RunDTO, 'authorized' | 'settled' | 'held' | 'remaining' | 'mode'>;
+  run: Pick<RunDTO, 'authorized' | 'settled' | 'held' | 'remaining' | 'mode' | 'paymentNetwork'>;
   compact?: boolean;
 }) {
   const total = Number(run.authorized) || 1;
@@ -243,7 +253,7 @@ function BudgetMeter({
       <div className="budget-title">
         <span className="eyebrow">Your allowance</span>
         <span className="currency-label">
-          USDC <span>· {run.mode === 'rehearsal' ? 'mainnet preview' : 'devnet'}</span>
+          USDC <span>· {run.mode === 'rehearsal' ? 'mainnet preview' : run.paymentNetwork}</span>
         </span>
       </div>
       <div className="budget-total">
@@ -313,6 +323,7 @@ function LandingReceipt() {
             held: '0',
             remaining: '10000',
             mode: 'rehearsal',
+            paymentNetwork: 'mainnet',
           }}
         />
         <div className="receipt-items">
@@ -484,9 +495,21 @@ function Landing() {
             </Link>
           </div>
           <ol className="run-unfolds-steps">
-            <li><span>01</span><b>Set the allowance</b><small>Choose the boundary first.</small></li>
-            <li><span>02</span><b>Let the agent request tools</b><small>Only useful, permitted work.</small></li>
-            <li><span>03</span><b>Review the receipt</b><small>See every decision and result.</small></li>
+            <li>
+              <span>01</span>
+              <b>Set the allowance</b>
+              <small>Choose the boundary first.</small>
+            </li>
+            <li>
+              <span>02</span>
+              <b>Let the agent request tools</b>
+              <small>Only useful, permitted work.</small>
+            </li>
+            <li>
+              <span>03</span>
+              <b>Review the receipt</b>
+              <small>See every decision and result.</small>
+            </li>
           </ol>
           <DecorativeFilm
             className="mountain-film"
@@ -586,7 +609,9 @@ function Landing() {
                 {':  "0.020000"\n'}
                 <span className="code-green">services</span>
                 {':    ["wallet_snapshot",\n              "transaction_explain"]\n'}
-                <span className="code-muted">// Mainnet-ready policy. Exact payments. Clear receipts.</span>
+                <span className="code-muted">
+                  // Mainnet-ready policy. Exact payments. Clear receipts.
+                </span>
               </code>
             </pre>
             <div className="terminal-foot">
@@ -600,6 +625,29 @@ function Landing() {
     </>
   );
 }
+const demoScenarios: Record<DemoScenario, { title: string; detail: string }> = {
+  standard: {
+    title: 'Useful work, inside the limit',
+    detail:
+      'Two example tools cost 0.030000 USDC. Then test why another 0.020000 request is blocked.',
+  },
+  empty: {
+    title: 'An empty wallet is a valid answer',
+    detail:
+      'The 0.010000 snapshot finds no history, so the agent skips the transaction explanation.',
+  },
+  failure: {
+    title: 'No response. No charge.',
+    detail:
+      'The service fails before signing. Its 0.010000 reservation returns to the available budget.',
+  },
+  ambiguous: {
+    title: 'Recover before trying again',
+    detail:
+      'A simulated timeout holds 0.010000. Reconcile the original request to see what settled without paying twice.',
+  },
+};
+
 const terminalStatuses = new Set<RunDTO['status']>([
   'completed',
   'stopped',
@@ -628,37 +676,10 @@ function Demo() {
   };
   const stop = () => {
     setStep(null);
-    setRun((old) => ({
-      ...old,
-      status: 'stopped',
-      held: '0',
-      remaining: String(Number(old.authorized) - Number(old.settled)),
-      purchases: old.purchases.map((p) =>
-        p.status === 'reserved'
-          ? {
-              ...p,
-              status: 'released',
-              reason: 'Fixture stopped before signing.',
-              serviceOutcome: 'unavailable',
-            }
-          : p
-      ),
-      events: [
-        ...old.events,
-        {
-          id: old.events.length + 1,
-          at: old.createdAt,
-          kind: 'stopped',
-          title: 'Rehearsal stopped',
-          detail:
-            'No new fixture requests will start. The unsigned fixture reservation is released.',
-          source: 'system',
-        },
-      ],
-    }));
+    setRun(stopDemo);
   };
   return (
-    <main className="console-page page-width">
+    <main className="console-page demo-page page-width">
       <PageHeading
         eyebrow="The working example"
         title="A little budget. Useful work."
@@ -678,57 +699,16 @@ function Demo() {
           </span>
         </div>
       </div>
-      <section className="demo-guide" aria-label="How to use the working example">
-        <div className="demo-guide-heading">
-          <div className="eyebrow">A quick guided tour</div>
-          <p>Choose a fixture, watch the budget move, then open the receipt for the exact reason behind each decision.</p>
-        </div>
-        <ol className="demo-guide-steps">
-          <li><span>01</span><b>Choose an outcome</b><small>Try the standard run, a failure, or recovery.</small></li>
-          <li><span>02</span><b>Run the fixture</b><small>See useful tool purchases and one separate denial.</small></li>
-          <li><span>03</span><b>Read the receipt</b><small>Expand any row to inspect status, cost, and evidence.</small></li>
-          <li><span>04</span><b>Reconcile recovery</b><small>Resolve an unknown settlement without making a duplicate charge.</small></li>
-        </ol>
-      </section>
       <div className="workspace-grid">
-        <section className="card composer">
+        <section className="card composer demo-composer">
           <div className="card-heading">
             <span className="section-index">01</span>
-            <h2>The assignment</h2>
+            <h2>Try an outcome</h2>
             <span className="pill subtle-pill">Read-only example</span>
           </div>
           <div className="form-content">
-            <label className="field-label" htmlFor="demo-wallet">
-              Solana wallet<span>Fixture address</span>
-            </label>
-            <div className="input-with-icon">
-              <Wallet size={17} />
-              <input id="demo-wallet" value={run.wallet} readOnly />
-            </div>
-            <label className="field-label" htmlFor="demo-task">
-              What should the agent do?
-            </label>
-            <textarea id="demo-task" value={run.task} readOnly rows={4} />
-            <div className="two-fields">
-              <div>
-                <span className="field-label">Total allowance</span>
-                <div className="static-input">
-                  0.040000 <span>USDC</span>
-                </div>
-              </div>
-              <div>
-                <span className="field-label">Per-request cap</span>
-                <div className="static-input">
-                  0.020000 <span>USDC</span>
-                </div>
-              </div>
-            </div>
-            <div className="field-label">
-              Permitted services<span>First-party sample merchants</span>
-            </div>
-            <ToolList />
             <div className="demo-scenario">
-              <label htmlFor="scenario">Choose a fixture<span>Each option demonstrates a different guarded outcome.</span></label>
+              <label htmlFor="scenario">Choose an example</label>
               <select
                 id="scenario"
                 aria-describedby="scenario-help"
@@ -744,7 +724,11 @@ function Demo() {
                 <option value="failure">Service failure before signing</option>
                 <option value="ambiguous">Settlement unknown, then reconcile</option>
               </select>
-              <small id="scenario-help">No wallet, model, RPC, signing, or payment request is made from this page.</small>
+              <div className="scenario-explanation" id="scenario-help" aria-live="polite">
+                <b>{demoScenarios[scenario].title}</b>
+                <p>{demoScenarios[scenario].detail}</p>
+                <small>All amounts and outcomes are simulated. No funds are spent.</small>
+              </div>
             </div>
             <button
               className="button button-primary full-width"
@@ -754,7 +738,7 @@ function Demo() {
               {step !== null ? (
                 <>
                   <LoaderCircle size={17} className="spin" />
-                  Running fixture steps…
+                  Running the example…
                 </>
               ) : (
                 <>
@@ -767,6 +751,42 @@ function Demo() {
               <ShieldCheck size={13} />
               No keys or funds needed. Every step stays in your browser.
             </div>
+            <details className="demo-assignment">
+              <summary>
+                View the sample task and spending policy <ChevronDown size={16} />
+              </summary>
+              <div className="demo-assignment-content">
+                <label className="field-label" htmlFor="demo-wallet">
+                  Solana wallet<span>Fixture address</span>
+                </label>
+                <div className="input-with-icon">
+                  <Wallet size={17} />
+                  <input id="demo-wallet" value={run.wallet} readOnly />
+                </div>
+                <label className="field-label" htmlFor="demo-task">
+                  What should the agent do?
+                </label>
+                <textarea id="demo-task" value={run.task} readOnly rows={4} />
+                <div className="two-fields">
+                  <div>
+                    <span className="field-label">Total allowance</span>
+                    <div className="static-input">
+                      0.040000 <span>USDC</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="field-label">Per-request cap</span>
+                    <div className="static-input">
+                      0.020000 <span>USDC</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="field-label">
+                  Permitted services<span>First-party sample merchants</span>
+                </div>
+                <ToolList />
+              </div>
+            </details>
           </div>
         </section>
         <div className="workspace-right">
@@ -793,6 +813,37 @@ function Demo() {
           </div>
         </div>
       </div>
+      <section className="demo-guide" aria-label="How to use the working example">
+        <div className="demo-guide-heading">
+          <div className="eyebrow">A quick guided tour</div>
+          <p>
+            Choose an example and press run. Watch a small budget turn into useful information and a
+            clear receipt.
+          </p>
+        </div>
+        <ol className="demo-guide-steps">
+          <li>
+            <span>01</span>
+            <b>Choose an example</b>
+            <small>Useful work, an empty wallet, a failure, or recovery.</small>
+          </li>
+          <li>
+            <span>02</span>
+            <b>Watch the budget</b>
+            <small>See what is held, settled, and still available.</small>
+          </li>
+          <li>
+            <span>03</span>
+            <b>Try the next step</b>
+            <small>Test the spending limit or resolve a timed-out request.</small>
+          </li>
+          <li>
+            <span>04</span>
+            <b>Keep the receipt</b>
+            <small>Expand each purchase, then save or print the evidence.</small>
+          </li>
+        </ol>
+      </section>
       <RunDetails
         run={run}
         probe={() => setRun((old) => demoProbe(old))}
@@ -915,7 +966,11 @@ function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; p
             <CircleStop size={16} />
             {pending ? 'Stopping…' : 'Stop run'}
           </button>
-          <small>Stops new payments. Submitted payments can still settle.</small>
+          <small>
+            {run.mode === 'rehearsal'
+              ? 'Stops the example and returns unsigned reservations to the budget.'
+              : 'Stops new payments. Submitted payments can still settle.'}
+          </small>
         </div>
       ) : (
         finished && (
@@ -924,8 +979,15 @@ function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; p
             <span>
               {run.status === 'completed'
                 ? 'Task finished within its allowance.'
-                : `Run ${run.status}. Start a new run to authorize more work.`}
+                : run.mode === 'rehearsal'
+                  ? run.status === 'interrupted'
+                    ? 'Run interrupted. Review the recovery and receipt below.'
+                    : 'Example ended. Review the receipt or try another outcome.'
+                  : `Run ${run.status}. Start a new run to authorize more work.`}
             </span>
+            <a href="#run-details" className="text-link">
+              View details <ArrowDown size={14} />
+            </a>
           </div>
         )
       )}
@@ -938,7 +1000,15 @@ function statusLabel(purchase: PurchaseDTO) {
   if (purchase.status === 'settled-but-result-unavailable') return 'Settled · result unavailable';
   return purchase.status.replaceAll('-', ' ');
 }
-function PurchaseRow({ purchase, demo }: { purchase: PurchaseDTO; demo: boolean }) {
+function PurchaseRow({
+  purchase,
+  demo,
+  paymentNetwork,
+}: {
+  purchase: PurchaseDTO;
+  demo: boolean;
+  paymentNetwork: PaymentNetwork;
+}) {
   const [expanded, setExpanded] = useState(false);
   const blocked = purchase.status === 'denied';
   const held = ['reserved', 'submitted', 'settlement-unknown'].includes(purchase.status);
@@ -1037,11 +1107,11 @@ function PurchaseRow({ purchase, demo }: { purchase: PurchaseDTO; demo: boolean 
           {!demo && purchase.signature && (
             <a
               className="text-link"
-              href={`https://explorer.solana.com/tx/${encodeURIComponent(purchase.signature)}?cluster=devnet`}
+              href={`https://explorer.solana.com/tx/${encodeURIComponent(purchase.signature)}${paymentNetwork === 'devnet' ? '?cluster=devnet' : ''}`}
               target="_blank"
               rel="noreferrer"
             >
-              View actual devnet transaction <ArrowUpRight size={14} />
+              View {paymentNetwork} transaction <ArrowUpRight size={14} />
             </a>
           )}
           {purchase.result !== undefined && (
@@ -1074,7 +1144,7 @@ function RunDetails({
     run.status === 'completed' && run.settled === '30000' && run.remaining === '10000' && !probed;
   const unresolved = run.purchases.some((purchase) => purchase.status === 'settlement-unknown');
   return (
-    <div className="run-details">
+    <div className="run-details" id="run-details">
       {run.error && <ErrorBox>{run.error}</ErrorBox>}
       <div className="details-heading">
         <div className="tabs" aria-label="Run information">
@@ -1158,13 +1228,18 @@ function RunDetails({
         <div className="receipt-table-head">
           <h3>Purchase receipt</h3>
           <span>
-            Amounts in {run.mode === 'rehearsal' ? 'mainnet preview' : 'devnet'} USDC{' '}
+            Amounts in {run.mode === 'rehearsal' ? 'mainnet preview' : run.paymentNetwork} USDC{' '}
             {run.mode === 'rehearsal' && '· simulated'}
           </span>
         </div>
         {run.purchases.length ? (
           run.purchases.map((p) => (
-            <PurchaseRow key={p.id} purchase={p} demo={run.mode === 'rehearsal'} />
+            <PurchaseRow
+              key={p.id}
+              purchase={p}
+              demo={run.mode === 'rehearsal'}
+              paymentNetwork={run.paymentNetwork}
+            />
           ))
         ) : (
           <div className="empty-state compact-empty">
@@ -1235,8 +1310,8 @@ function RunDetails({
             <span className="eyebrow">Deterministic recovery</span>
             <h3>Reconcile the original hold.</h3>
             <p>
-              The fixture timed out after signing. Reconcile the original intent to clear the
-              hold; this never creates a second signature or invents delivery.
+              The fixture timed out after signing. Reconcile the original intent to clear the hold;
+              this never creates a second signature or invents delivery.
             </p>
           </div>
           <button className="button button-outline" onClick={reconcile}>
@@ -1273,7 +1348,7 @@ function RunDetails({
             <span>
               {run.mode === 'rehearsal'
                 ? 'Deterministic fixture · No live RPC or model evidence'
-                : `Data: ${run.dataNetwork} · Payments: devnet · Tool data is cited in the brief`}
+                : `Data: ${run.dataNetwork} · Payments: ${run.paymentNetwork} · Tool data is cited in the brief`}
             </span>
           </div>
         </section>
@@ -1282,7 +1357,9 @@ function RunDetails({
         <Logo />
         <h2>Allowance receipt</h2>
         <p>
-          Run {run.id} · Execution: {run.mode} · Payments: {run.mode === 'rehearsal' ? 'mainnet preview' : 'devnet'} · Data: {run.mode === 'rehearsal' ? 'mainnet preview' : run.dataNetwork}
+          Run {run.id} · Execution: {run.mode} · Payments:{' '}
+          {run.mode === 'rehearsal' ? 'mainnet preview' : run.paymentNetwork} · Data:{' '}
+          {run.mode === 'rehearsal' ? 'deterministic example' : run.dataNetwork}
         </p>
         {run.mode === 'rehearsal' && (
           <p>Deterministic fixture. No real signatures, payments, RPC calls or model calls.</p>
@@ -1616,7 +1693,7 @@ function OperatorApp() {
         title="Give useful work a limit."
         action={
           <div className="operator-actions">
-            <NetworkPills mode="live" data={config?.dataNetwork} />
+            <NetworkPills mode="live" data={config?.dataNetwork} payment={config?.paymentNetwork} />
             <button className="inline-button" onClick={() => void logout()}>
               Sign out
             </button>
@@ -1640,7 +1717,7 @@ function OperatorApp() {
             <div>
               <b>
                 {config.ready
-                  ? 'Devnet execution is ready.'
+                  ? `${config.paymentNetwork === 'mainnet' ? 'Mainnet' : 'Devnet'} execution is ready.`
                   : 'Live execution is unavailable until setup is complete.'}
               </b>
               <span>
@@ -1805,8 +1882,9 @@ function OperatorApp() {
                   </div>
                 )}
                 <p className="form-footnote">
-                  This authorizes devnet USDC tool charges. SOL fees/rent and OpenAI usage are
-                  separate. Stop prevents new payments; submitted payments can still settle.
+                  This authorizes {config.paymentNetwork} USDC tool charges. SOL fees/rent and
+                  OpenAI usage are separate. Stop prevents new payments; submitted payments can
+                  still settle.
                 </p>
               </form>
             </section>
@@ -1814,8 +1892,8 @@ function OperatorApp() {
               <section className="card payer-card">
                 <div className="card-heading">
                   <Wallet size={18} />
-                  <h2>Development payer</h2>
-                  <span className="pill subtle-pill">devnet</span>
+                  <h2>Payment wallet</h2>
+                  <span className="pill subtle-pill">{config.paymentNetwork}</span>
                 </div>
                 <div className="payer-balances">
                   <div>
@@ -2022,7 +2100,11 @@ function LiveRun() {
         title={
           run?.status === 'completed' ? 'Useful work. Accounted for.' : 'Every step, in the open.'
         }
-        action={run && <NetworkPills mode={run.mode} data={run.dataNetwork} />}
+        action={
+          run && (
+            <NetworkPills mode={run.mode} data={run.dataNetwork} payment={run.paymentNetwork} />
+          )
+        }
       >
         A durable record of this task, its policy, and every purchase.
       </PageHeading>
@@ -2314,7 +2396,7 @@ function Developers() {
             <p>
               Configure a dedicated low-balance mainnet payer, a different merchant recipient,
               Solana RPC, a compatible facilitator, and your server-only OpenAI credentials and
-              model. Keep this public rehearsal disabled until every prerequisite is reviewed.
+              model. Keep live payments disabled until every prerequisite is configured and verified.
             </p>
             <p>
               Check the mainnet USDC mint and decimals, required token accounts, facilitator
@@ -2325,8 +2407,8 @@ function Developers() {
             <span className="section-index">03</span>
             <h3>Verify a real run</h3>
             <p>
-              The opt-in live smoke command requires explicit mainnet configuration and funding.
-              See the README for the authorization flag and complete setup.
+              The opt-in live smoke command requires explicit mainnet configuration and funding. See
+              the README for the authorization flag and complete setup.
             </p>
             <p>
               A working fixture or an unpaid 402 response is separate from evidence of real mainnet

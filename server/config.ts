@@ -1,6 +1,12 @@
 import 'dotenv/config';
 import path from 'node:path';
-import { CATALOG, parseMoney, type DataNetwork } from '../shared/domain.js';
+import {
+  CATALOG,
+  PAYMENT_CHAINS,
+  parseMoney,
+  type DataNetwork,
+  type PaymentNetwork,
+} from '../shared/domain.js';
 export interface Config {
   port: number;
   host: string;
@@ -11,6 +17,7 @@ export interface Config {
   sessionSecret: string;
   proxyHops: number;
   liveEnabled: boolean;
+  paymentNetwork: PaymentNetwork;
   payerSecretFile: string;
   payerSecretJson: string;
   recipient: string;
@@ -50,12 +57,38 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)))
   )
     throw new Error('APP_ORIGIN must be HTTPS or an exact local development origin.');
-  if (env.PAYMENT_NETWORK && env.PAYMENT_NETWORK !== 'devnet')
-    throw new Error('Only devnet payments are supported.');
-  const dataNetwork = env.DATA_NETWORK || 'devnet';
+  const paymentNetwork = env.PAYMENT_NETWORK || 'mainnet';
+  if (paymentNetwork !== 'mainnet' && paymentNetwork !== 'devnet')
+    throw new Error('PAYMENT_NETWORK must be mainnet or devnet.');
+  const liveEnabled = env.LIVE_PAYMENTS_ENABLED === 'true';
+  if (liveEnabled && (!env.PAYMENT_NETWORK || !env.PAYMENT_RPC_URL || !env.FACILITATOR_URL))
+    throw new Error(
+      'Live payments require explicit PAYMENT_NETWORK, PAYMENT_RPC_URL and FACILITATOR_URL.'
+    );
+  if (liveEnabled && paymentNetwork === 'mainnet' && env.MAINNET_PAYMENTS_ACKNOWLEDGED !== 'true')
+    throw new Error(
+      'Mainnet uses real USDC. Set MAINNET_PAYMENTS_ACKNOWLEDGED=true after reviewing the operator spending limits.'
+    );
+  const paymentRpcUrl = env.PAYMENT_RPC_URL || PAYMENT_CHAINS[paymentNetwork].rpcUrl;
+  for (const [name, endpoint] of [
+    ['PAYMENT_RPC_URL', paymentRpcUrl],
+    ['FACILITATOR_URL', env.FACILITATOR_URL],
+  ] as const) {
+    if (!endpoint) continue;
+    const target = new URL(endpoint);
+    if (target.protocol !== 'https:' || target.username || target.password || target.hash)
+      throw new Error(
+        `${name} must be an HTTPS URL without embedded user credentials or fragments.`
+      );
+  }
+  const dataNetwork = env.DATA_NETWORK || paymentNetwork;
   if (dataNetwork !== 'devnet' && dataNetwork !== 'mainnet')
     throw new Error('Unknown data network.');
-  if (dataNetwork === 'mainnet' && env.ALLOW_MAINNET_READ_ONLY !== 'true')
+  if (
+    dataNetwork === 'mainnet' &&
+    (env.DATA_NETWORK || liveEnabled) &&
+    env.ALLOW_MAINNET_READ_ONLY !== 'true'
+  )
     throw new Error('Mainnet data reads require separate explicit configuration.');
   return {
     port,
@@ -66,15 +99,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     passwordHash: env.OPERATOR_PASSWORD_HASH || '',
     sessionSecret: env.SESSION_SECRET || '',
     proxyHops: integer(env.PROXY_HOPS, 0, 0, 2),
-    liveEnabled: env.LIVE_PAYMENTS_ENABLED === 'true',
+    liveEnabled,
+    paymentNetwork,
     payerSecretFile: env.PAYER_SECRET_FILE || '',
     payerSecretJson: env.PAYER_SECRET_JSON || '',
     recipient: env.MERCHANT_RECIPIENT || '',
     facilitatorUrl: env.FACILITATOR_URL || 'https://x402.org/facilitator',
     facilitatorToken: env.FACILITATOR_TOKEN || '',
     trustedFeePayer: env.TRUSTED_FEE_PAYER || '',
-    paymentRpcUrl: env.PAYMENT_RPC_URL || 'https://api.devnet.solana.com',
-    dataRpcUrl: env.DATA_RPC_URL || 'https://api.devnet.solana.com',
+    paymentRpcUrl,
+    dataRpcUrl: env.DATA_RPC_URL || PAYMENT_CHAINS[dataNetwork].rpcUrl,
     dataNetwork: dataNetwork as DataNetwork,
     allowMainnetReadOnly: env.ALLOW_MAINNET_READ_ONLY === 'true',
     dailyCeiling: parseMoney(env.DAILY_USDC_CEILING || '0.100000'),
@@ -101,26 +135,26 @@ export function configurationReadiness(config: Config) {
         : 'Run npm run setup:operator to configure password hash and session secret.',
     },
     {
-      name: 'Devnet payments',
+      name: `${config.paymentNetwork} payments`,
       ready: config.liveEnabled,
       detail: config.liveEnabled
-        ? 'Explicit devnet opt-in enabled.'
-        : 'Set LIVE_PAYMENTS_ENABLED=true only after devnet funding and preflight.',
+        ? `Explicit ${config.paymentNetwork} opt-in enabled.`
+        : `Set LIVE_PAYMENTS_ENABLED=true only after ${config.paymentNetwork} configuration, funding and preflight.`,
     },
     {
-      name: 'Development signer',
+      name: 'Dedicated payer',
       ready: Boolean(config.payerSecretFile || config.payerSecretJson),
       detail:
         config.payerSecretFile || config.payerSecretJson
           ? 'Backend-only signer source configured; preflight must validate it.'
-          : 'Set PAYER_SECRET_FILE to an ignored dedicated devnet keypair file.',
+          : 'Set PAYER_SECRET_FILE to an ignored dedicated low-balance keypair file.',
     },
     {
       name: 'Merchant recipient',
       ready: Boolean(config.recipient),
       detail: config.recipient
         ? 'Recipient configured; must differ from signer and have a USDC account.'
-        : 'Set MERCHANT_RECIPIENT to a separate devnet token owner.',
+        : 'Set MERCHANT_RECIPIENT to a separate token owner on the configured payment network.',
     },
     {
       name: 'Trusted fee sponsor',
@@ -128,6 +162,14 @@ export function configurationReadiness(config: Config) {
       detail: config.trustedFeePayer
         ? 'Pinned sponsor requires facilitator and transaction checks.'
         : 'Set TRUSTED_FEE_PAYER after inspecting the facilitator supported response.',
+    },
+    {
+      name: 'Read-only data access',
+      ready: config.dataNetwork !== 'mainnet' || config.allowMainnetReadOnly,
+      detail:
+        config.dataNetwork === 'mainnet' && !config.allowMainnetReadOnly
+          ? 'Set ALLOW_MAINNET_READ_ONLY=true to enable the configured mainnet data RPC.'
+          : `${config.dataNetwork} data reads configured; live RPC genesis verification is still required.`,
     },
     {
       name: 'OpenAI agent',

@@ -20,6 +20,7 @@
     "setup:operator": "tsx scripts/setup-operator.ts",
     "preflight": "tsx scripts/preflight.ts",
     "smoke:devnet": "tsx scripts/smoke-devnet.ts",
+    "smoke:mainnet": "tsx scripts/smoke-mainnet.ts",
     "mcp": "tsx server/mcp.ts",
     "test:browser": "playwright test",
     "test:hosted": "playwright test --config playwright.hosted.config.ts"

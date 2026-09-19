@@ -24,7 +24,10 @@ function setup(file = ':memory:') {
   let now = Date.now();
   const db = openDatabase(file);
   dbs.push(db);
-  const config = loadConfig({ MERCHANT_RECIPIENT: '11111111111111111111111111111111' });
+  const config = loadConfig({
+    PAYMENT_NETWORK: 'devnet',
+    MERCHANT_RECIPIENT: '11111111111111111111111111111111',
+  });
   const ledger = new Ledger(db, config, () => now);
   const run = ledger.createRun({
     wallet: '11111111111111111111111111111111',

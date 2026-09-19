@@ -127,8 +127,8 @@ describe('validated Solana data', () => {
   it('validates the network instead of trusting the configured label', async () => {
     const { client } = setup({}, (envelope) => ({ ...envelope, result: ADDRESS }));
     await expect(client.probe()).rejects.toMatchObject({ code: 'NETWORK_MISMATCH' });
-    expect(() => new SolanaDataClient({ cluster: 'mainnet-beta' })).toThrow(
-      'explicit read-only opt-in'
+    await expect(new SolanaDataClient({ cluster: 'mainnet-beta' }).probe()).rejects.toThrow(
+      'ALLOW_MAINNET_READ_ONLY'
     );
   });
 

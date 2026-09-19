@@ -12,7 +12,7 @@ The external run route is:
 POST /api/external-runs
 ```
 
-It accepts the same strict run body as `POST /api/runs` (`wallet`, `task`, `allowance`, `perRequestCap`, `expiresInMinutes`, and `allowedTools`). It requires operator authentication, a fresh successful readiness check, and live devnet payment configuration. It does not require an OpenAI key because the external agent is the runner. The response contains `run` and the one-time `grant.token`; no token is returned by receipt or status tools.
+It accepts the same strict run body as `POST /api/runs` (`wallet`, `task`, `allowance`, `perRequestCap`, `expiresInMinutes`, and `allowedTools`). It requires operator authentication, a fresh successful readiness check, and live payment configuration for the selected network. It does not require an OpenAI key because the external agent is the runner. The response contains `run` and the one-time `grant.token`; no token is returned by receipt or status tools.
 
 Start the bridge from the repository root only after the operator has created the run:
 
@@ -28,7 +28,7 @@ Every tool has a strict object schema. `runId` is a UUID. Paid calls also requir
 
 | Tool                  | Scope                 | Behavior                                                                                                                                |
 | --------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `wallet_snapshot`     | `wallet_snapshot`     | Runs the fixed 0.010000 devnet-USDC wallet snapshot through the existing x402 buyer and ledger.                                         |
+| `wallet_snapshot`     | `wallet_snapshot`     | Runs the fixed 0.010000 USDC wallet snapshot through the existing x402 buyer and ledger.                                         |
 | `transaction_explain` | `transaction_explain` | Runs the fixed 0.020000 explanation only for a signature returned by a delivered snapshot in the same run.                              |
 | `get_run_status`      | `get_run_status`      | Returns status, execution mode, bounded totals and safe purchase summaries.                                                             |
 | `get_receipt`         | `get_receipt`         | Returns the durable policy, timeline, purchase evidence and delivered results for the run.                                              |
@@ -40,4 +40,4 @@ Errors are returned as MCP `isError: true` results with stable codes such as `GR
 
 ## Current blockers
 
-The bridge is implemented and covered by controlled MCP discovery, schema, authorization, revocation, stop and error tests. It has not been used for a funded devnet payment in this delivery. A live run still needs the exact prerequisites in [live-setup.md](live-setup.md): operator credentials, a dedicated devnet payer, a different merchant recipient with token accounts, test SOL/USDC, a reviewed trusted fee sponsor, RPC/facilitator readiness, and a prepared wallet. No grant creation or MCP process start can verify a real onchain settlement by itself.
+The bridge is implemented and covered by controlled MCP discovery, schema, authorization, revocation, stop and error tests. It has not been used for a funded payment in this delivery. A live run still needs the exact prerequisites in [live-setup.md](live-setup.md): operator credentials, a dedicated payer on the selected network, a different merchant recipient with token accounts, network-specific SOL/USDC, a reviewed trusted fee sponsor, RPC/facilitator readiness, and a prepared wallet. No grant creation or MCP process start can verify a real onchain settlement by itself.

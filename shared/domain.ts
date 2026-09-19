@@ -1,6 +1,30 @@
 import { z } from 'zod';
-export const PAYMENT_NETWORK = 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1' as const;
-export const USDC_MINT = '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU' as const;
+// Network and mint are captured in each immutable policy; never reinterpret existing receipts.
+export const PAYMENT_CHAINS = {
+  mainnet: {
+    network: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+    mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+    genesisHash: '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d',
+    rpcUrl: 'https://api.mainnet-beta.solana.com',
+  },
+  devnet: {
+    network: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+    mint: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
+    genesisHash: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG',
+    rpcUrl: 'https://api.devnet.solana.com',
+  },
+} as const;
+export type PaymentNetwork = keyof typeof PAYMENT_CHAINS;
+export type PaymentChainId = (typeof PAYMENT_CHAINS)[PaymentNetwork]['network'];
+export type UsdcMint = (typeof PAYMENT_CHAINS)[PaymentNetwork]['mint'];
+export function paymentNetworkName(network: string): PaymentNetwork {
+  if (network === PAYMENT_CHAINS.mainnet.network) return 'mainnet';
+  if (network === PAYMENT_CHAINS.devnet.network) return 'devnet';
+  throw new Error('Unsupported payment network.');
+}
+// Legacy exports retain their original meaning for saved devnet fixtures and integrations.
+export const PAYMENT_NETWORK = PAYMENT_CHAINS.devnet.network;
+export const USDC_MINT = PAYMENT_CHAINS.devnet.mint;
 export const TOOL_NAMES = ['wallet_snapshot', 'transaction_explain'] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 export type DataNetwork = 'devnet' | 'mainnet';
@@ -107,8 +131,8 @@ export interface Policy {
   allowedTools: ToolName[];
   origin: string;
   recipient: string;
-  network: typeof PAYMENT_NETWORK;
-  mint: typeof USDC_MINT;
+  network: PaymentChainId;
+  mint: UsdcMint;
   expiresAt: string;
   runtimeExpiresAt?: string;
   callLimit: number;
@@ -160,7 +184,7 @@ export interface RunDTO {
   status: 'queued' | 'running' | 'completed' | 'stopped' | 'expired' | 'failed' | 'interrupted';
   mode: 'live' | 'rehearsal';
   executionMode?: 'builtin' | 'external';
-  paymentNetwork: 'devnet';
+  paymentNetwork: PaymentNetwork;
   dataNetwork: DataNetwork;
   createdAt: string;
   policy: Policy;
@@ -190,7 +214,7 @@ export interface ReadinessItem {
 }
 export interface AppConfigDTO {
   tools: typeof CATALOG;
-  paymentNetwork: 'devnet';
+  paymentNetwork: PaymentNetwork;
   dataNetwork: DataNetwork;
   ready: boolean;
   externalReady: boolean;

@@ -40,6 +40,7 @@ export async function createRuntime(
   const payments = await createPaymentService(
     {
       enabled: config.liveEnabled,
+      network: config.paymentNetwork,
       merchantOrigin: config.origin,
       recipient: config.recipient,
       rpcUrl: config.paymentRpcUrl,

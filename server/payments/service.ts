@@ -17,8 +17,7 @@ import {
 } from '@x402/extensions/payment-identifier';
 import {
   CATALOG,
-  PAYMENT_NETWORK,
-  USDC_MINT,
+  PAYMENT_CHAINS,
   isBase58Bytes,
   type ReadinessItem,
   type ToolName,
@@ -84,6 +83,7 @@ export async function createPaymentService(
   adapters: PaymentAdapters = {}
 ): Promise<PaymentService> {
   const { db } = ledger;
+  const chain = PAYMENT_CHAINS[config.network];
   db.exec(`CREATE TABLE IF NOT EXISTS buyer_replays (
     intent_id TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE, canonical_hash TEXT NOT NULL,
     url TEXT NOT NULL, body TEXT NOT NULL, tool TEXT NOT NULL, amount TEXT NOT NULL,
@@ -100,7 +100,9 @@ export async function createPaymentService(
     throw new PaymentError('facilitator', 'Facilitator must use a configured HTTPS endpoint.');
   const fetcher = adapters.fetch ?? fetch;
   const rpc =
-    adapters.rpc ?? new PaymentRpc(config.rpcUrl ?? 'https://api.devnet.solana.com', fetcher);
+    adapters.rpc ?? new PaymentRpc(config.rpcUrl ?? chain.rpcUrl, config.network, fetcher);
+  if (rpc.network !== config.network)
+    throw new PaymentError('network', 'Payment RPC adapter network mismatch.');
   const headers: Record<string, string> = config.facilitatorBearerToken
     ? { Authorization: `Bearer ${config.facilitatorBearerToken}` }
     : {};
@@ -139,19 +141,19 @@ export async function createPaymentService(
   async function computeReadiness(): Promise<PaymentReadiness> {
     const items: ReadinessItem[] = [
       {
-        name: 'Devnet opt-in',
+        name: `${config.network} opt-in`,
         ready: config.enabled,
         detail: config.enabled
-          ? 'Devnet signing is explicitly enabled.'
+          ? `${config.network} signing is explicitly enabled.`
           : 'LIVE_PAYMENTS_ENABLED is false; rehearsal never signs.',
       },
       {
         name: 'Signer boundary',
         ready: !!signer,
         detail: signer
-          ? 'Server-managed development signer loaded.'
+          ? 'Server-managed dedicated signer loaded.'
           : (signerError ??
-            'Set PAYER_SECRET_FILE or PAYER_SECRET_JSON for a dedicated devnet payer.'),
+            'Set PAYER_SECRET_FILE or PAYER_SECRET_JSON for a dedicated low-balance payer.'),
       },
       {
         name: 'Separate recipient',
@@ -179,15 +181,15 @@ export async function createPaymentService(
       const supported = checks[0];
       if (supported.status === 'fulfilled') {
         const kind = supported.value.kinds.find(
-          (k) => k.x402Version === 2 && k.scheme === 'exact' && k.network === PAYMENT_NETWORK
+          (k) => k.x402Version === 2 && k.scheme === 'exact' && k.network === chain.network
         );
         const ready = kind?.extra?.feePayer === config.trustedFeeSponsor;
         items.push({
           name: 'Facilitator',
           ready,
           detail: ready
-            ? 'Advertises v2 exact Solana devnet with the pinned fee sponsor. Settlement has not been tested by this read.'
-            : 'Facilitator does not advertise exact devnet with the pinned fee sponsor.',
+            ? `Advertises v2 exact Solana ${config.network} with the pinned fee sponsor. Settlement has not been tested by this read.`
+            : `Facilitator does not advertise exact ${config.network} with the pinned fee sponsor.`,
         });
       } else
         items.push({
@@ -195,32 +197,32 @@ export async function createPaymentService(
           ready: false,
           detail: 'Supported preflight failed; verify access/authentication and availability.',
         });
-      const chain = checks[1];
-      if (chain.status === 'fulfilled') {
-        const lamports = BigInt(chain.value.sol);
+      const chainCheck = checks[1];
+      if (chainCheck.status === 'fulfilled') {
+        const lamports = BigInt(chainCheck.value.sol);
         balance = {
-          usdc: chain.value.usdc,
+          usdc: chainCheck.value.usdc,
           sol: `${lamports / 1_000_000_000n}.${String(lamports % 1_000_000_000n).padStart(9, '0')}`,
         };
         items.push({
-          name: 'Devnet mint and accounts',
+          name: `${config.network} mint and accounts`,
           ready: true,
           detail:
             'RPC genesis, SPL mint ownership, six decimals, and both USDC associated accounts verified. Sponsor pays bounded SOL fees; account creation is not included.',
         });
         items.push({
-          name: 'Test USDC funding',
-          ready: BigInt(chain.value.usdc) >= 10000n,
-          detail: `Payer has ${chain.value.usdc} micro-USDC on devnet. SOL balance is ${chain.value.sol} lamports; fee sponsor is a separate account.`,
+          name: 'USDC funding',
+          ready: BigInt(chainCheck.value.usdc) >= 10000n,
+          detail: `Payer has ${chainCheck.value.usdc} micro-USDC on ${config.network}. SOL balance is ${chainCheck.value.sol} lamports; fee sponsor is a separate account.`,
         });
       } else
         items.push({
-          name: 'Devnet mint and accounts',
+          name: `${config.network} mint and accounts`,
           ready: false,
           detail:
-            chain.reason instanceof PaymentError
-              ? chain.reason.message
-              : 'RPC/account preflight failed. Create and fund both devnet USDC associated token accounts first.',
+            chainCheck.reason instanceof PaymentError
+              ? chainCheck.reason.message
+              : 'RPC/account preflight failed. Create and fund both configured USDC associated token accounts first.',
         });
     }
     return {
@@ -247,6 +249,7 @@ export async function createPaymentService(
     config.recipient && config.trustedFeeSponsor
       ? createMerchant({
           db,
+          network: config.network,
           origin,
           recipient: config.recipient,
           sponsor: config.trustedFeeSponsor,
@@ -258,6 +261,53 @@ export async function createPaymentService(
   function replayRow(id: string) {
     return db.prepare('SELECT * FROM buyer_replays WHERE intent_id=?').get(id) as
       ReplayRow | undefined;
+  }
+  function assertReplayNetwork(row: ReplayRow) {
+    const terms = JSON.parse(row.requirements_json) as {
+      network?: string;
+      asset?: string;
+      payTo?: string;
+      amount?: string;
+      extra?: { feePayer?: string };
+    };
+    const intent = ledger.getIntent(row.intent_id);
+    const saved = db.prepare('SELECT policy FROM runs WHERE id=?').get(intent?.runId) as
+      { policy: string } | undefined;
+    const policy = saved
+      ? (JSON.parse(saved.policy) as {
+          network: string;
+          mint: string;
+          recipient: string;
+          origin: string;
+        })
+      : undefined;
+    const accepted = row.payload_json
+      ? (JSON.parse(row.payload_json) as PaymentPayload).accepted
+      : undefined;
+    if (
+      !policy ||
+      policy.network !== terms.network ||
+      policy.mint !== terms.asset ||
+      policy.recipient !== terms.payTo ||
+      policy.origin !== origin ||
+      terms.network !== chain.network ||
+      terms.asset !== chain.mint ||
+      terms.payTo !== config.recipient ||
+      terms.amount !== row.amount ||
+      terms.extra?.feePayer !== config.trustedFeeSponsor ||
+      new URL(row.url).origin !== origin ||
+      (accepted &&
+        (accepted.network !== terms.network ||
+          accepted.asset !== terms.asset ||
+          accepted.payTo !== terms.payTo ||
+          accepted.amount !== terms.amount ||
+          accepted.extra?.feePayer !== terms.extra?.feePayer))
+    )
+      throw new PaymentError(
+        'network',
+        'This purchase belongs to its original network, recipient and origin. Restore that configuration to reconcile it.',
+        row.intent_id
+      );
   }
   const makeHttp = () => new x402HTTPClient(new x402Client());
   async function request(
@@ -289,6 +339,7 @@ export async function createPaymentService(
     });
   }
   async function consume(row: ReplayRow, response: Response): Promise<unknown> {
+    assertReplayNetwork(row);
     const header = response.headers.get('payment-response');
     let settlement: SettleResponse | undefined;
     let chainVerified = false;
@@ -300,7 +351,7 @@ export async function createPaymentService(
       }
       if (
         settlement.success &&
-        settlement.network === PAYMENT_NETWORK &&
+        settlement.network === chain.network &&
         isBase58Bytes(settlement.transaction, 64)
       ) {
         ledger.markSettled(row.intent_id, {
@@ -371,6 +422,7 @@ export async function createPaymentService(
     }
   }
   async function recover(row: ReplayRow): Promise<unknown> {
+    assertReplayNetwork(row);
     const intent = ledger.getIntent(row.intent_id);
     if (intent?.status === 'delivered') return intent.result;
     if (!row.payload_json)
@@ -399,7 +451,7 @@ export async function createPaymentService(
         recordRecoveredSettlement(db, row.request_id, {
           success: true,
           transaction: proof.signature,
-          network: PAYMENT_NETWORK,
+          network: chain.network,
           payer: proof.feeSponsor,
         });
       }
@@ -432,12 +484,19 @@ export async function createPaymentService(
           .prepare('SELECT * FROM buyer_replays WHERE canonical_hash=?')
           .all(canonical.hash) as ReplayRow[]
       ).find((row) => ledger.getIntent(row.intent_id)?.runId === runId);
-    if (prior) return recover(prior);
+    if (prior) {
+      if (!config.enabled)
+        throw new PaymentError(
+          'disabled',
+          'Live payments are disabled; recovery cannot submit an existing signed payment.'
+        );
+      return recover(prior);
+    }
     const state = await readiness();
     if (!state.ready || !signer)
       throw new PaymentError(
         'unavailable',
-        'Live payments are unavailable. Complete the devnet readiness checklist.'
+        'Live payments are unavailable. Complete the configured network readiness checklist.'
       );
     const catalog = CATALOG.find((item) => item.name === tool)!;
     const unpaid = await request(canonical.url, canonical.body, requestId);
@@ -459,6 +518,8 @@ export async function createPaymentService(
       recipient: config.recipient!,
       sponsor: config.trustedFeeSponsor!,
       memo: paymentMemo(requestId, canonical.hash),
+      network: chain.network,
+      mint: chain.mint,
     };
     const requirements = validateRequirements(required, expected);
     const reservation = ledger.reserve({
@@ -471,8 +532,8 @@ export async function createPaymentService(
       path: canonical.path,
       method: 'POST',
       recipient: config.recipient!,
-      network: PAYMENT_NETWORK,
-      mint: USDC_MINT,
+      network: chain.network,
+      mint: chain.mint,
     });
     const { intent } = reservation;
     if (!reservation.created) {
@@ -526,6 +587,7 @@ export async function createPaymentService(
             sponsor: config.trustedFeeSponsor!,
             recipient: config.recipient!,
             amount: catalog.price,
+            mint: chain.mint,
             memo: expected.memo,
           });
           await rpc.validateLifetimeAndFee(
@@ -567,14 +629,12 @@ export async function createPaymentService(
       const scheme =
         adapters.scheme?.(guardedSigner, identity) ??
         new ExactSvmScheme(guardedSigner, { rpcUrl: rpc.url });
-      const client = new x402Client()
-        .register(PAYMENT_NETWORK, scheme)
-        .setSpendControls({
-          maxAmountPerPayment: '$0.020000',
-          allowedAssets: [
-            { network: PAYMENT_NETWORK, asset: USDC_MINT, maxAmountPerPayment: catalog.price },
-          ],
-        });
+      const client = new x402Client().register(chain.network, scheme).setSpendControls({
+        maxAmountPerPayment: '$0.020000',
+        allowedAssets: [
+          { network: chain.network, asset: chain.mint, maxAmountPerPayment: catalog.price },
+        ],
+      });
       client.onBeforePaymentCreation(async (context) => {
         validateRequirements(context.paymentRequired, expected);
         if (JSON.stringify(context.selectedRequirements) !== JSON.stringify(requirements))
@@ -608,6 +668,7 @@ export async function createPaymentService(
         sponsor: config.trustedFeeSponsor!,
         recipient: config.recipient!,
         amount: catalog.price,
+        mint: chain.mint,
         memo: expected.memo,
       });
       if (
@@ -655,10 +716,26 @@ export async function createPaymentService(
     if (!config.enabled || !config.recipient) return;
     const rows = db
       .prepare(
-        'SELECT * FROM buyer_replays WHERE done=0 AND attempts<4 AND payload_json IS NOT NULL ORDER BY checked_at,intent_id LIMIT 20'
+        "SELECT * FROM buyer_replays WHERE done=0 AND attempts<4 AND payload_json IS NOT NULL AND json_valid(requirements_json) AND json_extract(requirements_json,'$.network')=? AND json_extract(requirements_json,'$.asset')=? AND json_extract(requirements_json,'$.payTo')=? AND json_extract(requirements_json,'$.extra.feePayer')=? AND url IN (?,?) ORDER BY checked_at,intent_id LIMIT 20"
       )
-      .all() as ReplayRow[];
+      .all(
+        chain.network,
+        chain.mint,
+        config.recipient,
+        config.trustedFeeSponsor,
+        ...CATALOG.map((tool) => new URL(tool.path, origin).href)
+      ) as ReplayRow[];
     for (const row of rows) {
+      // A configuration change must never replay a historical payment on another cluster.
+      try {
+        assertReplayNetwork(row);
+      } catch {
+        db.prepare('UPDATE buyer_replays SET checked_at=? WHERE intent_id=?').run(
+          Date.now(),
+          row.intent_id
+        );
+        continue;
+      }
       const intent = ledger.getIntent(row.intent_id);
       if (!intent) continue;
       if (intent.status === 'delivered' && row.payload_json && intent.signature) {
@@ -714,7 +791,7 @@ export async function createPaymentService(
       else
         for (const tool of CATALOG)
           app.post(tool.path, (_req, res) => {
-            res.status(503).json({ error: 'Merchant devnet payments are not configured.' });
+            res.status(503).json({ error: 'Merchant payments are not configured.' });
           });
     },
   };

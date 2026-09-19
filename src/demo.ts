@@ -1,11 +1,5 @@
 import { decision } from '../shared/policy';
-import {
-  DEFAULT_TASK,
-  PAYMENT_NETWORK,
-  USDC_MINT,
-  type RunDTO,
-  type PurchaseDTO,
-} from '../shared/domain';
+import { DEFAULT_TASK, PAYMENT_CHAINS, type RunDTO, type PurchaseDTO } from '../shared/domain';
 
 export type DemoScenario = 'standard' | 'empty' | 'failure' | 'ambiguous';
 const AT = '2026-09-12T00:00:00.000Z';
@@ -16,8 +10,8 @@ export function createDemo(): RunDTO {
     task: DEFAULT_TASK,
     status: 'queued',
     mode: 'rehearsal',
-    paymentNetwork: 'devnet',
-    dataNetwork: 'devnet',
+    paymentNetwork: 'mainnet',
+    dataNetwork: 'mainnet',
     createdAt: AT,
     policy: {
       version: 1,
@@ -27,8 +21,8 @@ export function createDemo(): RunDTO {
       allowedTools: ['wallet_snapshot', 'transaction_explain'],
       origin: 'fixture://first-party',
       recipient: 'No recipient — rehearsal',
-      network: PAYMENT_NETWORK,
-      mint: USDC_MINT,
+      network: PAYMENT_CHAINS.mainnet.network,
+      mint: PAYMENT_CHAINS.mainnet.mint,
       expiresAt: '2026-09-12T00:15:00.000Z',
       callLimit: 3,
     },
@@ -180,6 +174,7 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
   return run;
 }
 export function demoProbe(previous: RunDTO): RunDTO {
+  if (previous.purchases.some((purchase) => purchase.source === 'policy-probe')) return previous;
   const run = structuredClone(previous);
   const outcome = decision(
     {
@@ -268,5 +263,35 @@ export function reconcileDemo(previous: RunDTO): RunDTO {
   });
   run.report =
     'The wallet snapshot entered a deterministic settlement-unknown state after a simulated timeout. Reconciliation recovered the original settlement report and cleared 0.010000 USDC from held to settled without retrying the payment.\n\nThe paid result was unavailable, so no wallet facts are inferred. This is a deterministic recovery fixture with no RPC, signing, or paid request.';
+  return run;
+}
+
+export function stopDemo(previous: RunDTO): RunDTO {
+  if (previous.status !== 'running' && previous.status !== 'queued') return previous;
+  const run = structuredClone(previous);
+  run.status = 'stopped';
+  for (const purchase of run.purchases) {
+    if (purchase.status !== 'reserved') continue;
+    purchase.status = 'released';
+    purchase.reason = 'Fixture stopped before signing. No payment was made.';
+    purchase.serviceOutcome = 'unavailable';
+  }
+  run.held = String(
+    run.purchases
+      .filter(
+        (purchase) => purchase.status === 'submitted' || purchase.status === 'settlement-unknown'
+      )
+      .reduce((sum, purchase) => sum + Number(purchase.amount), 0)
+  );
+  run.remaining = String(Number(run.authorized) - Number(run.settled) - Number(run.held));
+  run.events.push({
+    id: run.events.length + 1,
+    at: AT,
+    kind: 'stopped',
+    title: 'Rehearsal stopped',
+    detail:
+      'No new example requests will start. Unsigned reservations are released; completed work stays in the receipt.',
+    source: 'system',
+  });
   return run;
 }

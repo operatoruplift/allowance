@@ -39,3 +39,7 @@ HOSTED_REHEARSAL_URL=https://allowanceonsolana.vercel.app npm run test:hosted
 ```
 
 The hosted browser tests check direct navigation to private routes without authentication/API requests, mobile layout, the fixture run and separate denied probe, exact receipt totals, no transaction signatures, JSON export and print. Brand-library journeys check category filters, dialog keyboard behavior, full-size PNGs and ZIP downloads, narrow phone layouts, and the absence of service requests. Deployment evidence is recorded separately from the original local checks. Actual devnet settlement remains pending the dedicated payer, test funding, merchant accounts, trusted sponsor, and live backend configuration.
+
+## September 19 release
+
+The release restores the actual two-part A across the header, browser icons and brand kit; simplifies the working example; and aligns simulated exports with their mainnet label. Persistent source now supports guarded mainnet configuration as described in [the release report](release-2026-09-19.md). This does not activate live payments on Vercel: the deployment remains static, with no backend credentials and `connect-src 'none'`. The persistent service still requires its own volume, HTTPS origin and operator setup.

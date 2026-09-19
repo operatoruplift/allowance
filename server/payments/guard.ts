@@ -4,8 +4,10 @@ import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from '@solana-program/t
 import type { PaymentRequired, PaymentRequirements, PaymentPayload } from '@x402/core/types';
 import {
   CATALOG,
-  PAYMENT_NETWORK,
-  USDC_MINT,
+  PAYMENT_CHAINS,
+  paymentNetworkName,
+  type PaymentChainId,
+  type UsdcMint,
   toolArgs,
   type ToolName,
 } from '../../shared/domain.js';
@@ -55,7 +57,15 @@ export function validateOrigin(origin: string, allowLocalHttp: boolean): string 
 }
 export function validateRequirements(
   required: PaymentRequired,
-  expected: { url: string; amount: string; recipient: string; sponsor: string; memo: string }
+  expected: {
+    url: string;
+    amount: string;
+    recipient: string;
+    sponsor: string;
+    memo: string;
+    network: PaymentChainId;
+    mint: UsdcMint;
+  }
 ): PaymentRequirements {
   if (
     required.x402Version !== 2 ||
@@ -69,8 +79,9 @@ export function validateRequirements(
   const r = required.accepts[0];
   if (
     r.scheme !== 'exact' ||
-    r.network !== PAYMENT_NETWORK ||
-    r.asset !== USDC_MINT ||
+    r.network !== expected.network ||
+    expected.mint !== PAYMENT_CHAINS[paymentNetworkName(expected.network)].mint ||
+    r.asset !== expected.mint ||
     r.payTo !== expected.recipient ||
     r.amount !== expected.amount
   )
@@ -171,16 +182,16 @@ export function decodeMessage(bytes: Uint8Array) {
   );
   return { keys, blockhash, instructions, writable, signers: keys.slice(0, signed) };
 }
-export async function expectedAccounts(payer: string, recipient: string) {
+export async function expectedAccounts(payer: string, recipient: string, mint: UsdcMint) {
   const [[source], [destination]] = await Promise.all([
     findAssociatedTokenPda({
       owner: address(payer),
-      mint: address(USDC_MINT),
+      mint: address(mint),
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     }),
     findAssociatedTokenPda({
       owner: address(recipient),
-      mint: address(USDC_MINT),
+      mint: address(mint),
       tokenProgram: TOKEN_PROGRAM_ADDRESS,
     }),
   ]);
@@ -188,16 +199,27 @@ export async function expectedAccounts(payer: string, recipient: string) {
 }
 export async function validateTransaction(
   bytes: Uint8Array,
-  expected: { payer: string; sponsor: string; recipient: string; amount: string; memo: string }
+  expected: {
+    payer: string;
+    sponsor: string;
+    recipient: string;
+    amount: string;
+    memo: string;
+    mint: UsdcMint;
+  }
 ) {
   const decoded = decodeMessage(bytes);
-  const { source, destination } = await expectedAccounts(expected.payer, expected.recipient);
+  const { source, destination } = await expectedAccounts(
+    expected.payer,
+    expected.recipient,
+    expected.mint
+  );
   const exactKeys = new Set([
     expected.sponsor,
     expected.payer,
     source,
     destination,
-    USDC_MINT,
+    expected.mint,
     String(TOKEN_PROGRAM_ADDRESS),
     COMPUTE_PROGRAM,
     MEMO_PROGRAM,
@@ -235,7 +257,8 @@ export async function validateTransaction(
     throw new PaymentError('transaction', 'Priority fee is not the approved SDK price.');
   if (
     transfer.program !== TOKEN_PROGRAM_ADDRESS ||
-    transfer.accounts.join(',') !== [source, USDC_MINT, destination, expected.payer].join(',') ||
+    transfer.accounts.join(',') !==
+      [source, expected.mint, destination, expected.payer].join(',') ||
     transfer.data.length !== 10 ||
     transfer.data[0] !== 12 ||
     transfer.data[9] !== 6 ||

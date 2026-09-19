@@ -1,5 +1,7 @@
 # Allowance implementation audit
 
+> Historical audit through September 16. The September 19 release corrects the A logo, updates the working example, and implements network-bound mainnet support. See [the current release report](release-2026-09-19.md) for current checks, deployment and unresolved live prerequisites. Earlier test counts, logo geometry and devnet-only statements below are dated history.
+
 **Audit date:** 15 September 2026  
 **Repository:** `/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance`  
 **Selected composition:** A14_RED — A1 Constellation + A4 Axiom in red  

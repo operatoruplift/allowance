@@ -52,6 +52,7 @@ test('full fixture, separate probe and JSON export have exact accounting and no 
   const receipt = JSON.parse(await fs.readFile(file!, 'utf8'));
   expect(receipt).toMatchObject({
     mode: 'rehearsal',
+    paymentNetwork: 'mainnet',
     settled: '30000',
     held: '0',
     remaining: '10000',
@@ -79,13 +80,13 @@ test('mobile and reduced-motion layout, empty history, service failure and reset
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true
   );
-  await page.getByLabel('Choose a fixture').selectOption('empty');
+  await page.getByLabel('Choose an example').selectOption('empty');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible({
     timeout: 15000,
   });
   await expect(page.getByText(/represents a wallet with no SOL balance/)).toBeVisible();
-  await page.getByLabel('Choose a fixture').selectOption('failure');
+  await page.getByLabel('Choose an example').selectOption('failure');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('Fixture service failure', {
     timeout: 15000,
@@ -119,7 +120,7 @@ test('deterministic recovery keeps an ambiguous hold until the original intent i
   page,
 }) => {
   await page.goto('/demo');
-  await page.getByLabel('Choose a fixture').selectOption('ambiguous');
+  await page.getByLabel('Choose an example').selectOption('ambiguous');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByText(/settlement evidence is unknown/)).toBeVisible({ timeout: 15000 });
   await expect(page.getByRole('button', { name: 'Reconcile fixture hold' })).toBeVisible();
@@ -137,4 +138,34 @@ test('deterministic recovery keeps an ambiguous hold until the original intent i
   await expect(page.locator('.report-card')).toContainText('no RPC, signing, or paid request');
   await expect(page.locator('.purchase-entry')).toHaveCount(1);
   await expect(page.locator('.purchase-status-icon.amber-text')).toHaveCount(1);
+});
+
+test('stopping an example releases its unsigned hold and rerunning begins with a clean receipt', async ({
+  page,
+}) => {
+  await page.clock.install();
+  await page.goto('/demo');
+  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.clock.runFor(100);
+  await expect(page.getByText('Task received', { exact: true })).toBeVisible();
+  await page.clock.runFor(700);
+  await expect(page.getByText('Wallet snapshot reserved', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Stop run', exact: true }).click();
+  await page.clock.runFor(5000);
+  await expect(page.getByText('Rehearsal stopped', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /^Receipt/ }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export JSON' }).click();
+  const download = await downloadPromise;
+  const receipt = JSON.parse(await fs.readFile((await download.path())!, 'utf8'));
+  expect(receipt).toMatchObject({ status: 'stopped', settled: '0', held: '0', remaining: '40000' });
+  expect(receipt.purchases).toHaveLength(1);
+  expect(receipt.purchases[0]).toMatchObject({ status: 'released', chainVerified: false });
+  await page.getByRole('button', { name: 'Run rehearsal again', exact: true }).click();
+  await page.clock.resume();
+  await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
+  await expect(page.locator('.purchase-entry')).toHaveCount(2);
+  await expect(page.getByText('Rehearsal stopped', { exact: true })).toHaveCount(0);
+  await expect(page.locator('a[href*="explorer.solana.com"]')).toHaveCount(0);
 });

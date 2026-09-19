@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 import type { PaymentPayload, PaymentRequirements } from '@x402/core/types';
-import type { ToolName } from '../../shared/domain.js';
+import type { ToolName, PaymentNetwork } from '../../shared/domain.js';
 
 export interface PurchaseProposal {
   runId: string;
@@ -74,6 +74,7 @@ export interface DataTools {
   transactionExplain(signature: string): Promise<unknown>;
 }
 export interface PaymentConfig {
+  network: PaymentNetwork;
   enabled: boolean;
   merchantOrigin: string;
   recipient?: string;

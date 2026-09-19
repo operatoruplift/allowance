@@ -1,6 +1,6 @@
 # Allowance architecture
 
-Allowance is a single-operator developer application with a server-managed devnet signer and application-enforced spending limits. Its two sample merchants are first-party services. The model proposes purchases; the server owns authorization, the catalog, recipients, network, mint, signing, and the durable ledger. A compromised server can compromise these controls. There is no smart-wallet or onchain budget guarantee.
+Allowance is a single-operator developer application with a server-managed dedicated signer and application-enforced spending limits. Its two sample merchants are first-party services. The model proposes purchases; the server owns authorization, the catalog, recipients, network, mint, signing, and the durable ledger. A compromised server can compromise these controls. There is no smart-wallet or onchain budget guarantee.
 
 ```mermaid
 flowchart LR
@@ -11,9 +11,9 @@ flowchart LR
   Guard --> Ledger[(SQLite persistent ledger)]
   Guard --> Client[Guarded x402 HTTP client]
   Client --> Merchant[First-party x402 HTTP merchants]
-  Client --> Signer[Dedicated backend devnet signer]
+  Client --> Signer[Dedicated backend signer]
   Merchant --> Facilitator[Configured exact SVM facilitator]
-  Facilitator --> Devnet[Solana devnet settlement]
+  Facilitator --> Chain[Selected Solana network settlement]
   Merchant --> Data[Validated read-only Solana RPC data]
   Devnet --> Reconcile[Settlement evidence and reconciliation]
   Reconcile --> Ledger
@@ -33,7 +33,7 @@ flowchart LR
 | `server/policy`   | Exact integer amounts, immutable policy, cap/expiry/allowlist checks and transactional reservation                        |
 | `server/db`       | Durable run, reservation, request identity, event, payment and delivery state                                             |
 | `server/payments` | Selected-requirement validation, pre-sign ledger guard, isolated signer, settlement checking and recovery                 |
-| `server/mcp`      | Local stdio tools, hashed session-bound grants, fixed scopes and safe error mapping                                    |
+| `server/mcp`      | Local stdio tools, hashed session-bound grants, fixed scopes and safe error mapping                                       |
 | `server/merchant` | Actual HTTP x402 middleware, bounded validated inputs, purchased-result recovery                                          |
 | `server/data`     | Bounded, schema-validated, lossless Solana JSON-RPC reads                                                                 |
 
@@ -68,7 +68,11 @@ Transaction explanations request `jsonParsed`, confirmed commitment and `maxSupp
 
 Response bodies are capped at 512 KiB, calls time out after 10 seconds by default, arrays have explicit bounds, and no automatic RPC retries occur. `lossless-json` preserves u64 values before Zod validates them. Decimal outputs use integer/string formatting. HTTPS endpoints are server configuration, redirects are refused, and endpoint credentials are not surfaced to the UI. Genesis verification rejects a mislabeled cluster and is cached for at most 60 seconds.
 
-Payment network always remains devnet. Mainnet data requires both an explicit mainnet data setting and a separate read-only opt-in. UI labels must identify mode, data network and payment network independently.
+New configurations default to mainnet with live signing disabled. Live mode requires explicit network, HTTPS payment RPC and facilitator configuration; mainnet additionally requires `MAINNET_PAYMENTS_ACKNOWLEDGED=true`. Data defaults to the selected payment network, and mainnet reads require a separate read-only opt-in. UI labels identify mode, data network and payment network independently.
+
+`PAYMENT_CHAINS` pins each network’s CAIP-2 identifier, native Circle USDC mint and full genesis hash. Each new run captures its selected network and mint in the immutable policy; existing devnet rows keep their original values. Runtime configuration changes never relabel a receipt. The shared decision function verifies the network/mint pairing, the signer checks the current runtime against the saved policy, the payment client pins the challenge, and the merchant validates matching terms and transaction accounts. RPC preflight and the final pre-sign fee check independently verify genesis; chain evidence additionally checks the accepted terms, exact message identity, transaction signature and payer/recipient token deltas.
+
+Recovery compares replay requirements, signed payload and saved policy to the configured network, mint, recipient, sponsor and origin. A mismatch cannot consume recovery attempts or issue requests on another chain; the original payment stays held until the original configuration is restored. Daily accounting and the payer freeze remain conservative across legacy records. Neither the live opt-in nor the mainnet acknowledgement is enabled by a code deployment.
 
 Each purchase receipt separates facilitator settlement from independent chain proof. It records `chainVerified`, the original signed blockhash when known, the observation timestamp, delivery state, and a SHA-256 result hash after delivery. A provider validity height is recorded only when a provider supplies one; the application never fabricates it.
 

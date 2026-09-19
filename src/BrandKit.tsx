@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowDownToLine, ArrowUpRight, Check, Copy, Smartphone, X } from 'lucide-react';
-import manifest from '../public/brand/manifest.json';
+import manifest from './brand-manifest.json';
 import './brand-kit.css';
 
 const categories = [

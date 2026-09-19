@@ -94,6 +94,7 @@ test('hosted rehearsal exports fixture accounting without a signature or network
   const receipt = JSON.parse(await fs.readFile(file!, 'utf8'));
   expect(receipt).toMatchObject({
     mode: 'rehearsal',
+    paymentNetwork: 'mainnet',
     settled: '30000',
     held: '0',
     remaining: '10000',

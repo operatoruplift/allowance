@@ -9,6 +9,8 @@ try {
   const evidence = {
     recordedAt: new Date().toISOString(),
     kind: 'read-only preflight; no signing, LLM call or settlement',
+    paymentNetwork: runtime.config.paymentNetwork,
+    dataNetwork: runtime.config.dataNetwork,
     configuration: configurationReadiness(runtime.config),
     payments:
       payments.status === 'fulfilled'

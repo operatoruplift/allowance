@@ -1,4 +1,4 @@
-import { CATALOG, PAYMENT_NETWORK, USDC_MINT, units, type Policy } from './domain.js';
+import { CATALOG, PAYMENT_CHAINS, units, type Policy } from './domain.js';
 import type { PurchaseProposal } from '../server/payments/contracts.js';
 export interface PolicyContext {
   policy: Policy;
@@ -26,10 +26,11 @@ export function decision(
     proposal.path !== catalog.path
   )
     return deny('Request destination is outside the exact allowlist.');
-  if (proposal.network !== PAYMENT_NETWORK || proposal.network !== policy.network)
-    return deny('Payment network does not match devnet policy.');
-  if (proposal.mint !== USDC_MINT || proposal.mint !== policy.mint)
-    return deny('Asset mint does not match the configured devnet USDC.');
+  const chain = Object.values(PAYMENT_CHAINS).find((item) => item.network === policy.network);
+  if (!chain || proposal.network !== policy.network)
+    return deny('Payment network does not match the immutable policy.');
+  if (policy.mint !== chain.mint || proposal.mint !== policy.mint)
+    return deny('Asset mint does not match the policy network’s native USDC.');
   if (proposal.recipient !== policy.recipient) return deny('Merchant recipient changed.');
   let amount: number;
   try {
