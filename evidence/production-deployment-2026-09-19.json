@@ -1,0 +1,116 @@
+{
+  "recordedAt": "2026-09-19T09:02:40.218Z",
+  "sourceCommit": "14f061173bfd6f88f80b538cb9efb86c250d2a9f",
+  "deploymentId": "dpl_5BMpQUAYZe3BRdzMQA1BDZP8Xa39",
+  "url": "https://allowanceonsolana.vercel.app",
+  "mode": "static public rehearsal; no signing or model runtime",
+  "status": 200,
+  "contentSecurityPolicy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  "xFrameOptions": "DENY",
+  "apiStatus": 404,
+  "versionedFavicon": true,
+  "assets": [
+    {
+      "path": "allowance-a.svg",
+      "status": 200,
+      "sha256": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+      "matchesLocal": true
+    },
+    {
+      "path": "favicon-red.svg",
+      "status": 200,
+      "sha256": "cc7823a5118dfeeed42e6f3468fe85df61d546c217b25b64c5b725f8642a405e",
+      "matchesLocal": true
+    },
+    {
+      "path": "favicon-32.png",
+      "status": 200,
+      "sha256": "59e54a952a24149f714833e05b46cc842de664cbb595729a34b775e87244a463",
+      "matchesLocal": true
+    },
+    {
+      "path": "apple-touch-icon.png",
+      "status": 200,
+      "sha256": "823be06dcc6cd4ac63a7b18120b07ac29d721705b80624d200105b6b5e43e025",
+      "matchesLocal": true
+    },
+    {
+      "path": "allowance-icon-192.png",
+      "status": 200,
+      "sha256": "ea0bd517c7d1da987ee3b3c27c1dee1c27be5a977c2f797e23b15d7a9ec56e63",
+      "matchesLocal": true
+    },
+    {
+      "path": "allowance-icon-512.png",
+      "status": 200,
+      "sha256": "d2c68edc52b81bb74873817fbb87f26f23e0b2248e6164aa04d7a6c096186880",
+      "matchesLocal": true
+    },
+    {
+      "path": "site.webmanifest",
+      "status": 200,
+      "sha256": "6d7a7e09c629c263541e347a72f4e51962dea6b5761847cadcc4989f2bee2358",
+      "matchesLocal": true
+    },
+    {
+      "path": "allowance-share.png",
+      "status": 200,
+      "sha256": "a745bc2f2b1544777a3ad03d463a6edb641e2cdb938f00085963d570580244e0",
+      "matchesLocal": true
+    },
+    {
+      "path": "brand/manifest.json",
+      "status": 200,
+      "sha256": "31bc5619d72649ebaf96d210c3882eea2e0adcd50b7dcdef74c9b89c0545ae59",
+      "matchesLocal": true
+    },
+    {
+      "path": "brand/allowance-brand-kit.zip",
+      "status": 200,
+      "sha256": "ce45edeb54e52457a3b47330d849ca7a4ffa3b97b6a8056e451bf9fa09aa09ee",
+      "matchesLocal": true
+    },
+    {
+      "path": "brand/profiles/profile-red.png",
+      "status": 200,
+      "sha256": "2e22e2b60f4f9b512bc78a8dc2763dc9c229a9df8f28392c9696977bab7f4034",
+      "matchesLocal": true
+    }
+  ],
+  "mainnetSettlement": "not performed",
+  "devnetSettlement": "not performed",
+  "paidModelCall": "not performed",
+  "browser": {
+    "landing": {
+      "logo": "/allowance-a.svg?v=3",
+      "favicon": "/favicon-red.svg?v=3",
+      "pauseControls": 0,
+      "receiptPhrases": true
+    },
+    "playback": {
+      "autoplay": true,
+      "paused": false,
+      "time": 2.338073,
+      "advances": true
+    },
+    "flow": [
+      "flowStep",
+      "flowStep",
+      "flowStep",
+      "flowStep"
+    ],
+    "externalOrServiceRequests": []
+  },
+  "ci": {
+    "status": "success",
+    "url": "https://github.com/operatoruplift/allowance/actions/runs/35433489774"
+  },
+  "validation": {
+    "localCheck": "passed: lint, typecheck, 102 tests in 10 files, production build",
+    "browserJourneys": 7,
+    "localStaticJourneys": 4,
+    "productionStaticJourneys": 4,
+    "preflight": "expected exit 1; live prerequisites missing",
+    "smokeWithoutConfirmation": "expected exit 2; no runtime initialization"
+  }
+}

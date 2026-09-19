@@ -43,3 +43,5 @@ The hosted browser tests check direct navigation to private routes without authe
 ## September 19 release
 
 The release restores the actual two-part A across the header, browser icons and brand kit; simplifies the working example; and aligns simulated exports with their mainnet label. Persistent source now supports guarded mainnet configuration as described in [the release report](release-2026-09-19.md). This does not activate live payments on Vercel: the deployment remains static, with no backend credentials and `connect-src 'none'`. The persistent service still requires its own volume, HTTPS origin and operator setup.
+
+Production release `14f0611` was verified on September 19 as deployment `dpl_5BMpQUAYZe3BRdzMQA1BDZP8Xa39` (READY). Four public hosted journeys and eleven asset hashes passed. See [current production evidence](../evidence/production-deployment-2026-09-19.json) and [the release report](release-2026-09-19.md). Later documentation/evidence commits do not alter the verified application or generated static assets.
