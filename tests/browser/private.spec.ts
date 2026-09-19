@@ -140,6 +140,9 @@ test('controlled real auth: saved run survives refresh, stops, exports, and stay
     page.getByText(`Payments: ${receipt.paymentNetwork}`, { exact: true })
   ).toBeVisible();
   await expect(page.locator('.currency-label')).toContainText(receipt.paymentNetwork);
+  await expect(page.getByText('Data: devnet', { exact: true })).toBeVisible();
+  expect(receipt.paymentNetwork).toBe('mainnet');
+  expect(receipt.dataNetwork).toBe('devnet');
   expect(receipt).toMatchObject({
     id: runId,
     task,
@@ -153,7 +156,7 @@ test('controlled real auth: saved run survives refresh, stops, exports, and stay
   });
   await page.getByRole('heading', { name: 'Every step, in the open.' }).click();
   await page.screenshot({
-    path: 'evidence/controlled-browser-auth-no-payments.png',
+    path: 'evidence/release-2026-09-20-controlled-browser-auth-no-payments.png',
     fullPage: true,
     animations: 'disabled',
   });
@@ -172,5 +175,10 @@ test('controlled real auth: saved run survives refresh, stops, exports, and stay
   } finally {
     await guest.close();
   }
+  // A server-expired session cannot leave stale financial data in the workspace.
+  await context.clearCookies();
+  await page.getByRole('button', { name: 'Export JSON' }).click();
+  await expect(page).toHaveURL(`${origin}/login`);
+  await expect(page.getByText(task, { exact: true })).toHaveCount(0);
   expect(externalRequests).toEqual([]);
 });

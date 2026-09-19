@@ -1,6 +1,6 @@
 # Verification report
 
-> Historical audit through September 16. The September 19 release corrects the A logo, updates the working example, and implements network-bound mainnet support. See [the current release report](release-2026-09-19.md) for current checks, deployment and unresolved live prerequisites. Earlier test counts, logo geometry and devnet-only statements below are dated history.
+> Historical audit through September 16. The September 19 release corrected the A logo and implemented network-bound mainnet support. See the [September 20 release report](release-2026-09-20.md) and [integration matrix](integration-status.md) for current checks, deployment and unresolved live prerequisites. Earlier test counts, logo geometry and devnet-only statements below are dated history.
 
 Originally recorded on **September 12, 2026** and updated **September 16, 2026**. This report distinguishes local controlled tests, public read-only network evidence, and unperformed live payments.
 

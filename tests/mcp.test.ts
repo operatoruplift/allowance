@@ -5,7 +5,12 @@ import { InMemoryTransport as ServerInMemoryTransport } from '@modelcontextproto
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createAgentGrant, revokeSessionAgentGrants } from '../server/mcp/grants.js';
+import {
+  assertExternalRunAuthorization,
+  authorizeAgentGrant,
+  createAgentGrant,
+  revokeSessionAgentGrants,
+} from '../server/mcp/grants.js';
 import { openDatabase } from '../server/db/index.js';
 import { loadConfig } from '../server/config.js';
 import { Ledger } from '../server/policy/ledger.js';
@@ -40,6 +45,11 @@ async function setup() {
     'external'
   );
   ledger.setStatus(run.id, 'running');
+  db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(
+    'test-session',
+    Date.now() + 3600000,
+    JSON.stringify({ operator: 'operator', issuedAt: Date.now() })
+  );
   const created = createAgentGrant(db, ledger, {
     runId: run.id,
     owner: 'operator',
@@ -83,6 +93,91 @@ async function connect(runtime: never, token: string) {
 }
 
 describe('Allowance local MCP bridge', () => {
+  it('issues at most one grant per run and denies legacy ambiguity at the signature boundary', async () => {
+    const { db, ledger, run } = await setup();
+    expect(() =>
+      createAgentGrant(db, ledger, {
+        runId: run.id,
+        owner: 'operator',
+        sessionId: 'test-session',
+        expiresAt: run.policy.expiresAt,
+      })
+    ).toThrow(/one human grant/);
+    db.prepare(
+      "INSERT INTO agent_grants(id,token_hash,run_id,owner,session_id,scopes,expires_at,created_at) SELECT 'second',?,run_id,owner,session_id,scopes,expires_at,created_at FROM agent_grants LIMIT 1"
+    ).run('0'.repeat(64));
+    expect(() => assertExternalRunAuthorization(db, run.id, 'operator', 'wallet_snapshot')).toThrow(
+      /active human authorization/
+    );
+    db.prepare("UPDATE agent_grants SET revoked_at=? WHERE id='second'").run(Date.now());
+    expect(() => assertExternalRunAuthorization(db, run.id, 'operator', 'wallet_snapshot')).toThrow(
+      /active human authorization/
+    );
+  });
+  it.each(['expired', 'deleted', 'wrong-owner', 'stale-issued-at'])(
+    'denies reads after the authorizing session is %s',
+    async (mode) => {
+      const { db, run, token, runtime } = await setup();
+      if (mode === 'expired') db.prepare('UPDATE sessions SET expires=?').run(Date.now() - 1);
+      if (mode === 'deleted') db.prepare('DELETE FROM sessions').run();
+      if (mode === 'wrong-owner')
+        db.prepare('UPDATE sessions SET data=?').run(
+          JSON.stringify({ operator: 'other', issuedAt: Date.now() })
+        );
+      if (mode === 'stale-issued-at')
+        db.prepare('UPDATE sessions SET data=?').run(
+          JSON.stringify({ operator: 'operator', issuedAt: Date.now() - 8 * 60 * 60 * 1000 })
+        );
+      const { client, server } = await connect(runtime, token);
+      const response = await client.callTool({ name: 'get_receipt', arguments: { runId: run.id } });
+      expect(response.isError).toBe(true);
+      expect(response.structuredContent).toMatchObject({ code: 'GRANT_EXPIRED' });
+      await client.close();
+      await server.close();
+    }
+  );
+
+  it('rechecks external authority in the signing claim after an asynchronous purchase loses its session', async () => {
+    const { db, ledger, run, token } = await setup();
+    const reservation = ledger.reserve({
+      runId: run.id,
+      requestId: 'grant_race_0000001',
+      canonicalHash: 'grant-race',
+      tool: 'wallet_snapshot',
+      amount: '10000',
+      origin: run.policy.origin,
+      path: '/merchant/wallet-snapshot',
+      method: 'POST',
+      recipient: run.policy.recipient,
+      network: run.policy.network,
+      mint: run.policy.mint,
+    });
+    expect(authorizeAgentGrant(db, token, run.id, 'wallet_snapshot').runId).toBe(run.id);
+    expect(ledger.getRun(run.id).purchases[0].source).toBe('external-agent');
+    revokeSessionAgentGrants(db, 'test-session');
+    expect(() =>
+      ledger.markSigning(reservation.intent.id, {
+        messageHash: 'fixture-message',
+        blockhash: 'fixture-blockhash',
+        payer: run.wallet,
+        feeSponsor: 'fixture-sponsor',
+      })
+    ).toThrow(/active human authorization/);
+    expect(
+      db.prepare('SELECT signed_identity FROM intents WHERE id=?').get(reservation.intent.id)
+    ).toEqual({ signed_identity: null });
+  });
+
+  it('rejects wrong-run and reduced-scope access without trusting the MCP request ID', async () => {
+    const { db, run, token } = await setup();
+    expect(() =>
+      authorizeAgentGrant(db, token, '00000000-0000-4000-8000-000000000000', 'get_receipt')
+    ).toThrow(/invalid/);
+    db.prepare('UPDATE agent_grants SET scopes=?').run(JSON.stringify(['get_run_status']));
+    expect(() => authorizeAgentGrant(db, token, run.id, 'wallet_snapshot')).toThrow(
+      /does not allow/
+    );
+  });
   it('discovers only the fixed tools and returns safe payment errors', async () => {
     const { run, token, runtime } = await setup();
     const { server, client } = await connect(runtime, token);
@@ -189,6 +284,11 @@ describe('Allowance local MCP bridge', () => {
       'external'
     );
     ledger.setStatus(run.id, 'running');
+    db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(
+      'stdio-session',
+      Date.now() + 3600000,
+      JSON.stringify({ operator: 'operator', issuedAt: Date.now() })
+    );
     const grant = createAgentGrant(db, ledger, {
       runId: run.id,
       owner: 'operator',

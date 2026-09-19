@@ -34,6 +34,8 @@ const config = loadConfig({
   }),
   SESSION_SECRET: randomBytes(48).toString('hex'),
   LIVE_PAYMENTS_ENABLED: 'false',
+  PAYMENT_NETWORK: 'mainnet',
+  DATA_NETWORK: 'devnet',
 });
 const db = openDatabase(config.databasePath);
 const ledger = new Ledger(db, config);

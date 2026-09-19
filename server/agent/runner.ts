@@ -5,6 +5,7 @@ import { CATALOG, toolArgs, type ToolName, type RunDTO } from '../../shared/doma
 import type { Config } from '../config.js';
 import { canonicalRequest } from '../payments/guard.js';
 import { Ledger } from '../policy/ledger.js';
+import { snapshotIncludesSignature, validateToolResult } from '../../shared/tool-results.js';
 export interface PaidToolRunner {
   runPaidTool(
     runId: string,
@@ -79,6 +80,9 @@ export class AgentRunner {
   isBusy() {
     return Boolean(this.active);
   }
+  stopActive() {
+    if (this.active) this.stop(this.active.id);
+  }
   start(id: string) {
     if (this.active) throw new Error('Runner is busy.');
     const controller = new AbortController();
@@ -100,6 +104,33 @@ export class AgentRunner {
   private fallback(run: RunDTO) {
     const bought = run.purchases.filter((p) => p.source === 'agent');
     return `Run ${run.status}. ${run.error || 'The agent stopped before completing its brief.'}\n\n${bought.length ? bought.map((p) => `[${p.id}] ${p.tool}: ${p.status}${p.reason ? ` — ${p.reason}` : ''}. ${p.result ? `Returned facts are available in the receipt.` : 'No result available.'}`).join('\n') : 'No paid tool result was returned.'}\n\nSettled: ${run.settled} micro-USDC. Held: ${run.held} micro-USDC. Remaining: ${run.remaining} micro-USDC. No unsupported wallet claims were inferred.`;
+  }
+  private groundedReport(text: string, run: RunDTO) {
+    const delivered = run.purchases.filter(
+      (purchase) => purchase.source === 'agent' && purchase.serviceOutcome === 'delivered'
+    );
+    if (!delivered.length)
+      throw new Error('No delivered tool facts are available to support an agent brief.');
+    const cited = [...text.matchAll(/\[([^\]\n]+)\]/g)].map((match) => match[1]);
+    const receipts = run.purchases.filter((purchase) => purchase.source === 'agent');
+    if (
+      text.length > 12000 ||
+      cited.some((id) => !receipts.some((purchase) => purchase.id === id)) ||
+      delivered.some((purchase) => !cited.includes(purchase.id))
+    )
+      throw new Error('Agent brief did not cite its actual delivered purchase receipts.');
+    const evidence = delivered.map((purchase) => {
+      const result = validateToolResult(
+        purchase.tool,
+        purchase.result,
+        purchase.tool === 'wallet_snapshot' ? { address: run.wallet } : purchase.result,
+        run.dataNetwork
+      );
+      const identity =
+        'address' in result ? `wallet ${result.address}` : `data transaction ${result.signature}`;
+      return `[${purchase.id}] ${purchase.tool}: ${identity}; ${result.dataCluster}; observed ${result.provenance.observedAt}.`;
+    });
+    return `${text.trim()}\n\nPurchased data evidence (distinct from payment settlement):\n${evidence.join('\n')}`;
   }
   private async execute(id: string, controller: AbortController) {
     const timer = setTimeout(() => {
@@ -164,7 +195,10 @@ export class AgentRunner {
         const calls = response.output.filter((item) => item.type === 'function_call');
         if (calls.length === 0) {
           if (!response.output_text.trim()) throw new Error('Model returned no usable brief.');
-          this.ledger.setReport(id, response.output_text);
+          this.ledger.setReport(
+            id,
+            this.groundedReport(response.output_text, this.ledger.getRun(id))
+          );
           this.ledger.setStatus(id, 'completed');
           this.ledger.event(
             id,
@@ -192,17 +226,7 @@ export class AgentRunner {
             if (tool === 'wallet_snapshot' && args.address !== first.wallet)
               throw new Error('Snapshot must use the authorized wallet.');
             if (tool === 'transaction_explain') {
-              const snapshots = this.ledger
-                .getRun(id)
-                .purchases.filter(
-                  (p) => p.tool === 'wallet_snapshot' && p.serviceOutcome === 'delivered'
-                );
-              // Data is used only for membership; instructions embedded in data never alter policy.
-              if (
-                !snapshots.some((p) =>
-                  JSON.stringify(p.result).includes(JSON.stringify(args.signature))
-                )
-              )
+              if (!snapshotIncludesSignature(this.ledger.getRun(id), args.signature))
                 throw new Error('Signature was not returned by the purchased wallet snapshot.');
             }
             this.ledger.event(

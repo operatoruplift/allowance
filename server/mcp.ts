@@ -14,6 +14,7 @@ import {
   type AgentGrantScope,
 } from './mcp/grants.js';
 import { PaymentError, canonicalRequest } from './payments/service.js';
+import { snapshotIncludesSignature } from '../shared/tool-results.js';
 
 const runIdSchema = z.string().uuid();
 const requestIdSchema = z
@@ -59,6 +60,7 @@ function errorResult(error: unknown) {
 function paymentError(error: PaymentError): McpToolError {
   const codes: Record<string, string> = {
     unavailable: 'PAYMENT_UNAVAILABLE',
+    disabled: 'PAYMENT_UNAVAILABLE',
     'settlement-unknown': 'SETTLEMENT_UNKNOWN',
     challenge: 'PAYMENT_CHALLENGE_INVALID',
     'invalid-challenge': 'PAYMENT_CHALLENGE_INVALID',
@@ -102,6 +104,16 @@ function grantError(error: unknown): McpToolError {
 function safePurchase(purchase: RunDTO['purchases'][number]) {
   return {
     id: purchase.id,
+    requestId: purchase.requestId,
+    requestHash: purchase.requestHash,
+    policyHash: purchase.policyHash,
+    catalogVersion: purchase.catalogVersion,
+    catalogHash: purchase.catalogHash,
+    messageHash: purchase.messageHash,
+    proofSlot: purchase.proofSlot,
+    paymentNetwork: purchase.paymentNetwork,
+    dataNetwork: purchase.dataNetwork,
+    mint: purchase.mint,
     tool: purchase.tool,
     amount: purchase.amount,
     status: purchase.status,
@@ -170,6 +182,7 @@ export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: 
       };
     } catch (error) {
       if (error instanceof PaymentError) throw paymentError(error);
+      if (error instanceof AgentGrantError) throw grantError(error);
       if (error instanceof McpToolError) throw error;
       if (error instanceof PolicyError)
         throw new McpToolError('POLICY_DENIED', 'The frozen run policy denied this tool call.');
@@ -208,15 +221,7 @@ export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: 
     async ({ runId, requestId, signature }) => {
       try {
         const run = authorize(runId, 'transaction_explain');
-        const snapshots = run.purchases.filter(
-          (purchase) =>
-            purchase.tool === 'wallet_snapshot' && purchase.serviceOutcome === 'delivered'
-        );
-        if (
-          !snapshots.some((purchase) =>
-            JSON.stringify(purchase.result).includes(JSON.stringify(signature))
-          )
-        )
+        if (!snapshotIncludesSignature(run, signature))
           throw new McpToolError(
             'POLICY_DENIED',
             'The signature was not returned by this run wallet snapshot.'

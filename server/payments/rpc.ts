@@ -31,25 +31,32 @@ const accountSchema = z.object({
   }),
 });
 export class PaymentRpc {
+  private sequence = 0;
   constructor(
     readonly url: string,
     readonly network: PaymentNetwork,
     private fetcher: typeof fetch = fetch
   ) {}
   async call(method: string, params: unknown[]): Promise<unknown> {
+    const id = ++this.sequence;
     const response = await this.fetcher(this.url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+      body: JSON.stringify({ jsonrpc: '2.0', id, method, params }),
       redirect: 'error',
       signal: AbortSignal.timeout(8000),
     });
     if (!response.ok)
       throw new PaymentError('rpc-unavailable', `Payment RPC returned HTTP ${response.status}.`);
     const body = z
-      .object({ error: z.unknown().optional(), result: z.unknown().optional() })
+      .object({
+        jsonrpc: z.literal('2.0'),
+        id: z.number().int().safe(),
+        error: z.unknown().optional(),
+        result: z.unknown().optional(),
+      })
       .parse(await boundedJson(response));
-    if (body.error || body.result === undefined)
+    if (body.id !== id || Object.hasOwn(body, 'error') || !Object.hasOwn(body, 'result'))
       throw new PaymentError('rpc-error', 'Payment RPC could not complete the bounded read.');
     return body.result;
   }
@@ -170,11 +177,11 @@ export class PaymentRpc {
     });
     const tx = z
       .object({
-        slot: z.number().int(),
+        slot: z.number().int().safe().nonnegative(),
         transaction: z.tuple([z.string(), z.literal('base64')]),
         meta: z.object({
           err: z.unknown().nullable(),
-          fee: z.number().int().safe(),
+          fee: z.number().int().safe().nonnegative(),
           preTokenBalances: z.array(balance),
           postTokenBalances: z.array(balance),
         }),
@@ -188,7 +195,9 @@ export class PaymentRpc {
     });
     if (
       sha256(original.message) !== sha256(landed.message) ||
-      getBase58Decoder().decode(landed.signatures[0]) !== signature
+      getBase58Decoder().decode(landed.signatures[0]) !== signature ||
+      !Buffer.from(original.signatures[1]).equals(Buffer.from(landed.signatures[1])) ||
+      tx.meta.fee > 15_000
     )
       return null;
     const payer = original.decoded.signers[1],
@@ -196,20 +205,22 @@ export class PaymentRpc {
     const { source, destination } = await expectedAccounts(payer, recipient, this.chain.mint);
     const delta = (ata: string, owner: string) => {
       const index = landed.decoded.keys.indexOf(ata);
-      const before = tx.meta.preTokenBalances.find(
+      const beforeMatches = tx.meta.preTokenBalances.filter(
         (b) =>
           b.accountIndex === index &&
           b.mint === this.chain.mint &&
           b.owner === owner &&
           b.uiTokenAmount.decimals === 6
       );
-      const after = tx.meta.postTokenBalances.find(
+      const afterMatches = tx.meta.postTokenBalances.filter(
         (b) =>
           b.accountIndex === index &&
           b.mint === this.chain.mint &&
           b.owner === owner &&
           b.uiTokenAmount.decimals === 6
       );
+      const before = beforeMatches.length === 1 ? beforeMatches[0] : undefined;
+      const after = afterMatches.length === 1 ? afterMatches[0] : undefined;
       return before && after
         ? BigInt(after.uiTokenAmount.amount) - BigInt(before.uiTokenAmount.amount)
         : null;

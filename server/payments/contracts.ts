@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 import type { PaymentPayload, PaymentRequirements } from '@x402/core/types';
-import type { ToolName, PaymentNetwork } from '../../shared/domain.js';
+import type { ToolName, PaymentNetwork, RunDTO } from '../../shared/domain.js';
 
 export interface PurchaseProposal {
   runId: string;
@@ -68,6 +68,7 @@ export interface PaymentLedger {
   markResultUnavailable(intentId: string, reason: string): void;
   rejectUnsigned(intentId: string, reason: string): void;
   getIntent(intentId: string): PaymentIntent | undefined;
+  getRun(runId: string): RunDTO;
 }
 export interface DataTools {
   walletSnapshot(address: string): Promise<unknown>;

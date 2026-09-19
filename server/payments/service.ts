@@ -7,7 +7,7 @@ import {
 } from '@solana/kit';
 import { x402Client } from '@x402/core/client';
 import { x402HTTPClient } from '@x402/fetch';
-import { HTTPFacilitatorClient, type FacilitatorClient } from '@x402/core/server';
+import type { FacilitatorClient } from '@x402/core/server';
 import { ExactSvmScheme } from '@x402/svm/exact/client';
 import { decodePaymentRequiredHeader, decodePaymentResponseHeader } from '@x402/core/http';
 import type { PaymentPayload, SchemeNetworkClient, SettleResponse } from '@x402/core/types';
@@ -42,6 +42,9 @@ import {
   verifyPayerSignature,
 } from './guard.js';
 import { boundedJson, PaymentRpc } from './rpc.js';
+import { snapshotIncludesSignature, validateToolResult } from '../../shared/tool-results.js';
+import { pendingRestore } from '../db/recovery.js';
+import { createBoundedFacilitatorClient, settlementResponseSchema } from './facilitator.js';
 
 export { canonicalRequest, PaymentError } from './guard.js';
 export interface PaymentReadiness {
@@ -103,15 +106,12 @@ export async function createPaymentService(
     adapters.rpc ?? new PaymentRpc(config.rpcUrl ?? chain.rpcUrl, config.network, fetcher);
   if (rpc.network !== config.network)
     throw new PaymentError('network', 'Payment RPC adapter network mismatch.');
-  const headers: Record<string, string> = config.facilitatorBearerToken
-    ? { Authorization: `Bearer ${config.facilitatorBearerToken}` }
-    : {};
   const facilitator =
     adapters.facilitator ??
-    new HTTPFacilitatorClient({
+    createBoundedFacilitatorClient({
       url: config.facilitatorUrl,
-      timeoutMs: 15_000,
-      createAuthHeaders: async () => ({ verify: headers, settle: headers, supported: headers }),
+      bearerToken: config.facilitatorBearerToken,
+      fetch: fetcher,
     });
   let signer = adapters.signer;
   let signerError: string | undefined;
@@ -345,7 +345,7 @@ export async function createPaymentService(
     let chainVerified = false;
     if (header && header.length <= 8192) {
       try {
-        settlement = decodePaymentResponseHeader(header);
+        settlement = settlementResponseSchema.parse(decodePaymentResponseHeader(header));
       } catch {
         throw new PaymentError('settlement-unknown', 'Invalid settlement receipt.', row.intent_id);
       }
@@ -402,11 +402,18 @@ export async function createPaymentService(
           row.intent_id
         );
       }
-      ledger.markDelivered(row.intent_id, result);
+      const intent = ledger.getIntent(row.intent_id)!;
+      const validated = validateToolResult(
+        row.tool,
+        result,
+        JSON.parse(row.body),
+        ledger.getRun(intent.runId).dataNetwork
+      );
+      ledger.markDelivered(row.intent_id, validated);
       if (chainVerified)
         db.prepare('UPDATE buyer_replays SET done=1 WHERE intent_id=?').run(row.intent_id);
       cached = undefined;
-      return result;
+      return validated;
     } catch (error) {
       ledger.markResultUnavailable(
         row.intent_id,
@@ -485,13 +492,23 @@ export async function createPaymentService(
           .all(canonical.hash) as ReplayRow[]
       ).find((row) => ledger.getIntent(row.intent_id)?.runId === runId);
     if (prior) {
-      if (!config.enabled)
+      if (!config.enabled || pendingRestore(db))
         throw new PaymentError(
           'disabled',
-          'Live payments are disabled; recovery cannot submit an existing signed payment.'
+          'Payment transmission is disabled; use read-only reconciliation of the original payment.'
         );
       return recover(prior);
     }
+    const run = ledger.getRun(runId);
+    const parsedArgs = JSON.parse(canonical.body) as { address?: string; signature?: string };
+    if (
+      (tool === 'wallet_snapshot' && parsedArgs.address !== run.wallet) ||
+      (tool === 'transaction_explain' && !snapshotIncludesSignature(run, parsedArgs.signature!))
+    )
+      throw new PaymentError(
+        'policy-mismatch',
+        'Tool arguments are outside the frozen wallet and delivered snapshot.'
+      );
     const state = await readiness();
     if (!state.ready || !signer)
       throw new PaymentError(
@@ -712,11 +729,45 @@ export async function createPaymentService(
     }
   }
   let reconciling: Promise<void> | undefined;
+  async function observe(row: ReplayRow) {
+    const intent = ledger.getIntent(row.intent_id);
+    if (!intent || !row.payload_json) return;
+    const claim = db
+      .prepare('UPDATE buyer_replays SET checked_at=? WHERE intent_id=? AND checked_at<=?')
+      .run(Date.now(), row.intent_id, Date.now() - 30_000);
+    if (claim.changes !== 1) return;
+    const payload = JSON.parse(row.payload_json) as PaymentPayload;
+    const proof = intent.signature
+      ? await rpc.evidence(intent.signature, payload, row.amount, config.recipient!)
+      : await rpc.findSettlement(payload, row.amount, config.recipient!);
+    if (!proof) return; // A miss never frees held allowance or authorizes another identity.
+    ledger.markSettled(row.intent_id, proof);
+    const receipt = getMerchantRecord(db, row.request_id);
+    if (receipt)
+      recordRecoveredSettlement(db, row.request_id, {
+        success: true,
+        transaction: proof.signature,
+        network: chain.network,
+        payer: proof.feeSponsor,
+      });
+    if (intent.status !== 'delivered' && receipt?.result_json) {
+      const result = validateToolResult(
+        row.tool,
+        JSON.parse(receipt.result_json),
+        JSON.parse(row.body),
+        ledger.getRun(intent.runId).dataNetwork
+      );
+      ledger.markDelivered(row.intent_id, result);
+    }
+    if (ledger.getIntent(row.intent_id)?.status === 'delivered')
+      db.prepare('UPDATE buyer_replays SET done=1 WHERE intent_id=?').run(row.intent_id);
+  }
   async function reconcileOnce(): Promise<void> {
-    if (!config.enabled || !config.recipient) return;
+    if (!config.recipient) return;
+    const observationOnly = !config.enabled || Boolean(pendingRestore(db));
     const rows = db
       .prepare(
-        "SELECT * FROM buyer_replays WHERE done=0 AND attempts<4 AND payload_json IS NOT NULL AND json_valid(requirements_json) AND json_extract(requirements_json,'$.network')=? AND json_extract(requirements_json,'$.asset')=? AND json_extract(requirements_json,'$.payTo')=? AND json_extract(requirements_json,'$.extra.feePayer')=? AND url IN (?,?) ORDER BY checked_at,intent_id LIMIT 20"
+        "SELECT * FROM buyer_replays WHERE done=0 AND payload_json IS NOT NULL AND json_valid(requirements_json) AND json_extract(requirements_json,'$.network')=? AND json_extract(requirements_json,'$.asset')=? AND json_extract(requirements_json,'$.payTo')=? AND json_extract(requirements_json,'$.extra.feePayer')=? AND url IN (?,?) ORDER BY checked_at,intent_id LIMIT 20"
       )
       .all(
         chain.network,
@@ -738,28 +789,15 @@ export async function createPaymentService(
       }
       const intent = ledger.getIntent(row.intent_id);
       if (!intent) continue;
-      if (intent.status === 'delivered' && row.payload_json && intent.signature) {
-        const claim = db
-          .prepare(
-            'UPDATE buyer_replays SET attempts=attempts+1,checked_at=? WHERE intent_id=? AND attempts<4'
-          )
-          .run(Date.now(), row.intent_id);
-        if (claim.changes !== 1) continue;
+      if (observationOnly || row.attempts >= 4 || intent.status === 'delivered') {
         try {
-          const proof = await rpc.evidence(
-            intent.signature,
-            JSON.parse(row.payload_json) as PaymentPayload,
-            row.amount,
-            config.recipient
-          );
-          if (proof) {
-            ledger.markSettled(row.intent_id, proof);
-            db.prepare('UPDATE buyer_replays SET done=1 WHERE intent_id=?').run(row.intent_id);
-          }
+          await observe(row);
         } catch {
-          /* Existing settlement remains visible; proof may be retried later. */
+          /* Preserve original holds and evidence when observation or cached delivery is unavailable. */
         }
-      } else if (
+        continue;
+      }
+      if (
         [
           'reserved',
           'submitted',

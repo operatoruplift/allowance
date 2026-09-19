@@ -6,6 +6,7 @@ const AT = '2026-09-12T00:00:00.000Z';
 export function createDemo(): RunDTO {
   return {
     id: 'rehearsal',
+    receiptVersion: 1,
     wallet: '11111111111111111111111111111111',
     task: DEFAULT_TASK,
     status: 'queued',

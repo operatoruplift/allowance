@@ -1,0 +1,274 @@
+{
+  "releaseDate": "2026-09-20",
+  "timeZone": "Asia/Ho_Chi_Minh",
+  "recordedAt": "2026-09-19T18:19:05.501Z",
+  "baselineCommit": "6b397ada497216e34b0fee66efb6f9720bc0e4e2",
+  "sourceCommit": null,
+  "kind": "Release candidate: controlled application tests and public read-only observations",
+  "integrationMatrix": "docs/integration-status.md",
+  "deployment": {
+    "url": "https://allowanceonsolana.vercel.app",
+    "mode": "static no-spend rehearsal",
+    "candidateStatus": "awaiting CI and production deployment",
+    "persistentBackend": "not deployed; durable host and credentials absent"
+  },
+  "checks": {
+    "local": "evidence/release-2026-09-20-local-checks.json",
+    "browser": "evidence/release-2026-09-20-browser-checks.json",
+    "visual": "evidence/release-2026-09-20-visual-checks.json",
+    "container": "awaiting GitHub production-image job",
+    "publication": "evidence/publication-scan-2026-09-20.json",
+    "readOnlyNetworks": "evidence/public-network-2026-09-20.json",
+    "preflight": "expected missing-configuration exit; no paid effects"
+  },
+  "observedEvidence": {
+    "controlledUnitAndHttpTests": true,
+    "realLocalMcpSdkHandshake": true,
+    "controlledAuthenticatedConsole": true,
+    "publicGenesisAndMintReads": true,
+    "facilitatorSupportedOnly": true,
+    "realPaidSmoke": false,
+    "realModelRun": false,
+    "paidMcpRun": false,
+    "allowanceChainSettlement": false
+  },
+  "remainingPrerequisites": [
+    "Persistent host, HTTPS console origin and durable volume",
+    "Private operator/session and provider/payer/merchant/sponsor configuration",
+    "Verified dedicated account funding and data wallet",
+    "Model access and authorized provider usage for built-in runs",
+    "Explicit bounded spend authorization before any paid smoke"
+  ],
+  "artifacts": [
+    {
+      "path": "evidence/configuration-presence-2026-09-20.json",
+      "bytes": 276,
+      "sha256": "2eec59def6e16636ae734352ec879b91fca2336bdc4f201a9bfa13caff9d650a"
+    },
+    {
+      "path": "evidence/preflight-2026-09-20.txt",
+      "bytes": 2424,
+      "sha256": "df87c362487407a24629604b6a7030eebc6d9a5f522588f3c16ce2cdaca30189"
+    },
+    {
+      "path": "evidence/public-network-2026-09-20.json",
+      "bytes": 1782,
+      "sha256": "a50ba6d28d243c7abc0dc72bf169b5b87269cacfc5be3b9d85d3e83525b75909"
+    },
+    {
+      "path": "evidence/publication-scan-2026-09-20.json",
+      "bytes": 750,
+      "sha256": "47b4e2c304ac024b09e8035e28ced5389c9da66dcf5c31c2ce4d7f517de6f943"
+    },
+    {
+      "path": "evidence/release-2026-09-20-after-1024.png",
+      "bytes": 539745,
+      "sha256": "6fa44b491c98846e018d811f9f3c56d8011b61288f8ffa50e6a418c6e5c7fc9d"
+    },
+    {
+      "path": "evidence/release-2026-09-20-after-1440.png",
+      "bytes": 683937,
+      "sha256": "c4d29f50141e135e2c3f41c89ae74e9c93dddb572a0009d5848d8456dc5d0065"
+    },
+    {
+      "path": "evidence/release-2026-09-20-after-320.png",
+      "bytes": 344475,
+      "sha256": "fdbdb72e942fc3a13409c2b08930266138330edf6bc8b001f6183d20a82372e0"
+    },
+    {
+      "path": "evidence/release-2026-09-20-after-390.png",
+      "bytes": 359755,
+      "sha256": "922b7e7ba4915843e68ed9024a91a1a0e3e0616cb4300785c3a578086bbec7d7"
+    },
+    {
+      "path": "evidence/release-2026-09-20-before-1024.png",
+      "bytes": 651455,
+      "sha256": "a5308427d2d72aca9b4d5393f68f0a00413d753874611867b4361317daaee29d"
+    },
+    {
+      "path": "evidence/release-2026-09-20-before-1440.png",
+      "bytes": 783049,
+      "sha256": "18cdf0193ad4e3278485cb9dae30f0ff3caf377ccc5c86a9a4208414dae9f03b"
+    },
+    {
+      "path": "evidence/release-2026-09-20-before-320.png",
+      "bytes": 334047,
+      "sha256": "4bae09b05318fdf22ef53a072bbab2cbaa69c25d762da6d080a1e439876e3d69"
+    },
+    {
+      "path": "evidence/release-2026-09-20-before-390.png",
+      "bytes": 369257,
+      "sha256": "9cca534574d8637123273934b9199d8b6e73f9f80f7cda5330fcd3caaa568e84"
+    },
+    {
+      "path": "evidence/release-2026-09-20-browser-checks.json",
+      "bytes": 625,
+      "sha256": "e2a5fb77b316c820bf74151c7480191353247bd1b2f97f0fc2070f42125eb98d"
+    },
+    {
+      "path": "evidence/release-2026-09-20-browser.txt",
+      "bytes": 2155,
+      "sha256": "de46ff512b6c64402f3a206362e28f3f55903f136a1d1cde8afc8869c32e889f"
+    },
+    {
+      "path": "evidence/release-2026-09-20-build.txt",
+      "bytes": 444,
+      "sha256": "f1e653c9bfc9ce56a8d3d4c0f7b5d5e7ac51d80f8b9b0f6518c50bf4bcd13101"
+    },
+    {
+      "path": "evidence/release-2026-09-20-controlled-browser-auth-no-payments.png",
+      "bytes": 140921,
+      "sha256": "1be34361f0324de17c3ab0a617fc36aad772774c080a16a5eb24a74e411c2f42"
+    },
+    {
+      "path": "evidence/release-2026-09-20-delivery-unavailable.png",
+      "bytes": 277903,
+      "sha256": "39ac5b6d2b3a7376a0aaea7effe05cd2c2faea7823db95f4ca76940dd2329e00"
+    },
+    {
+      "path": "evidence/release-2026-09-20-demo-1440.png",
+      "bytes": 219111,
+      "sha256": "5d1e71e304e965f9baba0fe0e73d5462556d7d63547f65dd4511c9e6cfd12b96"
+    },
+    {
+      "path": "evidence/release-2026-09-20-demo-200-percent.png",
+      "bytes": 471551,
+      "sha256": "9fe6c0fde5bcc7930e81fc85487e623a14850361d68e72c9f69edac5d98e40a3"
+    },
+    {
+      "path": "evidence/release-2026-09-20-demo-320.png",
+      "bytes": 171568,
+      "sha256": "e2455a089d3d0db009484771e984e89de875bfe2030fe989666b345a5e0c56fc"
+    },
+    {
+      "path": "evidence/release-2026-09-20-developers-1024.png",
+      "bytes": 430902,
+      "sha256": "ff7a77eb904fd9f9f6c232d5f36fdb99bce2726b2b6648c33285ed23d7fef40f"
+    },
+    {
+      "path": "evidence/release-2026-09-20-developers-390.png",
+      "bytes": 376849,
+      "sha256": "06e5def91702e4f9c65adbc9fbbd05bbc9dba0ed1a61242e3f1ea92b02403d58"
+    },
+    {
+      "path": "evidence/release-2026-09-20-hosted-local.txt",
+      "bytes": 1465,
+      "sha256": "86e07dc1190031d1d80d90245fd24dc79b6ba15d75bf5a7156737e3617c95d84"
+    },
+    {
+      "path": "evidence/release-2026-09-20-landing-desktop.png",
+      "bytes": 639121,
+      "sha256": "338fdeae931b3b9fe99d4145c56e3ad31d303569ca40ba6b6e286060f23ae0e5"
+    },
+    {
+      "path": "evidence/release-2026-09-20-lint.txt",
+      "bytes": 36,
+      "sha256": "b5aa61947a6b42618bac04111571caf173e43a8ea9dd9715bebc9485138e25c0"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-brand-kit-desktop.png",
+      "bytes": 89162,
+      "sha256": "7cbe1e8351466d223a04d017d19b621e6c53c50a29b6d4ba337b7abf45b7a45c"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-brand-kit-mobile.png",
+      "bytes": 191997,
+      "sha256": "4b53b2fec692baa3c5c13c47746ae519e7934c153a738ee9e2b093ea8f9d75ed"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-checks.json",
+      "bytes": 1330,
+      "sha256": "b4b13a5a47b5340eb1d57d60b3d2ea445ee57a5721b6a7912ac888c3661bec94"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-hosted-console-mobile.png",
+      "bytes": 60095,
+      "sha256": "9499630c54112c6e15a1ad0b221cfb8e3689e9330e9d803cca8516ad2d5e7183"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-hosted-landing-desktop.png",
+      "bytes": 638957,
+      "sha256": "13eac0d178adc8bbf4ee351359183eba6d80d552590afb5e4c0e89c65fce10d2"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-hosted-rehearsal-console.png",
+      "bytes": 89956,
+      "sha256": "3a9aac7561f3f58f6df77b30f905b5eacfc54ec04f20031e577a76f74072a6db"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-hosted-rehearsal-print.pdf",
+      "bytes": 270080,
+      "sha256": "2cc42c29ce5941b0a921a23804fe5f3654c564ebd7bb6f56dbab52234ef4dea5"
+    },
+    {
+      "path": "evidence/release-2026-09-20-local-hosted-rehearsal-receipt.png",
+      "bytes": 297511,
+      "sha256": "6770d6400e1a8e5322067e0f5cd1c09a36a303db3f30bd4dbcf510d3d1e08ffc"
+    },
+    {
+      "path": "evidence/release-2026-09-20-media-failure.png",
+      "bytes": 705082,
+      "sha256": "b481134bb33a51172ad1ccfacc35f54c178ad358a67811e9f071dd0a3b70a8d6"
+    },
+    {
+      "path": "evidence/release-2026-09-20-mountain-composition.png",
+      "bytes": 179239,
+      "sha256": "c6415398bf60609a354d8266960e31d7c13891e3de288288dab8a3a039ebcf7e"
+    },
+    {
+      "path": "evidence/release-2026-09-20-phone-receipt.png",
+      "bytes": 91678,
+      "sha256": "ada764ef59bf6c62cbf00a42118a7c603eb0592508e2029cb94526d2be3af947"
+    },
+    {
+      "path": "evidence/release-2026-09-20-reduced-motion.png",
+      "bytes": 750467,
+      "sha256": "5cad5a5fe8661397f82c71c1e656a9efb08c6e411a92124cc14649cbdd13f4fb"
+    },
+    {
+      "path": "evidence/release-2026-09-20-rehearsal-build.txt",
+      "bytes": 547,
+      "sha256": "a9c01fe2e9f3b183de6e02e4371b10cf4d65423ef119102c715ef80da45e05a2"
+    },
+    {
+      "path": "evidence/release-2026-09-20-rehearsal-desktop-complete.png",
+      "bytes": 297000,
+      "sha256": "5a4d4726a71a0f13c9b50c08f3721e06e4906f78d1fad097c92712ff20f17b8f"
+    },
+    {
+      "path": "evidence/release-2026-09-20-rehearsal-mobile-complete.png",
+      "bytes": 270800,
+      "sha256": "0c2c41729852f02b2f7d1e7296ccfb056a960a6b9cdb855fe71a9985f807b73b"
+    },
+    {
+      "path": "evidence/release-2026-09-20-rehearsal-print.pdf",
+      "bytes": 270080,
+      "sha256": "0a56b44ca9fb831353a5c3e24e8bf6b29cccef003ee55b2ee5b0029b822aa110"
+    },
+    {
+      "path": "evidence/release-2026-09-20-tests.txt",
+      "bytes": 725,
+      "sha256": "e9ccafc7e7b57f4cd8025bcbd7a19a4b4db2148ff87d6d89f709dd9a377c0dd9"
+    },
+    {
+      "path": "evidence/release-2026-09-20-typecheck.txt",
+      "bytes": 85,
+      "sha256": "3ba4c48baf34eef5a610660f8a05b4bf06372f4e862340d2442ff8fcde665e5d"
+    },
+    {
+      "path": "evidence/release-2026-09-20-unknown-settlement.png",
+      "bytes": 260881,
+      "sha256": "7e7294b56fa2d5759c5289d8ccdae9cbf04e8b83c29636cbfb0feb501cfe3543"
+    },
+    {
+      "path": "evidence/release-2026-09-20-visual-checks.json",
+      "bytes": 2255,
+      "sha256": "a9b3c937fd731057955c7a9dbe120714d28c6bf43ec64157e19cb811cdc14136"
+    },
+    {
+      "path": "evidence/release-2026-09-20-walkthrough.webm",
+      "bytes": 1210843,
+      "sha256": "acb2f5acb6e5d3215d2d8cc20b4c0158db2299c1ee2284b24b63c50a61d5681c"
+    }
+  ]
+}

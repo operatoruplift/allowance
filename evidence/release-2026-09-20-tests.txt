@@ -1,0 +1,17 @@
+
+> allowance@0.1.0 test
+> vitest run --reporter=dot
+
+
+ RUN  v5.0.0 <repository>
+
+·······················································································································································
+
+ Test Files  15 passed (15)
+      Tests  151 passed (151)
+   Start at  01:10:53
+   Duration  32.06s (tests 47%, import 40%, transform 12%)
+
+    Isolate  15 workers spawned · ~1.66s startup each (spawn + environment, per file)
+             at least ~1.90s faster with isolate: false — reuses workers across files instead of one per file
+

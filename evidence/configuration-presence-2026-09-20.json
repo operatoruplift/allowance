@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-09-19T17:50:36.654Z",
+  "kind": "Presence-only check; no secret values recorded",
+  "files": [
+    {
+      "file": ".env.local",
+      "present": []
+    }
+  ],
+  "environmentPresent": [],
+  "persistentHostSupplied": false,
+  "fundingVerified": false
+}

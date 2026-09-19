@@ -28,6 +28,7 @@ export const USDC_MINT = PAYMENT_CHAINS.devnet.mint;
 export const TOOL_NAMES = ['wallet_snapshot', 'transaction_explain'] as const;
 export type ToolName = (typeof TOOL_NAMES)[number];
 export type DataNetwork = 'devnet' | 'mainnet';
+export const CATALOG_VERSION = 1 as const;
 export const CATALOG = [
   {
     name: 'wallet_snapshot' as const,
@@ -125,6 +126,8 @@ export const createRunSchema = z
 export type CreateRunInput = z.infer<typeof createRunSchema>;
 export interface Policy {
   version: 1;
+  catalogVersion?: 1;
+  catalogHash?: string;
   allowance: string;
   perRequestCap: string;
   dailyCeiling: string;
@@ -149,6 +152,16 @@ export type PaymentStatus =
   | 'released';
 export interface PurchaseDTO {
   id: string;
+  requestId?: string;
+  requestHash?: string;
+  policyHash?: string;
+  catalogVersion?: 1;
+  catalogHash?: string;
+  messageHash?: string;
+  proofSlot?: string;
+  paymentNetwork?: PaymentNetwork;
+  dataNetwork?: DataNetwork;
+  mint?: UsdcMint;
   tool: ToolName;
   amount: string;
   status: PaymentStatus;
@@ -167,7 +180,7 @@ export interface PurchaseDTO {
   deliveryState?: 'pending' | 'delivered' | 'unavailable';
   resultHash?: string;
   serviceOutcome: 'pending' | 'delivered' | 'unavailable';
-  source: 'agent' | 'policy-probe';
+  source: 'agent' | 'external-agent' | 'policy-probe';
 }
 export interface EventDTO {
   id: number;
@@ -179,6 +192,8 @@ export interface EventDTO {
 }
 export interface RunDTO {
   id: string;
+  receiptVersion?: 1;
+  policyHash?: string;
   wallet: string;
   task: string;
   status: 'queued' | 'running' | 'completed' | 'stopped' | 'expired' | 'failed' | 'interrupted';

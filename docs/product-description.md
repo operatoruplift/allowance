@@ -1,5 +1,7 @@
 # Allowance product description
 
+Last updated: **20 September 2026**.
+
 ## Short description
 
 Allowance gives an AI agent a fixed, human-approved budget to buy useful Solana data through exact x402 payments, with every decision and receipt visible.
@@ -12,7 +14,9 @@ The shipped example has two first-party paid data tools: `wallet_snapshot` for a
 
 Allowance keeps those stages separate in its receipt. Reserved, submitted, reported settlement, chain-verified settlement, unknown settlement and delivered or unavailable results are distinct states. An ambiguous signed request remains held until the original intent is reconciled; recovery never creates a second signature or invents delivery. The local stdio MCP bridge exposes the same guarded tools, run status, receipt and stop controls to an authorized external agent.
 
-The public site is a deterministic rehearsal of this workflow. It demonstrates the exact `0.040000` allowance story, a separately labeled `0.020000` policy denial and an ambiguous-hold recovery example without signing, paid requests, model calls or onchain claims. Real execution requires an explicitly configured persistent backend, operator credentials, funded accounts on the selected network, a compatible facilitator with a pinned fee sponsor, and a configured model when the built-in agent is used. No real Allowance mainnet or devnet settlement has been verified in this delivery.
+Versioned receipt exports connect each purchase to its original request, frozen policy and selected payment and data networks. New policies also preserve a version and hash of the approved tool catalog; changing that catalog requires a new authorization. Receipts include original message and independent chain-proof references when those were actually observed. Historical records retain their original amounts and networks, and unavailable evidence stays unavailable. These hashes describe recorded application data; they do not establish an onchain payment by themselves.
+
+The public site is a deterministic rehearsal of this workflow. It demonstrates the exact `0.040000` allowance story, a separately labeled `0.020000` policy denial and an ambiguous-hold recovery example without signing, paid requests, model calls or onchain claims. The persistent backend is implemented and packaged separately but has not been deployed to a persistent host in this delivery. Real execution requires that host and durable volume, operator credentials, funded accounts on the selected network, a compatible facilitator with a pinned fee sponsor, and a configured model when the built-in agent is used. No real Allowance mainnet or devnet settlement has been verified in this delivery.
 
 ## Demo description
 

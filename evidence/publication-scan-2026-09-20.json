@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-09-19T18:00:50.004Z",
+  "kind": "Scoped public asset and high-confidence credential-pattern checks; not a formal security audit",
+  "brandCompositions": 26,
+  "svgFiles": 31,
+  "zipEntries": 66,
+  "zipCrc": "passed",
+  "activeSvgContent": "none found",
+  "credentialPatternFindings": [],
+  "dependencyAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "fontNotices": [
+    "public/fonts/Figtree-LICENSE.txt",
+    "public/fonts/GeistMono-LICENSE.txt",
+    "public/brand/fonts/Figtree-LICENSE.txt",
+    "public/brand/fonts/GeistMono-LICENSE.txt"
+  ],
+  "mediaPermission": "User-supplied media provenance retained; separate third-party license grant not supplied"
+}

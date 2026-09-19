@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-09-19T18:16:23.603Z",
+  "kind": "Controlled local browser and isolated hosted rehearsal; no paid calls",
+  "checks": [
+    {
+      "name": "browser",
+      "command": "npm run test:browser",
+      "startedAt": "2026-09-19T18:16:23.605Z",
+      "durationSeconds": 71.35,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-browser.txt"
+    },
+    {
+      "name": "hosted-local",
+      "command": "npm run test:hosted",
+      "startedAt": "2026-09-19T18:17:34.956Z",
+      "durationSeconds": 36.47,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-hosted-local.txt"
+    }
+  ]
+}

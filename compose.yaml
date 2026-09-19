@@ -1,0 +1,30 @@
+name: allowance
+services:
+  allowance:
+    build: .
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 40s
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4318
+      DATABASE_PATH: /data/allowance.sqlite
+      # Deliberately start without payment key access. See docs/runtime-recovery.md.
+      LIVE_PAYMENTS_ENABLED: 'false'
+      PAYER_SECRET_JSON: ''
+      PAYER_SECRET_FILE: ''
+    ports:
+      - '127.0.0.1:4318:4318'
+    volumes:
+      - journal:/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  journal:

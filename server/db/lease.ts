@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type Database from 'better-sqlite3';
+import { assertRestoreApproved } from './recovery.js';
 /** One service owns startup recovery. Spending still requires the transactional ledger. */
 export function acquireServiceLease(db: Database.Database, now: () => number = Date.now) {
   const owner = randomUUID();
@@ -18,17 +19,28 @@ export function acquireServiceLease(db: Database.Database, now: () => number = D
       'INSERT INTO service_lease VALUES(1,?,?) ON CONFLICT(singleton) DO UPDATE SET owner=excluded.owner,expires=excluded.expires'
     ).run(owner, now() + ttl);
   }).immediate();
-  const assert = () => {
+  const assertOwner = () => {
     const row = db.prepare('SELECT owner,expires FROM service_lease WHERE singleton=1').get() as
       { owner: string; expires: number } | undefined;
     if (!row || row.owner !== owner || row.expires <= now())
       throw new Error('Service ownership expired. New spending is denied.');
   };
   return {
-    assert,
+    isOwner() {
+      try {
+        assertOwner();
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    assert() {
+      assertOwner();
+      assertRestoreApproved(db);
+    },
     renew() {
       db.transaction(() => {
-        assert();
+        assertOwner();
         db.prepare('UPDATE service_lease SET expires=? WHERE singleton=1 AND owner=?').run(
           now() + ttl,
           owner
@@ -46,4 +58,31 @@ export function assertServiceLeaseActive(db: Database.Database, now: () => numbe
   const row = db.prepare('SELECT expires FROM service_lease WHERE singleton=1').get() as
     { expires: number } | undefined;
   if (!row || row.expires <= now()) throw new Error('Allowance service ownership is not active.');
+  assertRestoreApproved(db);
+}
+
+/** A local bridge must restart after backend takeover; a fresh lease is not renewed authority. */
+export function createSharedServiceGuard(db: Database.Database, now: () => number = Date.now) {
+  const exists = db
+    .prepare("SELECT 1 FROM sqlite_schema WHERE type='table' AND name='service_lease'")
+    .get();
+  const original = exists
+    ? (db.prepare('SELECT owner,expires FROM service_lease WHERE singleton=1').get() as
+        { owner: string; expires: number } | undefined)
+    : undefined;
+  const owner = original && original.expires > now() ? original.owner : undefined;
+  return () => {
+    if (!owner)
+      throw new Error(
+        'No authoritative service was active when this bridge started. Restart the bridge after the service.'
+      );
+    const current = db
+      .prepare('SELECT owner,expires FROM service_lease WHERE singleton=1')
+      .get() as { owner: string; expires: number } | undefined;
+    if (!current || current.owner !== owner || current.expires <= now())
+      throw new Error(
+        'Authoritative service changed or expired. Restart this bridge before new spending.'
+      );
+    assertRestoreApproved(db);
+  };
 }

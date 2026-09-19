@@ -2,6 +2,7 @@ import { createHash, createPublicKey, verify } from 'node:crypto';
 import { address, getBase58Decoder, getBase58Encoder } from '@solana/kit';
 import { findAssociatedTokenPda, TOKEN_PROGRAM_ADDRESS } from '@solana-program/token';
 import type { PaymentRequired, PaymentRequirements, PaymentPayload } from '@x402/core/types';
+import { isPaymentIdentifierExtension } from '@x402/extensions/payment-identifier';
 import {
   CATALOG,
   PAYMENT_CHAINS,
@@ -105,7 +106,12 @@ export function validateRequirements(
   const keys = Object.keys(r.extra ?? {});
   if (keys.some((key) => !['feePayer', 'memo', 'paymentFlow'].includes(key)))
     throw new PaymentError('extra-requirements', 'Unexpected transaction requirements.');
-  if (!required.extensions?.['payment-identifier'])
+  const identifier = required.extensions?.['payment-identifier'];
+  if (
+    !isPaymentIdentifierExtension(identifier) ||
+    identifier.info.required !== true ||
+    Object.keys(required.extensions ?? {}).some((key) => key !== 'payment-identifier')
+  )
     throw new PaymentError(
       'idempotency-unavailable',
       'Merchant does not support durable payment identifiers.'

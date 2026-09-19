@@ -46,7 +46,12 @@ const config = {
   routes: [
     { src: '/.*', headers: securityHeaders, continue: true },
     { src: '/(?:api|merchant|tools)(?:/.*)?', status: 404 },
-    { src: '/.*', methods: ['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], status: 405 },
+    {
+      src: '/.*',
+      methods: ['POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'TRACE', 'CONNECT'],
+      status: 405,
+      headers: { Allow: 'GET, HEAD' },
+    },
     { handle: 'filesystem' },
     { src: '/(?:demo|developers|brand|login|app|runs/[^/]+)?/?', dest: '/index.html' },
   ],

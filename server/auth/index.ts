@@ -53,7 +53,12 @@ class SQLiteSessionStore extends session.Store {
     this.set(sid, data, callback);
   }
 }
-export function installAuth(app: Express, db: Database.Database, config: Config) {
+export function installAuth(
+  app: Express,
+  db: Database.Database,
+  config: Config,
+  onLogout: () => void = () => {}
+) {
   const configured = authenticationConfigured(config);
   const secureCookies = new URL(config.origin).protocol === 'https:';
   app.use(
@@ -175,12 +180,13 @@ export function installAuth(app: Express, db: Database.Database, config: Config)
   };
   app.post('/api/logout', requireOperator, (req, res, next) => {
     revokeSessionAgentGrants(db, req.sessionID);
+    onLogout();
     req.session.destroy((error) => {
       if (error) next(error);
       else {
         res.clearCookie(secureCookies ? '__Host-allowance' : 'allowance.sid', {
           path: '/',
-          secure: config.production,
+          secure: secureCookies,
           sameSite: 'strict',
         });
         res.json({ ok: true });

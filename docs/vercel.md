@@ -10,7 +10,7 @@ The complete live application remains a single persistent Express service with S
 
 On September 14, 2026, the current red Allowance build was deployed to production as `dpl_82MNDYsm16aFHG8RG6hfAWdMDnAm` and aliased to [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The deployment remains the static rehearsal/brand surface; no backend, SQLite database, signer, MCP process, OpenAI key, or payment endpoint is deployed to Vercel. Four hosted browser journeys passed, `/favicon-red.svg` returned 200 as `image/svg+xml`, and the deployed static asset hashes are recorded in [production-deployment-2026-09-14.json](../evidence/production-deployment-2026-09-14.json).
 
-## Latest production deployment
+## Historical September 15–16 deployments
 
 On September 15, 2026, the recovery-aware A14_RED candidate from source commit `48432f6` was promoted as `dpl_AHkuAUhTqPcLJfJXshWCG1LWfRLs`. On September 16, the final product-description and rehearsal-copy update from source commit `47c9661` was promoted as `dpl_34cQeJh8x2GSUudFSeSCrMY9yeYe` and aliased to [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). Four hosted browser journeys passed against the public URL, plus a public recovery check that preserved an interrupted run and `settled-but-result-unavailable` receipt without external requests. The updated metadata and demo copy are live alongside the boundary-and-dot favicon, canonical symbol, Axiom and Constellation films, posters and regenerated brand kit. Nine checked asset hashes match the local static build; `connect-src 'none'` remains enforced and `/api/health` returns 404. The deployment is still a deterministic rehearsal with no backend, signer, MCP process, OpenAI key or payment endpoint. Evidence is in [production-deployment-2026-09-16-final.json](../evidence/production-deployment-2026-09-16-final.json), [production recovery screenshot](../evidence/production-2026-09-16-recovery.png) and the prior matched public screenshots under `evidence/production-2026-09-15-*`.
 
@@ -31,6 +31,8 @@ npx --yes vercel@59.16.0 deploy --prebuilt --prod --yes
 Choose the intended Vercel account/team when linking; add `--scope TEAM` when necessary. The link and CLI-generated environment files remain ignored. Deploy with `--prebuilt` to upload only the prepared output. The repository's `vercel.json` also defines the rehearsal build explicitly so source builds cannot select the Express backend automatically.
 
 API and merchant routes return 404; mutation methods return 405 where no earlier route applies. Only supported page routes receive the SPA fallback. The generated Content Security Policy permits same-origin scripts and blocks fetch/XHR connections. JSON export and print remain local browser operations.
+
+For current source/test/deployment status, see the [September 20 release report](release-2026-09-20.md). Persistent backend deployment uses the separate [runtime runbook](runtime-recovery.md); no payment credentials belong in this Vercel project.
 
 ## Verify the public site
 

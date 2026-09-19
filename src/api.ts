@@ -3,6 +3,15 @@ export interface Session {
   configured: boolean;
   csrfToken: string;
 }
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 export async function api<T>(
   path: string,
   options: RequestInit = {},
@@ -23,7 +32,7 @@ export async function api<T>(
       data && typeof data === 'object' && 'error' in data && typeof data.error === 'string'
         ? data.error
         : `Request failed (${response.status}).`;
-    throw new Error(message);
+    throw new ApiError(message, response.status);
   }
   return data as T;
 }

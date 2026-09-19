@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { openDatabase } from '../server/db/index.js';
 import { Ledger } from '../server/policy/ledger.js';
 import { loadConfig } from '../server/config.js';
@@ -107,6 +108,56 @@ describe('integer money', () => {
   ])('rejects %s', (v) => expect(() => parseMoney(v)).toThrow());
 });
 describe('durable policy', () => {
+  it('exports versioned immutable identity metadata while retaining the original signed message and network', () => {
+    const { ledger, run, db } = setup();
+    const stored = db.prepare('SELECT policy FROM runs WHERE id=?').get(run.id) as {
+      policy: string;
+    };
+    const hash = createHash('sha256').update(stored.policy).digest('hex');
+    ledger.reserve(proposal(run.id));
+    settle(ledger, 'one');
+    ledger.markSettled('one', {
+      signature: 'controlled-test-one',
+      chainVerified: true,
+      slot: 123,
+      feeLamports: '10001',
+    });
+    const receipt = ledger.getRun(run.id);
+    expect(receipt).toMatchObject({ receiptVersion: 1, policyHash: hash });
+    expect(receipt.policy).toMatchObject({
+      catalogVersion: 1,
+      catalogHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+    expect(receipt.purchases[0]).toMatchObject({
+      requestId: 'one',
+      requestHash: 'one',
+      policyHash: hash,
+      messageHash: signing.messageHash,
+      proofSlot: '123',
+      paymentNetwork: 'devnet',
+      mint: USDC_MINT,
+      catalogHash: receipt.policy.catalogHash,
+    });
+    expect(JSON.stringify(receipt)).not.toContain('payerSignature');
+  });
+  it('refuses catalog drift before reservation and again at the signature boundary', () => {
+    const { ledger, run, db } = setup();
+    ledger.reserve(proposal(run.id));
+    const policy = { ...run.policy, catalogHash: '0'.repeat(64) };
+    db.prepare('UPDATE runs SET policy=? WHERE id=?').run(JSON.stringify(policy), run.id);
+    expect(() => ledger.checkBeforeSign('one')).toThrow(/catalog differs/);
+    expect(() => ledger.reserve(proposal(run.id, 'two'))).toThrow(/catalog differs/);
+  });
+  it('does not fabricate a historical catalog hash for older stored policies', () => {
+    const { ledger, run, db } = setup();
+    const legacy = { ...run.policy };
+    delete legacy.catalogHash;
+    delete legacy.catalogVersion;
+    db.prepare('UPDATE runs SET policy=? WHERE id=?').run(JSON.stringify(legacy), run.id);
+    ledger.reserve(proposal(run.id));
+    expect(ledger.getRun(run.id).policy.catalogHash).toBeUndefined();
+    expect(ledger.getRun(run.id).purchases[0].catalogHash).toBeUndefined();
+  });
   it('settles 10000 + 20000, leaves 10000, blocks 20000 without signing', () => {
     const { ledger, run } = setup();
     let signatures = 0;

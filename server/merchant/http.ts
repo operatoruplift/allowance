@@ -19,6 +19,7 @@ import {
   type ToolName,
 } from '../../shared/domain.js';
 import type { DataTools } from '../payments/contracts.js';
+import { validateToolResult } from '../../shared/tool-results.js';
 import {
   canonicalRequest,
   decodePaymentTransaction,
@@ -27,6 +28,7 @@ import {
   sha256,
   validateTransaction,
   verifyPayerSignature,
+  validateRequirements,
 } from '../payments/guard.js';
 
 export interface MerchantRecord {
@@ -241,6 +243,18 @@ export function createMerchant(options: {
                 maxTimeoutSeconds: 60,
                 extra: { feePayer: sponsor, memo: paymentMemo(id, canonical.hash) },
               };
+              validateRequirements(
+                { ...payload, resource: payload.resource!, accepts: [payload.accepted] },
+                {
+                  url: canonical.url,
+                  amount: tool.price,
+                  recipient,
+                  sponsor,
+                  memo: paymentMemo(id, canonical.hash),
+                  network: chain.network,
+                  mint: chain.mint,
+                }
+              );
               const accepted = payload.accepted;
               if (
                 accepted?.scheme !== expected.scheme ||
@@ -351,10 +365,11 @@ export function createMerchant(options: {
               address?: string;
               signature?: string;
             };
-            const result =
+            const rawResult =
               tool.name === 'wallet_snapshot'
                 ? await data.walletSnapshot(args.address!)
                 : await data.transactionExplain(args.signature!);
+            const result = validateToolResult(tool.name, rawResult, args);
             const encoded = JSON.stringify(result);
             if (Buffer.byteLength(encoded) > 128_000)
               throw new PaymentError('result-size', 'Tool result exceeds its bound.');

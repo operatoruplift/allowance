@@ -1,4 +1,5 @@
 import express from 'express';
+import { randomUUID } from 'node:crypto';
 import helmet from 'helmet';
 import type Database from 'better-sqlite3';
 import { z } from 'zod';
@@ -15,6 +16,7 @@ import { Ledger } from './policy/ledger.js';
 import { PolicyError } from './policy/decision.js';
 import { AgentRunner, type PaidToolRunner } from './agent/runner.js';
 import { createAgentGrant } from './mcp/grants.js';
+import { restoreReadiness } from './db/recovery.js';
 export interface RuntimePayments extends PaidToolRunner {
   mountMerchant(app: express.Express): void;
   readiness(): Promise<{
@@ -35,6 +37,13 @@ export function createApp(
 ) {
   const app = express();
   app.disable('x-powered-by');
+  app.use((req, res, next) => {
+    // Never accept a caller-supplied identifier as trusted diagnostic context.
+    res.setHeader('X-Request-ID', randomUUID());
+    if (req.path === '/api' || req.path.startsWith('/api/'))
+      res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
   if (config.proxyHops) app.set('trust proxy', config.proxyHops);
   app.use(
     helmet({
@@ -59,13 +68,14 @@ export function createApp(
   );
   app.use(express.json({ limit: '24kb', strict: true }));
   payments.mountMerchant(app);
-  const { requireOperator } = installAuth(app, db, config);
+  const { requireOperator } = installAuth(app, db, config, () => runner?.stopActive());
   let observed: Awaited<ReturnType<RuntimePayments['readiness']>> | undefined;
   let dataReady = false;
   let preflightAt = 0;
   function configDto(): AppConfigDTO {
     const readiness = [
       ...configurationReadiness(config),
+      restoreReadiness(db),
       ...(observed?.items || [
         {
           name: 'Live preflight',
@@ -236,18 +246,40 @@ export function createApp(
       if (error instanceof z.ZodError) {
         res
           .status(400)
-          .json({ error: 'Invalid request fields.', fields: z.flattenError(error).fieldErrors });
+          .json({
+            error: 'Invalid request fields.',
+            code: 'INVALID_FIELDS',
+            requestId: res.getHeader('X-Request-ID'),
+            fields: z.flattenError(error).fieldErrors,
+          });
         return;
       }
       if (error instanceof PolicyError) {
-        res.status(409).json({ error: error.message });
+        res
+          .status(409)
+          .json({
+            error: error.message,
+            code: 'POLICY_DENIED',
+            requestId: res.getHeader('X-Request-ID'),
+          });
         return;
       }
       if (error instanceof Error && error.message === 'Run not found.') {
         res.status(404).json({ error: 'Run not found.' });
         return;
       }
+      const bodyError = error as { type?: unknown } | null;
+      if (bodyError?.type === 'entity.too.large' || bodyError?.type === 'entity.parse.failed') {
+        res.status(bodyError.type === 'entity.too.large' ? 413 : 400).json({
+          error: 'Request body must be valid JSON within the allowed size.',
+          code: 'INVALID_BODY',
+          requestId: res.getHeader('X-Request-ID'),
+        });
+        return;
+      }
       res.status(503).json({
+        code: 'SERVICE_UNAVAILABLE',
+        requestId: res.getHeader('X-Request-ID'),
         error:
           'The service could not complete this request. No new spending is authorized by this error.',
       });

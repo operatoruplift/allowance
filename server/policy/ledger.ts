@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import type Database from 'better-sqlite3';
 import {
   CATALOG,
+  CATALOG_VERSION,
   PAYMENT_CHAINS,
   paymentNetworkName,
   parseMoney,
@@ -22,6 +23,7 @@ import type {
   SettlementEvidence,
 } from '../payments/contracts.js';
 import { decision, PolicyError } from './decision.js';
+import { assertExternalRunAuthorization } from '../mcp/grants.js';
 interface RunRow {
   id: string;
   owner: string;
@@ -63,6 +65,18 @@ const heldStates = ['reserved', 'submitted', 'settlement-unknown'];
 function resultHash(result: unknown) {
   return createHash('sha256').update(JSON.stringify(result), 'utf8').digest('hex');
 }
+function currentCatalogHash() {
+  return resultHash({ version: CATALOG_VERSION, tools: CATALOG });
+}
+function assertFrozenCatalog(policy: Policy) {
+  if (
+    (policy.catalogVersion !== undefined || policy.catalogHash !== undefined) &&
+    (policy.catalogVersion !== CATALOG_VERSION || policy.catalogHash !== currentCatalogHash())
+  )
+    throw new PolicyError(
+      'The current tool catalog differs from the immutable policy. Authorize a new run.'
+    );
+}
 export class Ledger implements PaymentLedger {
   constructor(
     public db: Database.Database,
@@ -96,8 +110,9 @@ export class Ledger implements PaymentLedger {
         .filter((r) => settledStates.includes(r.status))
         .reduce((s, r) => s + r.amount, 0),
       held: rows.filter((r) => heldStates.includes(r.status)).reduce((s, r) => s + r.amount, 0),
-      calls: rows.filter((r) => !['denied', 'released'].includes(r.status) && r.source === 'agent')
-        .length,
+      calls: rows.filter(
+        (r) => !['denied', 'released'].includes(r.status) && r.source !== 'policy-probe'
+      ).length,
     };
   }
   dailyUsed() {
@@ -148,6 +163,8 @@ export class Ledger implements PaymentLedger {
     const id = randomUUID();
     const policy: Policy = {
       version: 1,
+      catalogVersion: CATALOG_VERSION,
+      catalogHash: currentCatalogHash(),
       allowance: String(allowance),
       perRequestCap: String(cap),
       dailyCeiling: String(this.config.dailyCeiling),
@@ -198,12 +215,23 @@ export class Ledger implements PaymentLedger {
     const run = this.runRow(id);
     if (run.owner !== owner) throw new Error('Run not found.');
     const policy = JSON.parse(run.policy) as Policy;
+    const policyHash = createHash('sha256').update(run.policy, 'utf8').digest('hex');
     const amounts = this.amounts(id);
     const purchases = this.rows(id).map((row): PurchaseDTO => {
       const signed = row.signed_identity ? JSON.parse(row.signed_identity) : undefined;
       const evidence = row.evidence ? JSON.parse(row.evidence) : undefined;
       return {
         id: row.id,
+        requestId: row.id,
+        requestHash: row.request_hash,
+        policyHash,
+        catalogVersion: policy.catalogVersion,
+        catalogHash: policy.catalogHash,
+        messageHash: signed?.messageHash,
+        proofSlot: evidence?.slot === undefined ? undefined : String(evidence.slot),
+        paymentNetwork: paymentNetworkName(policy.network),
+        dataNetwork: run.data_network,
+        mint: policy.mint,
         tool: row.tool,
         amount: String(row.amount),
         status: row.status,
@@ -212,7 +240,10 @@ export class Ledger implements PaymentLedger {
         signature: row.signature || undefined,
         chainVerified: row.chain_verified === 1,
         result: row.result ? JSON.parse(row.result) : undefined,
-        source: row.source,
+        source:
+          row.source === 'agent' && run.execution_mode === 'external'
+            ? 'external-agent'
+            : row.source,
         serviceOutcome: row.service_outcome,
         payer: signed?.payer,
         recipient: policy.recipient,
@@ -236,6 +267,8 @@ export class Ledger implements PaymentLedger {
       .all(id) as EventDTO[];
     return {
       id: run.id,
+      receiptVersion: 1,
+      policyHash,
       wallet: run.wallet,
       task: run.task,
       status: run.status,
@@ -285,11 +318,13 @@ export class Ledger implements PaymentLedger {
   claimLlmCall(id: string): void {
     this.db
       .transaction(() => {
+        this.assertOwnership();
         const run = this.runRow(id);
         const policy = JSON.parse(run.policy) as Policy;
         if (
           !['running', 'queued'].includes(run.status) ||
-          this.now() >= Date.parse(policy.expiresAt)
+          this.now() >= Date.parse(policy.expiresAt) ||
+          (policy.runtimeExpiresAt && this.now() >= Date.parse(policy.runtimeExpiresAt))
         )
           throw new PolicyError('Run stopped or expired.');
         if (run.llm_calls >= this.config.maxLlmCalls)
@@ -374,7 +409,10 @@ export class Ledger implements PaymentLedger {
           return { created: false, intent: this.toIntent(existing) };
         }
         const run = this.runRow(proposal.runId);
+        if (run.execution_mode === 'external')
+          assertExternalRunAuthorization(this.db, run.id, run.owner, proposal.tool, this.now());
         const policy = JSON.parse(run.policy) as Policy;
+        assertFrozenCatalog(policy);
         const amounts = this.amounts(run.id);
         const result = decision(
           {
@@ -408,7 +446,7 @@ export class Ledger implements PaymentLedger {
             result.allowed ? 'reserved' : 'denied',
             this.time(),
             this.time().slice(0, 10),
-            proposal.source || 'agent',
+            proposal.source || (run.execution_mode === 'external' ? 'external-agent' : 'agent'),
             result.reason
           );
         this.event(
@@ -430,7 +468,10 @@ export class Ledger implements PaymentLedger {
     this.assertOwnership();
     const intent = this.intentRow(id);
     const run = this.runRow(intent.run_id);
+    if (run.execution_mode === 'external')
+      assertExternalRunAuthorization(this.db, run.id, run.owner, intent.tool, this.now());
     const policy = JSON.parse(run.policy) as Policy;
+    assertFrozenCatalog(policy);
     const chain = PAYMENT_CHAINS[this.config.paymentNetwork];
     if (
       policy.network !== chain.network ||
@@ -542,11 +583,18 @@ export class Ledger implements PaymentLedger {
         if (intent.signature && intent.signature !== evidence.signature)
           throw new Error('Settlement identity changed.');
         const signed = intent.signed_identity ? JSON.parse(intent.signed_identity) : undefined;
+        const previous = intent.evidence
+          ? (JSON.parse(intent.evidence) as SettlementEvidence)
+          : undefined;
         const observed: SettlementEvidence = {
+          ...previous,
           ...evidence,
           proofObservedAt: evidence.proofObservedAt ?? new Date(this.now()).toISOString(),
           originalBlockhash: evidence.originalBlockhash ?? signed?.blockhash,
           deliveryState: intent.service_outcome,
+          resultHash:
+            previous?.resultHash ??
+            (intent.result ? resultHash(JSON.parse(intent.result)) : undefined),
         };
         this.db
           .prepare(

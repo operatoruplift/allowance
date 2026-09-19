@@ -6,7 +6,7 @@
 
 **Full description:** Allowance is a developer console for bounded agent payments on Solana. An operator freezes a task, allowance, per-request cap, approved tools and expiry. A bounded agent can request the two first-party data tools—`wallet_snapshot` and `transaction_explain`—but application code keeps control of prices, recipients, mint, network, signing and the durable ledger. Receipts separate reserved funds, settlement evidence, chain verification and service delivery, including honest recovery when a signed request becomes ambiguous. The public site rehearses that workflow with exact fixtures; the persistent backend is required for real x402 execution. See the [complete product description](docs/product-description.md).
 
-The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution requires explicit setup. **No real Allowance mainnet or devnet settlement is claimed in this delivery.** See [verification](docs/verification.md) for the exact evidence obtained and remaining setup.
+The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution requires explicit setup. **No real Allowance mainnet or devnet settlement is claimed in this delivery.** See the [integration matrix](docs/integration-status.md) and [current release evidence](docs/release-2026-09-20.md) for checks and remaining setup.
 
 The public rehearsal is live at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The [Vercel deployment guide](docs/vercel.md) documents its separate static build. Live operator access and payments continue to require the persistent backend described below.
 
@@ -115,7 +115,7 @@ docker run --name allowance --restart unless-stopped \
 
 Place one HTTPS reverse proxy in front of the bound local port. `.env.docker` is ignored by git. Docker env files take literal values: omit the surrounding single quotes from the Argon2 hash generated in `.env` when copying it to `.env.docker`. Do not copy key files into the image. The image runs as the unprivileged `node` user; ensure that user can read the mounted dedicated key. For rehearsal-only hosting, omit the secret mount and leave live payments disabled.
 
-Back up SQLite with its backup API while running, or stop the service and copy the entire volume. Keep secrets and backups private. Do not run multiple replicas. Preserve the disk across upgrades. The schema migration version is recorded in `schema_migrations`; payment cache tables are created by the payment module.
+Use the [supported backup and restore commands](docs/runtime-recovery.md) rather than copying an active SQLite file. Restores preserve original receipts, holds and replay identities and begin locked against new spending; offline recovery requires explicit operator review. Keep secrets and backups private. Do not run multiple replicas or share one payer across different journals. The schema migration version is recorded in `schema_migrations`; payment cache tables are created by the payment module.
 
 ## Project map and delivery
 
@@ -127,6 +127,10 @@ The red brand edition includes 26 compositions in full-size PNG and outlined SVG
 - [Product descriptions](docs/product-description.md)
 - [Submission draft](docs/submission.md), pending live settlement evidence and final event rules
 - [Verification report](docs/verification.md)
+- [Integration evidence and blockers](docs/integration-status.md)
+- [Complete configuration reference](docs/configuration.md)
+- [Durable runtime, backup and recovery](docs/runtime-recovery.md)
+- [Focused threat model](docs/threat-model.md)
 - [Local external-agent MCP runbook](docs/mcp.md)
 - [Future channel transport](docs/payment-channels.md), not a shipped feature
 - [Brand assets and tokens](docs/brand.md)

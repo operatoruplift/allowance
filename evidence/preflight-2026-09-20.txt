@@ -1,0 +1,86 @@
+
+> allowance@0.1.0 preflight
+> tsx scripts/preflight.ts
+
+{
+  "recordedAt": "2026-09-19T17:54:42.226Z",
+  "kind": "read-only preflight; no signing, LLM call or settlement",
+  "paymentNetwork": "mainnet",
+  "dataNetwork": "mainnet",
+  "configuration": [
+    {
+      "name": "Operator access",
+      "ready": false,
+      "detail": "Run npm run setup:operator to configure password hash and session secret."
+    },
+    {
+      "name": "mainnet payments",
+      "ready": false,
+      "detail": "Set LIVE_PAYMENTS_ENABLED=true only after mainnet configuration, funding and preflight."
+    },
+    {
+      "name": "Dedicated payer",
+      "ready": false,
+      "detail": "Set PAYER_SECRET_FILE to an ignored dedicated low-balance keypair file."
+    },
+    {
+      "name": "Merchant recipient",
+      "ready": false,
+      "detail": "Set MERCHANT_RECIPIENT to a separate token owner on the configured payment network."
+    },
+    {
+      "name": "Trusted fee sponsor",
+      "ready": false,
+      "detail": "Set TRUSTED_FEE_PAYER after inspecting the facilitator supported response."
+    },
+    {
+      "name": "Read-only data access",
+      "ready": false,
+      "detail": "Set ALLOW_MAINNET_READ_ONLY=true to enable the configured mainnet data RPC."
+    },
+    {
+      "name": "OpenAI agent",
+      "ready": false,
+      "detail": "Set OPENAI_API_KEY and OPENAI_MODEL. See the documented verified model example."
+    },
+    {
+      "name": "Journal recovery",
+      "ready": true,
+      "detail": "No unapproved backup restore is present."
+    }
+  ],
+  "payments": {
+    "ready": false,
+    "items": [
+      {
+        "name": "mainnet opt-in",
+        "ready": false,
+        "detail": "LIVE_PAYMENTS_ENABLED is false; rehearsal never signs."
+      },
+      {
+        "name": "Signer boundary",
+        "ready": false,
+        "detail": "Set PAYER_SECRET_FILE or PAYER_SECRET_JSON for a dedicated low-balance payer."
+      },
+      {
+        "name": "Separate recipient",
+        "ready": false,
+        "detail": "MERCHANT_RECIPIENT must be a different valid Solana address."
+      },
+      {
+        "name": "Pinned sponsor",
+        "ready": false,
+        "detail": "TRUSTED_FEE_PAYER must match the facilitator and differ from the token owner."
+      }
+    ],
+    "payer": null,
+    "balance": {
+      "usdc": null,
+      "sol": null
+    }
+  },
+  "data": {
+    "ready": false,
+    "error": "Data preflight unavailable"
+  }
+}

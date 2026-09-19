@@ -52,7 +52,7 @@ import {
   type RunDTO,
   type ToolName,
 } from '../shared/domain';
-import { api, downloadJSON, type Session } from './api';
+import { api, ApiError, downloadJSON, type Session } from './api';
 import {
   createDemo,
   demoProbe,
@@ -63,6 +63,8 @@ import {
 } from './demo';
 import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
+import DecorativeFilm from './DecorativeFilm';
+import { useMotion } from './motion';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -78,6 +80,7 @@ function Logo({ compact = false }: { compact?: boolean }) {
 }
 function Header() {
   const { pathname } = useLocation();
+  const { reduced, requested, setRequested } = useMotion();
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
   return (
@@ -110,6 +113,18 @@ function Header() {
           <Link className={pathname === '/brand' ? 'nav-link active' : 'nav-link'} to="/brand">
             Brand kit
           </Link>
+          <button
+            className="nav-link motion-preference"
+            aria-pressed={requested}
+            title={
+              reduced && !requested
+                ? 'Your device requests reduced motion or data saving.'
+                : 'Reduce decorative movement. Run updates continue normally.'
+            }
+            onClick={() => setRequested(!requested)}
+          >
+            <Sparkles size={13} /> {reduced ? 'Motion reduced' : 'Reduce motion'}
+          </button>
           <Link className="button button-small button-outline mobile-console-link" to="/app">
             {rehearsalOnly ? 'About live runs' : 'Open console'} <ArrowUpRight size={15} />
           </Link>
@@ -395,44 +410,6 @@ function LandingReceipt() {
   );
 }
 
-function DecorativeFilm({
-  src,
-  poster,
-  label,
-  className,
-}: {
-  src: string;
-  poster: string;
-  label: string;
-  className?: string;
-}) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    void video.play().catch(() => undefined);
-  }, []);
-
-  return (
-    <div className={`decorative-film ${className ?? ''}`} data-film={label}>
-      <video
-        ref={videoRef}
-        className="decorative-film-video"
-        src={src}
-        poster={poster}
-        muted
-        loop
-        playsInline
-        autoPlay
-        preload="metadata"
-        aria-label={label}
-        onCanPlay={(event) => void event.currentTarget.play().catch(() => undefined)}
-      />
-      <div className="film-scrim" aria-hidden="true" />
-    </div>
-  );
-}
 function Landing() {
   return (
     <>
@@ -911,7 +888,7 @@ function ToolList({
 function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; pending: boolean }) {
   const finished = terminalStatuses.has(run.status);
   const count = run.purchases.filter(
-    (p) => p.source === 'agent' && p.serviceOutcome === 'delivered'
+    (p) => p.source !== 'policy-probe' && p.serviceOutcome === 'delivered'
   ).length;
   return (
     <section className="card progress-card">
@@ -1050,78 +1027,92 @@ function PurchaseRow({
         </span>
         <ChevronDown size={16} className={expanded ? 'rotated' : ''} />
       </button>
-      {expanded && (
-        <div className="purchase-expanded">
-          <dl>
+      <div className={`purchase-expanded ${expanded ? '' : 'purchase-collapsed'}`}>
+        <dl>
+          <div>
+            <dt>Payment state</dt>
+            <dd>
+              {statusLabel(purchase)}
+              {demo ? ' (simulated)' : ''}
+            </dd>
+          </div>
+          <div>
+            <dt>Service outcome</dt>
+            <dd>{purchase.serviceOutcome}</dd>
+          </div>
+          <div>
+            <dt>Chain evidence</dt>
+            <dd>
+              {demo
+                ? 'None — deterministic rehearsal'
+                : purchase.chainVerified
+                  ? 'Token movement verified using RPC'
+                  : 'Not chain-verified'}
+            </dd>
+          </div>
+          <div>
+            <dt>Request ID</dt>
+            <dd className="mono">{purchase.id}</dd>
+          </div>
+          <div>
+            <dt>Payment network</dt>
+            <dd>{demo ? 'Mainnet preview · no payment' : paymentNetwork}</dd>
+          </div>
+          {purchase.proofObservedAt && (
             <div>
-              <dt>Payment state</dt>
-              <dd>
-                {statusLabel(purchase)}
-                {demo ? ' (simulated)' : ''}
-              </dd>
+              <dt>Evidence observed</dt>
+              <dd>{purchase.proofObservedAt}</dd>
             </div>
-            <div>
-              <dt>Service outcome</dt>
-              <dd>{purchase.serviceOutcome}</dd>
-            </div>
-            <div>
-              <dt>Chain evidence</dt>
-              <dd>
-                {demo
-                  ? 'None — deterministic rehearsal'
-                  : purchase.chainVerified
-                    ? 'Token movement verified using RPC'
-                    : 'Not chain-verified'}
-              </dd>
-            </div>
-            <div>
-              <dt>Request ID</dt>
-              <dd className="mono">{purchase.id}</dd>
-            </div>
-            {purchase.payer && (
-              <div>
-                <dt>Token-owning payer</dt>
-                <dd className="mono">{purchase.payer}</dd>
-              </div>
-            )}
-            {purchase.recipient && (
-              <div>
-                <dt>Merchant recipient</dt>
-                <dd className="mono">{purchase.recipient}</dd>
-              </div>
-            )}
-            {purchase.feeSponsor && (
-              <div>
-                <dt>SOL fee sponsor</dt>
-                <dd className="mono">{purchase.feeSponsor}</dd>
-              </div>
-            )}
-            {purchase.feeLamports && (
-              <div>
-                <dt>Network fee (separate)</dt>
-                <dd>{purchase.feeLamports} lamports, paid by the fee sponsor</dd>
-              </div>
-            )}
-          </dl>
-          {purchase.reason && <p>{purchase.reason}</p>}
-          {!demo && purchase.signature && (
-            <a
-              className="text-link"
-              href={`https://explorer.solana.com/tx/${encodeURIComponent(purchase.signature)}${paymentNetwork === 'devnet' ? '?cluster=devnet' : ''}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              View {paymentNetwork} transaction <ArrowUpRight size={14} />
-            </a>
           )}
-          {purchase.result !== undefined && (
-            <details className="data-details">
-              <summary>Inspect returned data</summary>
-              <pre>{JSON.stringify(purchase.result, null, 2)}</pre>
-            </details>
+          {purchase.resultHash && (
+            <div>
+              <dt>Delivered result SHA-256</dt>
+              <dd className="mono">{purchase.resultHash}</dd>
+            </div>
           )}
-        </div>
-      )}
+          {purchase.payer && (
+            <div>
+              <dt>Token-owning payer</dt>
+              <dd className="mono">{purchase.payer}</dd>
+            </div>
+          )}
+          {purchase.recipient && (
+            <div>
+              <dt>Merchant recipient</dt>
+              <dd className="mono">{purchase.recipient}</dd>
+            </div>
+          )}
+          {purchase.feeSponsor && (
+            <div>
+              <dt>SOL fee sponsor</dt>
+              <dd className="mono">{purchase.feeSponsor}</dd>
+            </div>
+          )}
+          {purchase.feeLamports && (
+            <div>
+              <dt>Network fee (separate)</dt>
+              <dd>{purchase.feeLamports} lamports, paid by the fee sponsor</dd>
+            </div>
+          )}
+        </dl>
+        {purchase.reason && <p>{purchase.reason}</p>}
+        {!demo && purchase.signature && (
+          <a
+            className="text-link"
+            href={`https://explorer.solana.com/tx/${encodeURIComponent(purchase.signature)}${paymentNetwork === 'devnet' ? '?cluster=devnet' : ''}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View {paymentNetwork} transaction <ArrowUpRight size={14} />
+          </a>
+        )}
+        {purchase.result !== undefined && (
+          <details className="data-details">
+            <summary>Inspect returned data</summary>
+            <pre>{JSON.stringify(purchase.result, null, 2)}</pre>
+          </details>
+        )}
+      </div>
     </div>
   );
 }
@@ -1576,9 +1567,14 @@ function OperatorApp() {
       setWallet((old) => old || nextConfig.defaultWallet);
       setRuns(nextRuns.runs);
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        setConfig(null);
+        setRuns([]);
+        void refresh();
+      }
       setError(e instanceof Error ? e.message : 'Could not load configuration.');
     }
-  }, []);
+  }, [refresh]);
   useEffect(() => {
     if (session?.authenticated) void load();
   }, [session?.authenticated, load]);
@@ -1863,8 +1859,9 @@ function OperatorApp() {
                     <div>
                       <b>External run authorized.</b>
                       <span>
-                        Save this one-time grant token, then run <code>npm run mcp</code> with{' '}
-                        <code>MCP_GRANT_TOKEN</code>. It expires at{' '}
+                        Launch <code>npm run --silent mcp</code> with <code>MCP_GRANT_TOKEN</code>{' '}
+                        set in your MCP client’s private environment. Keep the token out of shell
+                        history and model messages. It expires at{' '}
                         {new Date(externalGrant.expiresAt).toLocaleString()}.
                       </span>
                       <button
@@ -2018,9 +2015,15 @@ function LiveRun() {
         setError('');
       }
     } catch (e) {
-      if (alive.current) setError(e instanceof Error ? e.message : 'Could not load run.');
+      if (alive.current) {
+        if (e instanceof ApiError && e.status === 401) {
+          setRun(null);
+          void refresh();
+        }
+        setError(e instanceof Error ? e.message : 'Could not load run.');
+      }
     }
-  }, [id]);
+  }, [id, refresh]);
   useEffect(() => {
     alive.current = true;
     if (session?.authenticated) void load();
@@ -2060,6 +2063,10 @@ function LiveRun() {
       );
       await load();
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        setRun(null);
+        void refresh();
+      }
       setError(e instanceof Error ? e.message : 'Could not stop run.');
     } finally {
       setPending(false);
@@ -2076,6 +2083,10 @@ function LiveRun() {
       );
       await load();
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        setRun(null);
+        void refresh();
+      }
       setError(e instanceof Error ? e.message : 'Policy probe failed.');
     } finally {
       setProbePending(false);
@@ -2086,6 +2097,10 @@ function LiveRun() {
       const receipt = await api<unknown>(`/api/runs/${encodeURIComponent(id ?? '')}/export`);
       downloadJSON(receipt, `allowance-${id}-receipt.json`);
     } catch (e) {
+      if (e instanceof ApiError && e.status === 401) {
+        setRun(null);
+        void refresh();
+      }
       setError(e instanceof Error ? e.message : 'Export failed.');
     }
   }
@@ -2396,7 +2411,8 @@ function Developers() {
             <p>
               Configure a dedicated low-balance mainnet payer, a different merchant recipient,
               Solana RPC, a compatible facilitator, and your server-only OpenAI credentials and
-              model. Keep live payments disabled until every prerequisite is configured and verified.
+              model. Keep live payments disabled until every prerequisite is configured and
+              verified.
             </p>
             <p>
               Check the mainnet USDC mint and decimals, required token accounts, facilitator

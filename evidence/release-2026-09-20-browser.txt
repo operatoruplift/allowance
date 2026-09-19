@@ -1,0 +1,26 @@
+
+> allowance@0.1.0 test:browser
+> playwright test
+
+[WebServer] (node:34507) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 3 workers
+
+(node:34526) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34525) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/browser/media.spec.ts:3:1 › local films autoplay in view, suspend offscreen, and keep their original posters (7.3s)
+  ✓  3 [chromium] › tests/browser/journeys.spec.ts:3:1 › landing, keyboard CTA, private route and developer guide (7.5s)
+  ✓  4 [chromium] › tests/browser/media.spec.ts:42:1 › device and saved motion preferences show posters without stopping example state updates (10.2s)
+  ✓  5 [chromium] › tests/browser/journeys.spec.ts:23:1 › full fixture, separate probe and JSON export have exact accounting and no live APIs (13.1s)
+  ✓  6 [chromium] › tests/browser/media.spec.ts:76:1 › media failures and data saving keep the readable interface and supplied posters (6.5s)
+  ✓  1 [chromium] › tests/browser/private.spec.ts:104:1 › controlled real auth: saved run survives refresh, stops, exports, and stays private (15.7s)
+  ✓  7 [chromium] › tests/browser/journeys.spec.ts:91:1 › mobile and reduced-motion layout, empty history, service failure and reset are honest (10.2s)
+  ✓  8 [chromium] › tests/browser/journeys.spec.ts:136:1 › deterministic recovery keeps an ambiguous hold until the original intent is reconciled (3.3s)
+  ✓  9 [chromium] › tests/browser/journeys.spec.ts:160:1 › stopping an example releases its unsigned hold and rerunning begins with a clean receipt (6.0s)
+
+  9 passed (54.6s)

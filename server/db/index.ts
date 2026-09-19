@@ -1,17 +1,23 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
+export const SCHEMA_VERSION = 3;
 export function openDatabase(filename: string): Database.Database {
   if (filename !== ':memory:')
     fs.mkdirSync(path.dirname(filename), { recursive: true, mode: 0o700 });
   const db = new Database(filename);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
-  db.pragma('busy_timeout = 5000');
-  db.pragma('synchronous = FULL');
-  migrate(db);
-  if (filename !== ':memory:') fs.chmodSync(filename, 0o600);
-  return db;
+  try {
+    db.pragma('journal_mode = WAL');
+    db.pragma('foreign_keys = ON');
+    db.pragma('busy_timeout = 5000');
+    db.pragma('synchronous = FULL');
+    migrate(db);
+    if (filename !== ':memory:') fs.chmodSync(filename, 0o600);
+    return db;
+  } catch (error) {
+    db.close();
+    throw error;
+  }
 }
 export function migrate(db: Database.Database) {
   db.exec(
@@ -20,6 +26,10 @@ export function migrate(db: Database.Database) {
   const version = db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as {
     version: number | null;
   };
+  if ((version.version || 0) > SCHEMA_VERSION)
+    throw new Error(
+      'Database schema is newer than this application. Restore compatible code, not an older ledger.'
+    );
   if ((version.version || 0) < 1)
     db.transaction(() => {
       db.exec(`
@@ -56,5 +66,13 @@ export function migrate(db: Database.Database) {
         CREATE INDEX agent_grants_session ON agent_grants(session_id);
       `);
       db.prepare('INSERT INTO schema_migrations VALUES(2,?)').run(new Date().toISOString());
+    }).immediate();
+  if ((latest.version || 0) < 3)
+    db.transaction(() => {
+      db.exec(`CREATE TABLE restore_recoveries (
+        id TEXT PRIMARY KEY, backup_id TEXT NOT NULL, backup_completed_at TEXT NOT NULL,
+        restored_at TEXT NOT NULL, approved_at TEXT, approval_json TEXT
+      ) STRICT;`);
+      db.prepare('INSERT INTO schema_migrations VALUES(3,?)').run(new Date().toISOString());
     }).immediate();
 }

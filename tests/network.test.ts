@@ -118,7 +118,14 @@ describe('explicit payment network configuration', () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockImplementation(
-        async () => new Response(JSON.stringify({ result: PAYMENT_CHAINS.devnet.genesisHash }))
+        async (_input, init) =>
+          new Response(
+            JSON.stringify({
+              jsonrpc: '2.0',
+              id: JSON.parse(String(init?.body)).id,
+              result: PAYMENT_CHAINS.devnet.genesisHash,
+            })
+          )
       );
     const rpc = new PaymentRpc('https://rpc.example', 'mainnet', fetcher);
     await expect(rpc.preflight(input.wallet, PAYMENT_CHAINS.mainnet.mint)).rejects.toThrow(

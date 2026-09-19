@@ -26,8 +26,9 @@ The design separates authorization, held reservation, submission uncertainty, se
 
 - Public deterministic rehearsal: [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployed September 12, 2026. This site makes no model calls or real payments.
 - Repository: [operatoruplift/allowance](https://github.com/operatoruplift/allowance), including application code, controlled tests, brand kit and setup instructions.
-- Updated silent rehearsal walkthrough: [September 19 recording](../evidence/release-2026-09-19-walkthrough.webm); use [demo-script.md](demo-script.md) for the 90-second narrated version. A real paid-run recording remains pending.
+- Updated silent rehearsal walkthrough: [September 20 recording](../evidence/release-2026-09-20-walkthrough.webm); use [demo-script.md](demo-script.md) for the 90-second narrated version. A real paid-run recording remains pending.
 - Local checks and screenshots: see the repository verification report and screenshot artifacts.
+- Current capability-by-capability evidence, container/runtime preparation and exact blockers: [integration matrix](integration-status.md), [release manifest](../evidence/release-2026-09-20-manifest.json) and [runtime recovery](runtime-recovery.md).
 - Real data reads: dated devnet genesis/mint verification and public wallet history are recorded in [sources.md](sources.md).
 - Actual Allowance x402 settlements, receipt IDs and chain-verified token movements: **pending an authorized, funded live run**.
 

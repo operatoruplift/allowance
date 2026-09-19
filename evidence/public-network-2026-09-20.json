@@ -1,0 +1,61 @@
+{
+  "recordedAt": "2026-09-19T17:48:21.236Z",
+  "kind": "Public read-only capability checks; no payer, funding, signature or payment",
+  "networks": [
+    {
+      "network": "mainnet",
+      "observedAt": "2026-09-19T17:48:20.171Z",
+      "rpc": "https://api.mainnet-beta.solana.com",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "genesis": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+      "mintSlot": "448479553",
+      "checks": {
+        "genesis": true,
+        "envelope": true,
+        "owner": true,
+        "decimals": true,
+        "initialized": true,
+        "notExecutable": true
+      },
+      "result": "read-only verified"
+    },
+    {
+      "network": "devnet",
+      "observedAt": "2026-09-19T17:48:20.285Z",
+      "rpc": "https://api.devnet.solana.com",
+      "mint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+      "genesis": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+      "mintSlot": "500974610",
+      "checks": {
+        "genesis": true,
+        "envelope": true,
+        "owner": true,
+        "decimals": true,
+        "initialized": true,
+        "notExecutable": true
+      },
+      "result": "read-only verified"
+    }
+  ],
+  "facilitator": {
+    "observedAt": "2026-09-19T17:48:21.236Z",
+    "url": "https://x402.org/facilitator/supported",
+    "result": "read-only observed",
+    "kinds": [
+      {
+        "x402Version": 2,
+        "scheme": "exact",
+        "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "extra": {
+          "feePayer": "CKPKJWNdJEqa81x7CkZ14BVPiY6y16Sxs7owznqtWYp5",
+          "features": {
+            "smartWalletSupported": true
+          }
+        }
+      }
+    ],
+    "settlementVerified": false
+  },
+  "configuredProviderVerified": false,
+  "paymentsPerformed": false
+}

@@ -4,6 +4,8 @@ import { loadConfig } from '../server/config.js';
 import { Ledger } from '../server/policy/ledger.js';
 import { AgentRunner, type ModelPort } from '../server/agent/runner.js';
 import type { Response } from 'openai/resources/responses/responses';
+import { snapshotFixture } from './fixtures/tool-results.js';
+import { canonicalRequest } from '../server/payments/guard.js';
 const dbs: ReturnType<typeof openDatabase>[] = [];
 afterEach(() => dbs.splice(0).forEach((db) => db.close()));
 function setup(model: ModelPort) {
@@ -30,6 +32,59 @@ function setup(model: ModelPort) {
 async function untilDone(runner: AgentRunner) {
   await vi.waitFor(() => expect(runner.isBusy()).toBe(false));
 }
+function deliverSnapshot(ledger: Ledger, run: ReturnType<Ledger['getRun']>) {
+  const id = 'purchased_snapshot_01';
+  const canonical = canonicalRequest(
+    'wallet_snapshot',
+    { address: run.wallet },
+    ledger.config.origin
+  );
+  ledger.reserve({
+    runId: run.id,
+    requestId: id,
+    canonicalHash: canonical.hash,
+    tool: 'wallet_snapshot',
+    amount: '10000',
+    origin: ledger.config.origin,
+    path: canonical.path,
+    method: 'POST',
+    recipient: run.policy.recipient,
+    network: run.policy.network,
+    mint: run.policy.mint,
+  });
+  ledger.markSettled(id, { signature: 'controlled-fixture', chainVerified: false });
+  ledger.markDelivered(id, snapshotFixture(run.wallet));
+  return id;
+}
+it('stores only receipt-grounded reports and adds observed data provenance separately from payment proof', async () => {
+  const model: ModelPort = {
+    create: async () => ({
+      output: [],
+      output_text: 'The purchased snapshot has no recent activity [purchased_snapshot_01].',
+      usage: undefined,
+    }),
+  };
+  const { ledger, run, runner } = setup(model);
+  deliverSnapshot(ledger, run);
+  runner.start(run.id);
+  await untilDone(runner);
+  expect(ledger.getRun(run.id).status).toBe('completed');
+  expect(ledger.getRun(run.id).report).toContain('observed 2026-09-20T00:00:00.000Z');
+  expect(ledger.getRun(run.id).report).toContain('distinct from payment settlement');
+});
+it.each([
+  'A report without receipt citations.',
+  'The receipt proves activity [invented_receipt_01].',
+])('replaces an ungrounded model report with durable receipt facts: %s', async (output_text) => {
+  const model: ModelPort = { create: async () => ({ output: [], output_text, usage: undefined }) };
+  const { ledger, run, runner } = setup(model);
+  deliverSnapshot(ledger, run);
+  runner.start(run.id);
+  await untilDone(runner);
+  expect(ledger.getRun(run.id).status).toBe('failed');
+  expect(ledger.getRun(run.id).report).toContain('[purchased_snapshot_01]');
+  expect(ledger.getRun(run.id).report).not.toContain(output_text);
+});
 it('rejects injected policy/URL arguments before the guarded paid client', async () => {
   let calls = 0;
   const model: ModelPort = {

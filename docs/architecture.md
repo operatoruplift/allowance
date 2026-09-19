@@ -15,7 +15,7 @@ flowchart LR
   Merchant --> Facilitator[Configured exact SVM facilitator]
   Facilitator --> Chain[Selected Solana network settlement]
   Merchant --> Data[Validated read-only Solana RPC data]
-  Devnet --> Reconcile[Settlement evidence and reconciliation]
+  Chain --> Reconcile[Settlement evidence and reconciliation]
   Reconcile --> Ledger
   Ledger --> Receipt[Run timeline and receipt]
   Express --> Receipt
@@ -39,6 +39,8 @@ flowchart LR
 
 The live runner must traverse the same HTTP merchant middleware as a separate client. The public `/demo` is fixture-only and invokes neither a model nor payment services. The conventional LLM-provider bill is separately capped and outside the USDC allowance.
 
+The facilitator adapter implements the pinned SDK's v2 contract with a fixed HTTPS origin, rejected redirects, a 15-second timeout, a 64 KiB body limit, validated supported/verify/settle response shapes and no automatic retries. Official x402 buyer and merchant lifecycle code remains in use. Useful outputs are validated again at merchant and buyer boundaries against their canonical tool input and frozen data network. Model report citations must refer to actually delivered receipts. Versioned exported metadata and unavailable legacy evidence are described in [the receipt contract](receipt-contract.md).
+
 The [Vercel rehearsal](vercel.md) is a static copy of the public interface. Its build does not mount operator/private route components and emits no backend functions. API and merchant paths return 404, and browser connections are blocked by its Content Security Policy. This public deployment does not change the live application's one-instance, persistent-disk requirements or host its ledger.
 
 ## Durable purchase lifecycle
@@ -50,7 +52,7 @@ stateDiagram-v2
   proposed --> reserved: atomic ledger transaction
   reserved --> submitted: payment created and sent
   submitted --> settlement_unknown: evidence inconclusive
-  submitted --> settled: verified settlement evidence
+  submitted --> settled: reported settlement; chain proof recorded separately
   settlement_unknown --> settled: reconciliation
   settled --> delivered: cached result available
   settled --> settled_but_result_unavailable: service outcome unavailable

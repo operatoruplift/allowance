@@ -1,0 +1,13 @@
+# Receipt export contract
+
+New exports declare `receiptVersion: 1`. The existing run-shaped JSON is preserved; this release adds metadata rather than wrapping/removing the existing fields. A missing version identifies a historical export. Consumers must tolerate additive fields and missing legacy evidence. Any future incompatible representation needs a new version.
+
+The run has its original `id`, frozen `policy`, exact micro-USDC strings (`authorized`, `settled`, `held`, `remaining`), UTC timestamps, independent payment/data networks, report, events and purchase records. `policyHash` is SHA-256 over the exact saved policy JSON bytes. New policies freeze `catalogVersion` and `catalogHash`; old policies without those fields remain without them. A hash is an integrity reference to application data, not a signature or proof of chain activity.
+
+Each durable purchase adds `requestId`, canonical `requestHash`, policy/catalog references, selected networks/mint, original `messageHash` when recorded, and independent `proofSlot` as a decimal string. `id` is the durable intent/receipt identity; the request ID is preserved as the same identifier used at reservation. `source` distinguishes `agent`, `external-agent` and the separately initiated `policy-probe`. Legacy external rows are identified from their saved run execution mode; no amount or network is rewritten.
+
+`status` describes payment/accounting state. `chainVerified` reports independent matching RPC proof. `serviceOutcome`/`deliveryState` describes useful delivery; a successful payment can still have unavailable output. Original payment `signature`, `originalBlockhash`, originating last-valid height (only when actually exposed), proof observation time, fee sponsor/lamports and result hash remain separate. Missing optional proof fields mean **unavailable**, never zero or a made-up validity height. Data-source transaction signatures live inside purchased results; they must never populate a payment signature.
+
+The export intentionally omits replayable signed payloads, raw secret keys, provider credentials, session cookies and grant tokens. It is an authenticated owner-scoped private export and may contain that operator's wallet/task and purchased public-chain facts. The local public rehearsal export is fixture data, has no real signature or chain proof, and remains labeled `mode: rehearsal` even when its illustrative payment network is mainnet.
+
+Printing includes the currently loaded receipt evidence immediately, even when its on-screen rows are collapsed. Exporting the rehearsal is local; exporting a real private run uses the authenticated no-store API. Neither action signs or initiates a model request.

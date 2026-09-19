@@ -1,0 +1,47 @@
+{
+  "recordedAt": "2026-09-19T18:08:34.515Z",
+  "kind": "Local controlled release gates; no funded or model calls",
+  "node": "v22.19.0",
+  "checks": [
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "startedAt": "2026-09-19T18:08:34.517Z",
+      "durationSeconds": 13.392,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-lint.txt"
+    },
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck",
+      "startedAt": "2026-09-19T18:08:47.913Z",
+      "durationSeconds": 119.462,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-typecheck.txt"
+    },
+    {
+      "name": "tests",
+      "command": "npm test -- --reporter=dot",
+      "startedAt": "2026-09-19T18:10:47.378Z",
+      "durationSeconds": 37.925,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-tests.txt"
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "startedAt": "2026-09-19T18:11:25.307Z",
+      "durationSeconds": 58.746,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-build.txt"
+    },
+    {
+      "name": "rehearsal-build",
+      "command": "npm run build:rehearsal",
+      "startedAt": "2026-09-19T18:12:24.056Z",
+      "durationSeconds": 21.875,
+      "exitCode": 0,
+      "log": "evidence/release-2026-09-20-rehearsal-build.txt"
+    }
+  ]
+}

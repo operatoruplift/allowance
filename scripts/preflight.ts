@@ -1,5 +1,6 @@
 import { createRuntime } from '../server/runtime.js';
 import { configurationReadiness, loadConfig } from '../server/config.js';
+import { restoreReadiness } from '../server/db/recovery.js';
 const runtime = await createRuntime(loadConfig(), { recover: false });
 try {
   const [payments, data] = await Promise.allSettled([
@@ -11,7 +12,7 @@ try {
     kind: 'read-only preflight; no signing, LLM call or settlement',
     paymentNetwork: runtime.config.paymentNetwork,
     dataNetwork: runtime.config.dataNetwork,
-    configuration: configurationReadiness(runtime.config),
+    configuration: [...configurationReadiness(runtime.config), restoreReadiness(runtime.db)],
     payments:
       payments.status === 'fulfilled'
         ? payments.value

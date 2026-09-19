@@ -1,0 +1,132 @@
+{
+  "observedAt": "2026-09-19T17:52:53.488Z",
+  "mode": "controlled local runtime with payments and external services disabled",
+  "checks": [
+    {
+      "route": "/",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "route": "/demo",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "route": "/developers",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "route": "/brand",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "route": "/login",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "route": "/missing-page",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "route": "/",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "route": "/demo",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "route": "/developers",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "route": "/brand",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "route": "/login",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "route": "/missing-page",
+      "width": 1024,
+      "overflow": false
+    },
+    {
+      "route": "/",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "/demo",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "/developers",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "/brand",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "/login",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "/missing-page",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "/",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "/demo",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "/developers",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "/brand",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "/login",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "/missing-page",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "/demo",
+      "width": 640,
+      "zoom": "200%",
+      "overflow": false
+    }
+  ]
+}

@@ -5329,7 +5329,7 @@ select {
   background: #f0eee9;
 }
 .mountain-film .decorative-film-video {
-  object-position: center bottom;
+  object-position: center 60%;
 }
 .mountain-film .film-scrim {
   background: linear-gradient(180deg, #f0eee900 55%, #281e2015 100%);
@@ -5853,6 +5853,110 @@ select {
 
 #run-details {
   scroll-margin-top: 100px;
+}
+
+.motion-preference {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  padding: 3px 0;
+  color: var(--secondary);
+}
+.motion-preference[aria-pressed='true'] {
+  color: var(--accent);
+}
+.decorative-film-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.mountain-film .decorative-film-poster {
+  object-position: center 60%;
+}
+.decorative-film-video {
+  position: relative;
+  opacity: 0;
+}
+.decorative-film[data-film-state='playing'] .decorative-film-video {
+  opacity: 1;
+}
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.purchase-collapsed {
+  display: none;
+}
+
+/* Keep receipt facts legible on a narrow phone without scaling a desktop card. */
+.hero-receipt .receipt-top .eyebrow,
+.hero-receipt .currency-label,
+.hero-receipt .budget-title .eyebrow {
+  font-size: 11px;
+}
+.hero-receipt .receipt-top h2 {
+  font-size: 16px;
+}
+.hero-receipt .meter-legend > span,
+.hero-receipt .meter-legend b,
+.hero-receipt .preview-row-text small,
+.hero-receipt .preview-row-price small {
+  font-size: 11px;
+}
+.hero-receipt .preview-row-text b {
+  font-size: 13px;
+}
+.hero-receipt .preview-row-price b {
+  font-size: 12px;
+}
+.hero-receipt .preview-detail,
+.hero-receipt .receipt-bottom {
+  font-size: 11px;
+}
+@media (max-width: 430px) {
+  .hero-receipt .budget-title {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .hero-receipt .currency-label {
+    flex-basis: 100%;
+  }
+  .hero-receipt .receipt-top {
+    flex-wrap: wrap;
+  }
+  .hero-receipt .receipt-top .pill {
+    margin-left: 0;
+    font-size: 10px;
+  }
+  .hero-receipt .receipt-top h2 {
+    font-size: 14px;
+  }
+  .hero-receipt .preview-row {
+    gap: 7px;
+  }
+  .hero-receipt .preview-row-text small {
+    margin-top: 3px;
+  }
+  .hero-receipt .receipt-bottom {
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+}
+@media print {
+  .purchase-collapsed {
+    display: block;
+  }
+  .purchase-row > svg,
+  .purchase-expanded .data-details {
+    display: none;
+  }
 }
 
 @media (max-width: 430px) {

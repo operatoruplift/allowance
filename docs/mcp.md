@@ -1,5 +1,7 @@
 # Local external-agent bridge
 
+Last updated: **20 September 2026**.
+
 Allowance exposes a local, stdio-only MCP adapter for an authenticated operator who wants an external agent to use the same guarded payment engine. It is disabled by default and is never part of the public rehearsal or the static Vercel build. The adapter does not expose a signer, arbitrary HTTP client, payment channel, or policy mutation tool.
 
 ## Enablement and authorization
@@ -14,13 +16,17 @@ POST /api/external-runs
 
 It accepts the same strict run body as `POST /api/runs` (`wallet`, `task`, `allowance`, `perRequestCap`, `expiresInMinutes`, and `allowedTools`). It requires operator authentication, a fresh successful readiness check, and live payment configuration for the selected network. It does not require an OpenAI key because the external agent is the runner. The response contains `run` and the one-time `grant.token`; no token is returned by receipt or status tools.
 
-Start the bridge from the repository root only after the operator has created the run:
+Each external run has exactly one human-issued grant. Issuance checks and inserts that grant in one immediate SQLite transaction. An expired, revoked or lost grant cannot be replaced or reissued for the same run; the operator must explicitly authorize a new run. If a legacy journal contains multiple grant rows for one run, paid reservation and pre-sign authorization reject that ambiguity even when only one grant remains active. Historical rows are retained rather than silently selecting a replacement authority.
+
+Set `MCP_ENABLED=true` and the grant in the MCP client's private environment settings, then start the bridge from the repository root only after the operator has created the run. Do not put the actual token in a shell command/history. Use npm's silent mode so its script banner cannot contaminate protocol stdout:
 
 ```sh
-MCP_ENABLED=true MCP_GRANT_TOKEN='the-private-token' npm run mcp
+npm run --silent mcp
 ```
 
 The process speaks JSON-RPC on stdout and writes diagnostics only to stderr. It uses `createRuntime(..., { recover: false, exclusive: false, shared: true })` so connecting a client cannot restart or reactivate a run; paid mutations still require the already-running backend service lease. Keep the Express backend running while the bridge is connected. The bridge should be a child process of a local MCP client, not a publicly reachable HTTP service.
+
+The production equivalent is `node dist/server/mcp.js` with the same private environment and authoritative journal. Session existence, operator identity and expiry are checked for read tools as well as mutations; the grant is checked again before new signing, so logout during a slow upstream request cannot authorize a late signature. Restored journals remain blocked by the [recovery lock](runtime-recovery.md), and losing backend ownership denies new work. Recovery observes original payments without renewing grants or restarting the external model.
 
 ## Fixed tool contract
 

@@ -4,6 +4,8 @@ The public Vercel site is a deterministic rehearsal. It has no signer, model, pa
 
 ## Operator and hosting
 
+Use the [configuration reference](configuration.md) for every variable's shape, origin and boundary, and the [runtime/recovery runbook](runtime-recovery.md) for the deployable single-instance artifact, backup, restore lock and rollback. The [integration matrix](integration-status.md) separates current controlled evidence from the unresolved funded gate.
+
 Use Node 22.19–24 on a persistent server with one active Allowance service and a durable writable SQLite volume. Static Vercel deployment does not supply that runtime. Copy `.env.example` to ignored `.env`, run `npm run setup:operator`, and configure HTTPS `APP_ORIGIN`, persistent `DATABASE_PATH` and the correct `PROXY_HOPS` for the host. Keep the API and merchant under the same reviewed origin. The process lease denies spending when a second owner or failed lease could compromise the journal.
 
 The environment file must never be committed. The browser receives no secret material. Run `npm run dev` locally or `npm run build && npm start` on the persistent host. Authentication uses the configured Argon2id operator hash, persistent sessions and CSRF protection.
@@ -36,7 +38,7 @@ Each command checks the matching configured payment network, live opt-in and pre
 
 Retain explicit `PAYMENT_NETWORK=devnet` and the matching devnet RPC when using test funds. Use Circle's [test-token faucet](https://faucet.circle.com/) for test USDC only, and review the facilitator's devnet support. No faucet or funded smoke was used for this implementation.
 
-Existing stored policies and receipts are never migrated to mainnet. Reading a devnet record continues to return `paymentNetwork=devnet`. Changing runtime network, recipient or origin blocks signing or replaying that old purchase. Historical holds remain visible and conservatively block new spending; restore the original reviewed configuration to reconcile. Recovery compares the saved policy, original challenge and signed payload; it never makes a replacement payment. Switching live mode off also disables paid recovery submission.
+Existing stored policies and receipts are never migrated to mainnet. Reading a devnet record continues to return `paymentNetwork=devnet`. Changing runtime network, recipient or origin blocks signing or replaying that old purchase. Historical holds remain visible and conservatively block new spending; restore the original reviewed configuration to reconcile. Recovery compares the saved policy, original challenge and signed payload; it never makes a replacement payment. Switching live mode off disables paid recovery submission while allowing read-only observation of original proof and already-cached results. A restore lock likewise permits observation without paid transmission. Read-only misses do not consume the bounded four-attempt transmission budget; late evidence remains observable after that cap.
 
 ## What remains deployment-specific
 
