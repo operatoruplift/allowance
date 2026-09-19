@@ -1,0 +1,13 @@
+{
+  "kind": "isolated production container; no signing, model calls or external network",
+  "verifiedAt": "2026-09-19T18:20:24.783Z",
+  "image": "allowance:verify",
+  "unprivileged": true,
+  "nativeSqlite": true,
+  "nativeArgon2": true,
+  "persistentVolume": true,
+  "restartSessionPreserved": true,
+  "secureProxyCookie": true,
+  "unconfiguredAuthClosed": true,
+  "network": "none"
+}

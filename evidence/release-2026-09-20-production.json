@@ -1,0 +1,190 @@
+{
+  "verifiedAt": "2026-09-19T18:23:03.397Z",
+  "sourceCommit": "16111ef0d3da9c9accf3a0b166c88736db8776c0",
+  "deploymentId": "dpl_6h3jPRcFXrJaf4gmntirFSqAyt67",
+  "deploymentUrl": "https://allowanceonsolana-fvd7irdjd-operatoruplift.vercel.app",
+  "productionUrl": "https://allowanceonsolana.vercel.app",
+  "mode": "Static rehearsal; no backend, signing or model runtime",
+  "routes": [
+    {
+      "route": "/demo",
+      "status": 200
+    },
+    {
+      "route": "/developers",
+      "status": 200
+    },
+    {
+      "route": "/brand",
+      "status": 200
+    },
+    {
+      "route": "/login",
+      "status": 200
+    },
+    {
+      "route": "/app",
+      "status": 200
+    },
+    {
+      "route": "/runs/release-proof",
+      "status": 200
+    },
+    {
+      "route": "/missing-page",
+      "status": 404
+    },
+    {
+      "route": "/api/health",
+      "status": 404
+    },
+    {
+      "route": "/api/session",
+      "status": 404
+    },
+    {
+      "route": "/merchant/wallet-snapshot",
+      "status": 404
+    }
+  ],
+  "methods": [
+    {
+      "method": "POST",
+      "status": 405,
+      "allow": "GET, HEAD"
+    },
+    {
+      "method": "PUT",
+      "status": 405,
+      "allow": "GET, HEAD"
+    },
+    {
+      "method": "PATCH",
+      "status": 405,
+      "allow": "GET, HEAD"
+    },
+    {
+      "method": "DELETE",
+      "status": 405,
+      "allow": "GET, HEAD"
+    },
+    {
+      "method": "OPTIONS",
+      "status": 204,
+      "allow": "GET, HEAD",
+      "corsOrigin": null,
+      "note": "Vercel platform empty preflight; no mutation or cross-origin permission"
+    },
+    {
+      "method": "OPTIONS",
+      "route": "/api/runs",
+      "status": 404
+    },
+    {
+      "method": "TRACE",
+      "status": 405,
+      "observedAt": "2026-09-19T18:23:07Z",
+      "note": "Vercel platform NOT_ALLOWED"
+    }
+  ],
+  "assets": [
+    {
+      "path": "allowance-a.svg",
+      "status": 200,
+      "sha256": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+      "matches": true
+    },
+    {
+      "path": "favicon-red.svg",
+      "status": 200,
+      "sha256": "cc7823a5118dfeeed42e6f3468fe85df61d546c217b25b64c5b725f8642a405e",
+      "matches": true
+    },
+    {
+      "path": "favicon-32.png",
+      "status": 200,
+      "sha256": "59e54a952a24149f714833e05b46cc842de664cbb595729a34b775e87244a463",
+      "matches": true
+    },
+    {
+      "path": "apple-touch-icon.png",
+      "status": 200,
+      "sha256": "823be06dcc6cd4ac63a7b18120b07ac29d721705b80624d200105b6b5e43e025",
+      "matches": true
+    },
+    {
+      "path": "allowance-icon-192.png",
+      "status": 200,
+      "sha256": "ea0bd517c7d1da987ee3b3c27c1dee1c27be5a977c2f797e23b15d7a9ec56e63",
+      "matches": true
+    },
+    {
+      "path": "allowance-icon-512.png",
+      "status": 200,
+      "sha256": "d2c68edc52b81bb74873817fbb87f26f23e0b2248e6164aa04d7a6c096186880",
+      "matches": true
+    },
+    {
+      "path": "site.webmanifest",
+      "status": 200,
+      "sha256": "6d7a7e09c629c263541e347a72f4e51962dea6b5761847cadcc4989f2bee2358",
+      "matches": true
+    },
+    {
+      "path": "allowance-share.png",
+      "status": 200,
+      "sha256": "a745bc2f2b1544777a3ad03d463a6edb641e2cdb938f00085963d570580244e0",
+      "matches": true
+    },
+    {
+      "path": "brand/manifest.json",
+      "status": 200,
+      "sha256": "31bc5619d72649ebaf96d210c3882eea2e0adcd50b7dcdef74c9b89c0545ae59",
+      "matches": true
+    },
+    {
+      "path": "brand/allowance-brand-kit.zip",
+      "status": 200,
+      "sha256": "ce45edeb54e52457a3b47330d849ca7a4ffa3b97b6a8056e451bf9fa09aa09ee",
+      "matches": true
+    },
+    {
+      "path": "brand/profiles/profile-red.png",
+      "status": 200,
+      "sha256": "2e22e2b60f4f9b512bc78a8dc2763dc9c229a9df8f28392c9696977bab7f4034",
+      "matches": true
+    },
+    {
+      "path": "assets/index-6k-mL8Ln.js",
+      "status": 200,
+      "sha256": "8f81b736a3c5b72123d1d6a89441945d0e36e4dd0740ad7618878db0dc63f8a2",
+      "matches": true
+    },
+    {
+      "path": "assets/index-BU_XwjIV.css",
+      "status": 200,
+      "sha256": "f796397f0c3bde13ed999647cabcd9ab27de61bf51963b46a688125b9dd47363",
+      "matches": true
+    }
+  ],
+  "paidRequests": false,
+  "modelInvocations": false,
+  "headers": {
+    "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+    "frameOptions": "DENY"
+  },
+  "browser": {
+    "verifiedAt": "2026-09-19T18:24:01.753Z",
+    "command": "HOSTED_REHEARSAL_URL=https://allowanceonsolana.vercel.app npm run test:hosted",
+    "passed": 4,
+    "failed": 0,
+    "durationSeconds": 16.7,
+    "coverage": [
+      "phone and desktop brand downloads",
+      "informational private routes without API calls",
+      "rehearsal exact accounting and separately denied probe",
+      "local JSON export and print without signatures or service requests"
+    ]
+  },
+  "ciRun": "https://github.com/operatoruplift/allowance/actions/runs/35460818425"
+}

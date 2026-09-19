@@ -1,25 +1,36 @@
 {
   "releaseDate": "2026-09-20",
   "timeZone": "Asia/Ho_Chi_Minh",
-  "recordedAt": "2026-09-19T18:19:05.501Z",
+  "recordedAt": "2026-09-19T18:25:10.184Z",
   "baselineCommit": "6b397ada497216e34b0fee66efb6f9720bc0e4e2",
-  "sourceCommit": null,
-  "kind": "Release candidate: controlled application tests and public read-only observations",
+  "sourceCommit": "16111ef0d3da9c9accf3a0b166c88736db8776c0",
+  "kind": "Verified public static release; controlled backend/container checks and separate public read-only observations",
   "integrationMatrix": "docs/integration-status.md",
   "deployment": {
     "url": "https://allowanceonsolana.vercel.app",
-    "mode": "static no-spend rehearsal",
-    "candidateStatus": "awaiting CI and production deployment",
-    "persistentBackend": "not deployed; durable host and credentials absent"
+    "immutableUrl": "https://allowanceonsolana-fvd7irdjd-operatoruplift.vercel.app",
+    "id": "dpl_6h3jPRcFXrJaf4gmntirFSqAyt67",
+    "mode": "Static rehearsal; no backend, signing or model runtime",
+    "status": "READY",
+    "sourceCommit": "16111ef0d3da9c9accf3a0b166c88736db8776c0",
+    "productionBrowserTests": {
+      "passed": 4,
+      "failed": 0
+    },
+    "matchingAssetHashes": 13,
+    "persistentBackend": "Not deployed: durable host and private configuration not supplied"
   },
   "checks": {
     "local": "evidence/release-2026-09-20-local-checks.json",
     "browser": "evidence/release-2026-09-20-browser-checks.json",
     "visual": "evidence/release-2026-09-20-visual-checks.json",
-    "container": "awaiting GitHub production-image job",
+    "container": "evidence/release-2026-09-20-container.json",
     "publication": "evidence/publication-scan-2026-09-20.json",
     "readOnlyNetworks": "evidence/public-network-2026-09-20.json",
-    "preflight": "expected missing-configuration exit; no paid effects"
+    "preflight": "expected missing-configuration exit; no paid effects",
+    "ci": "evidence/release-2026-09-20-ci.json",
+    "production": "evidence/release-2026-09-20-production.json",
+    "ciRun": "https://github.com/operatoruplift/allowance/actions/runs/35460818425"
   },
   "observedEvidence": {
     "controlledUnitAndHttpTests": true,
@@ -114,6 +125,16 @@
       "path": "evidence/release-2026-09-20-build.txt",
       "bytes": 444,
       "sha256": "f1e653c9bfc9ce56a8d3d4c0f7b5d5e7ac51d80f8b9b0f6518c50bf4bcd13101"
+    },
+    {
+      "path": "evidence/release-2026-09-20-ci.json",
+      "bytes": 4826,
+      "sha256": "448ba02a92273da64cff512d71b53277d5403d78128ca11972a52e4e9c25ee0b"
+    },
+    {
+      "path": "evidence/release-2026-09-20-container.json",
+      "bytes": 385,
+      "sha256": "f3e6f40fb3b8a2b07bcbc67a4f3816dc023aa0530424a6b2e392d6c333839e9b"
     },
     {
       "path": "evidence/release-2026-09-20-controlled-browser-auth-no-payments.png",
@@ -219,6 +240,46 @@
       "path": "evidence/release-2026-09-20-phone-receipt.png",
       "bytes": 91678,
       "sha256": "ada764ef59bf6c62cbf00a42118a7c603eb0592508e2029cb94526d2be3af947"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-brand-kit-desktop.png",
+      "bytes": 89162,
+      "sha256": "7cbe1e8351466d223a04d017d19b621e6c53c50a29b6d4ba337b7abf45b7a45c"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-brand-kit-mobile.png",
+      "bytes": 191997,
+      "sha256": "4b53b2fec692baa3c5c13c47746ae519e7934c153a738ee9e2b093ea8f9d75ed"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-hosted-console-mobile.png",
+      "bytes": 60095,
+      "sha256": "9499630c54112c6e15a1ad0b221cfb8e3689e9330e9d803cca8516ad2d5e7183"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-hosted-landing-desktop.png",
+      "bytes": 691947,
+      "sha256": "802f4eaf02329bca988c99884e8dc6e0bf7b321aae9cc2bf864016066f62faf1"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-hosted-rehearsal-console.png",
+      "bytes": 89956,
+      "sha256": "3a9aac7561f3f58f6df77b30f905b5eacfc54ec04f20031e577a76f74072a6db"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-hosted-rehearsal-print.pdf",
+      "bytes": 270095,
+      "sha256": "6481490042527c8d8088d0cbbd0686e67a818ae948024081933d5dc897c724eb"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production-hosted-rehearsal-receipt.png",
+      "bytes": 297511,
+      "sha256": "6770d6400e1a8e5322067e0f5cd1c09a36a303db3f30bd4dbcf510d3d1e08ffc"
+    },
+    {
+      "path": "evidence/release-2026-09-20-production.json",
+      "bytes": 5079,
+      "sha256": "921bd5ce1ccb19d80c814b9c98ad7c8ce54a93eb938d57a0adff724bb8a9b577"
     },
     {
       "path": "evidence/release-2026-09-20-reduced-motion.png",
