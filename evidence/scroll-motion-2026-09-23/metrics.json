@@ -1,0 +1,46 @@
+{
+  "target": "http://127.0.0.1:4339",
+  "verifiedAt": "2026-09-23T04:32:02.840Z",
+  "desktopInitialLayoutShift": 0.0001848096808288323,
+  "samples": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "stageWidth": 250,
+      "stageLeft": 35,
+      "stageRight": 285,
+      "activeStep": "2",
+      "layoutShift": 0
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "stageWidth": 320,
+      "stageLeft": 35,
+      "stageRight": 355,
+      "activeStep": "2",
+      "layoutShift": 0
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "stageWidth": 540,
+      "stageLeft": 114,
+      "stageRight": 654,
+      "activeStep": "2",
+      "layoutShift": 0
+    },
+    {
+      "width": 1024,
+      "scrollWidth": 1024,
+      "stageWidth": 478.90625,
+      "stageLeft": 69.953125,
+      "stageRight": 548.859375,
+      "activeStep": "0",
+      "layoutShift": 0
+    }
+  ],
+  "pageErrorsOrHttpFailures": [],
+  "externalRequests": [],
+  "paymentsPerformed": false
+}

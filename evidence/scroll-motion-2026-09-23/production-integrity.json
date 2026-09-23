@@ -1,0 +1,137 @@
+{
+  "verifiedAt": "2026-09-23T04:38:25.663Z",
+  "sourceCommit": "83e4d60e411a884ca1fa7da7b1bffb206f698d87",
+  "deploymentId": "dpl_7DiLKrQkmBHqhvkq6TTpb5mSCYfv",
+  "deploymentUrl": "https://allowanceonsolana-l2pzyqyi8-operatoruplift.vercel.app",
+  "productionUrl": "https://allowanceonsolana.vercel.app",
+  "ciRun": "https://github.com/operatoruplift/allowance/actions/runs/35818429855",
+  "routes": [
+    {
+      "path": "/",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/demo",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/developers",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/brand",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/app",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/login",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/runs/release-check",
+      "status": 200,
+      "htmlMatches": true
+    },
+    {
+      "path": "/api/health",
+      "status": 404
+    },
+    {
+      "path": "/api/session",
+      "status": 404
+    },
+    {
+      "path": "/merchant/wallet_snapshot",
+      "status": 404
+    },
+    {
+      "path": "/tools/wallet_snapshot",
+      "status": 404
+    },
+    {
+      "path": "/.env",
+      "status": 404
+    },
+    {
+      "path": "/server/config.ts",
+      "status": 404
+    },
+    {
+      "path": "/demo",
+      "method": "POST",
+      "status": 405
+    }
+  ],
+  "files": [
+    {
+      "path": "/allowance-a.svg",
+      "bytes": 203,
+      "sha256": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+      "matches": true
+    },
+    {
+      "path": "/assets/index-BRt3eiKE.js",
+      "bytes": 444363,
+      "sha256": "b19f38b279e1b67780f540078eb7ae622cc227495801ae35f7eb5754ba08668b",
+      "matches": true
+    },
+    {
+      "path": "/allowance-symbol.svg",
+      "bytes": 203,
+      "sha256": "c9764a53406365ddb64f033c596ab1492ce6a4c867dfc5ad9e3ffac6094e95ab",
+      "matches": true
+    },
+    {
+      "path": "/assets/index-BZXjhOUA.css",
+      "bytes": 114489,
+      "sha256": "a296973d60bb07e03bfb7f57dc0ecb35c25e1d0d90bcb6fdc6146a23ca435dce",
+      "matches": true
+    },
+    {
+      "path": "/favicon-red.svg",
+      "bytes": 281,
+      "sha256": "cc7823a5118dfeeed42e6f3468fe85df61d546c217b25b64c5b725f8642a405e",
+      "matches": true
+    },
+    {
+      "path": "/favicon-32.png",
+      "bytes": 829,
+      "sha256": "59e54a952a24149f714833e05b46cc842de664cbb595729a34b775e87244a463",
+      "matches": true
+    },
+    {
+      "path": "/brand/art/sky.jpg",
+      "bytes": 416684,
+      "sha256": "1235b7662624f9052f94bf301dc4dd4d2fb054df8ad67c2490bf5232e7339ead",
+      "matches": true
+    },
+    {
+      "path": "/brand/manifest.json",
+      "bytes": 14281,
+      "sha256": "dcb2159d44d17702259034bed979cf874774b81b9df4c7ad31ee528c97f42d54",
+      "matches": true
+    },
+    {
+      "path": "/media/allowance-cloud.mp4",
+      "bytes": 204438,
+      "sha256": "c25902c354b098b422e7074e0473edc01419df096e85de64485a9898594388d7",
+      "matches": true
+    },
+    {
+      "path": "/media/allowance-mountains.mp4",
+      "bytes": 329623,
+      "sha256": "68c1720c5603022f91542afaf676dd2fb715467af924ca129412c867b8d789ba",
+      "matches": true
+    }
+  ],
+  "paymentsPerformed": false
+}

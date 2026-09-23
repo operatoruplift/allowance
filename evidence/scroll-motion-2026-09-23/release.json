@@ -1,0 +1,72 @@
+{
+  "date": "2026-09-23",
+  "sourceCommit": "83e4d60e411a884ca1fa7da7b1bffb206f698d87",
+  "scope": "Native landing-page scroll choreography, accessible story, responsive motion and regression tests",
+  "premiumReference": {
+    "provider": "MotionSites",
+    "prompt": "Cinematic Landing Page",
+    "access": "premium; unlocked through account",
+    "url": "https://motionsites.ai/?prompt=cinematic-landing-page",
+    "usedFor": "Pacing and layered editorial motion; no third-party assets or runtime added"
+  },
+  "reviews": {
+    "code": "approved; zero actionable findings",
+    "typescript": "approved; zero actionable findings"
+  },
+  "local": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "applicationBuild": "passed",
+    "rehearsalBuild": "passed",
+    "hostedBrowserTests": 8,
+    "unitTests": {
+      "passed": 150,
+      "startupTimeouts": 1,
+      "note": "Unchanged MCP stdio case timed out at 35 seconds under workstation load, including an isolated retry. Instrumented no-spend reproduction completed in approximately 30.6 seconds; this is separate from the original test. The original test passed in exact-commit clean CI in 792 ms."
+    },
+    "visualMetrics": "metrics.json",
+    "visualWidths": [
+      320,
+      390,
+      768,
+      1024,
+      1440
+    ]
+  },
+  "ci": {
+    "url": "https://github.com/operatoruplift/allowance/actions/runs/35818429855",
+    "conclusion": "success",
+    "unitIntegrationTests": 151,
+    "testFiles": 15,
+    "applicationBrowserTests": 13,
+    "hostedBrowserTests": 8,
+    "productionContainer": "passed; unprivileged process, SQLite/Argon2, durable session restart, secure proxy cookie and network isolation"
+  },
+  "production": {
+    "url": "https://allowanceonsolana.vercel.app",
+    "deploymentId": "dpl_7DiLKrQkmBHqhvkq6TTpb5mSCYfv",
+    "deploymentUrl": "https://allowanceonsolana-l2pzyqyi8-operatoruplift.vercel.app",
+    "readyState": "READY",
+    "routeChecks": 14,
+    "matchingFiles": 10,
+    "integrityEvidence": "production-integrity.json",
+    "browserChecks": {
+      "passed": 8,
+      "exitCode": 0,
+      "duration": "4.1m",
+      "coverage": [
+        "Brand collections, PNG/ZIP downloads and mobile full-size images",
+        "Private hosted route boundary without API calls",
+        "Rehearsal budget accounting, JSON export and print without chain claims",
+        "Native wheel, keyboard and anchor scrolling with all three story scenes",
+        "Live reduced-motion changes and saved user preferences",
+        "320px, 390px and 768px readable layouts",
+        "Route transitions, browser history and direct story fragment URL"
+      ]
+    },
+    "status": "deployed and verified"
+  },
+  "paymentsPerformed": false,
+  "livePaymentStatus": "Public rehearsal only. Persistent backend, operator/provider/model credentials and funded dedicated accounts remain required for real agent runs and verified settlement.",
+  "recordedAt": "2026-09-23T04:43:35.222058+00:00"
+}
