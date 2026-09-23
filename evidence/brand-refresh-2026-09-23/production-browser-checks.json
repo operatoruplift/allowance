@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "626c5b78325d7e3add88408c4892a9d34bd1385f",
+  "url": "https://allowanceonsolana.vercel.app/brand",
+  "command": "HOSTED_REHEARSAL_URL=https://allowanceonsolana.vercel.app playwright test --config playwright.hosted.config.ts",
+  "exitCode": 0,
+  "passed": 4,
+  "duration": "1.5m",
+  "checks": [
+    "Private hosted routes explain backend boundary without API calls",
+    "Brand collections, filters, accessible preview, original PNG and ZIP downloads",
+    "320px and 390px phone layouts and full-size save flow without clipping",
+    "Rehearsal accounting, export and print without chain signatures or service calls"
+  ],
+  "paymentsPerformed": false
+}

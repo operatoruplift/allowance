@@ -56,7 +56,31 @@
     "public/brand/art/wide-provenance.json"
   ],
   "production": {
-    "status": "prepared; pending production deployment",
-    "url": "https://allowanceonsolana.vercel.app/brand"
+    "status": "deployed and verified",
+    "url": "https://allowanceonsolana.vercel.app/brand",
+    "deploymentId": "dpl_5FA5jGWStHAyd19GrYmQP4qcY4fJ",
+    "deploymentUrl": "https://allowanceonsolana-9dwtl041h-operatoruplift.vercel.app",
+    "readyState": "READY",
+    "verifiedAt": "2026-09-23T03:23:30.057Z",
+    "matchingFiles": 84,
+    "browserChecksPassed": 4,
+    "assetProof": "production-assets.json",
+    "browserProof": "production-browser-checks.json",
+    "paymentsPerformed": false
+  },
+  "sourceCommit": "626c5b78325d7e3add88408c4892a9d34bd1385f",
+  "github": {
+    "commit": "626c5b78325d7e3add88408c4892a9d34bd1385f",
+    "repository": "https://github.com/operatoruplift/allowance",
+    "runUrl": "https://github.com/operatoruplift/allowance/actions/runs/35814124718",
+    "conclusion": "success",
+    "unitTestsPassed": 151,
+    "unitTestFiles": 15,
+    "applicationBrowserTestsPassed": 9,
+    "hostedBrowserTestsPassed": 4,
+    "jobs": {
+      "verify": "success",
+      "production-image": "success"
+    }
   }
 }

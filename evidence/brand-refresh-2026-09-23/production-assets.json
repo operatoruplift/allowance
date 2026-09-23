@@ -1,0 +1,520 @@
+{
+  "verifiedAt": "2026-09-23T03:23:30.057Z",
+  "sourceCommit": "626c5b78325d7e3add88408c4892a9d34bd1385f",
+  "deploymentId": "dpl_5FA5jGWStHAyd19GrYmQP4qcY4fJ",
+  "deploymentUrl": "https://allowanceonsolana-9dwtl041h-operatoruplift.vercel.app",
+  "productionUrl": "https://allowanceonsolana.vercel.app/brand",
+  "version": "2026-09-23",
+  "assetCount": 26,
+  "collections": 3,
+  "matchingFiles": 84,
+  "cspNoConnections": true,
+  "apiUnavailable": true,
+  "assets": [
+    {
+      "file": "/allowance-share.png",
+      "sha256": "bac94e12cfab56ba059f0d8a6e000506c3fe925b6d4ae5483ad5c65da9a87eb5",
+      "bytes": 450757,
+      "matches": true
+    },
+    {
+      "file": "/brand/allowance-brand-kit.zip",
+      "sha256": "8548836169725aa325e668d7ac9298a8e378f959f0473ba6fa277ef948194e86",
+      "bytes": 40158160,
+      "matches": true
+    },
+    {
+      "file": "/brand/art/paper.jpg",
+      "sha256": "36894051c11a929d4ebb1a9b9f4f6dfcf22ba95aa18ef3b867772b2b450d2d52",
+      "bytes": 379128,
+      "matches": true
+    },
+    {
+      "file": "/brand/art/sculpture-wide.jpg",
+      "sha256": "08681b266633206f6b01ba4ff14005b3274741dccb9fd1a173a2a5e9d12b7fbc",
+      "bytes": 276712,
+      "matches": true
+    },
+    {
+      "file": "/brand/art/sculpture.jpg",
+      "sha256": "7e183a34efe032c84b216b1bf628ef8a28a295588d174e3be576bf208bb7ab0a",
+      "bytes": 331013,
+      "matches": true
+    },
+    {
+      "file": "/brand/art/sky.jpg",
+      "sha256": "1235b7662624f9052f94bf301dc4dd4d2fb054df8ad67c2490bf5232e7339ead",
+      "bytes": 416684,
+      "matches": true
+    },
+    {
+      "file": "/brand/backgrounds/background-ink.png",
+      "sha256": "18fa684faec80c7ba7787bbeb704fa0990932e3f453c0b76313f60c9e5bd22a5",
+      "bytes": 1533073,
+      "matches": true
+    },
+    {
+      "file": "/brand/backgrounds/background-ink.svg",
+      "sha256": "5ff762984f1dff302fbb98e86d280ab19e3fc9069d7c4b69448e6fd9df9bdc9f",
+      "bytes": 506175,
+      "matches": true
+    },
+    {
+      "file": "/brand/backgrounds/background-paper.png",
+      "sha256": "dfcc0c114ab048f00785f1e97e7406ab76b63676f20680997dbd0c54a191a1da",
+      "bytes": 1940665,
+      "matches": true
+    },
+    {
+      "file": "/brand/backgrounds/background-paper.svg",
+      "sha256": "676bfac924e6354871cb4f297dde2aaeb8be5ee729599b2f9f75d1f7335d3b48",
+      "bytes": 556258,
+      "matches": true
+    },
+    {
+      "file": "/brand/backgrounds/background-red.png",
+      "sha256": "feb796cc5a0d37da76f11b17fa68f3f79a440f1ee44806ed46d6d22387e98dce",
+      "bytes": 1438298,
+      "matches": true
+    },
+    {
+      "file": "/brand/backgrounds/background-red.svg",
+      "sha256": "ad999c626a80695bda3b91fa7a6508fab139d8fa59aaddef03f55031a369b5de",
+      "bytes": 369639,
+      "matches": true
+    },
+    {
+      "file": "/brand/headers/header-linkedin-paper.png",
+      "sha256": "d3210d2d71a4660ee226ba2b81d215b58211b923aca876e2186f50cbcd702508",
+      "bytes": 483573,
+      "matches": true
+    },
+    {
+      "file": "/brand/headers/header-linkedin-paper.svg",
+      "sha256": "329e2ca1303cb8cfdf12b6fd62f5f63b677cee1a79b8b62a3f0582450b69375e",
+      "bytes": 523194,
+      "matches": true
+    },
+    {
+      "file": "/brand/headers/header-x-red.png",
+      "sha256": "5e31e86fddcdb403d5a1b1dfe434827b7e8a96c065fb63b0738d2116c8f3087d",
+      "bytes": 430172,
+      "matches": true
+    },
+    {
+      "file": "/brand/headers/header-x-red.svg",
+      "sha256": "d6ad47e749fb1ec336affd3842a324a6ded96e473bec67f842237edbd6789356",
+      "bytes": 569227,
+      "matches": true
+    },
+    {
+      "file": "/brand/headers/header-youtube-ink.png",
+      "sha256": "d0b64b6460ea4d1102e740e4de46ee4774a17e921d1d55bbc951efcdbf25164c",
+      "bytes": 2940083,
+      "matches": true
+    },
+    {
+      "file": "/brand/headers/header-youtube-ink.svg",
+      "sha256": "716193f71964a085a2241557b1f7b03086b7d9492b55f2e7989ca10aa2463772",
+      "bytes": 569210,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/symbol-ink.png",
+      "sha256": "4b6f80e6ce1f4ec9d76d677db0672423f41b8148bd702b1309d5ee10780cbcb3",
+      "bytes": 24991,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/symbol-ink.svg",
+      "sha256": "0ca59c731e1bd5d7bff01c5763dffccf0f509ed01fb3104622cf70886acc6b95",
+      "bytes": 501,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/symbol-red.png",
+      "sha256": "a40bffc73332e09ace35e3f7d49d44e2498c1e97c271cef955cc6d008af7d01f",
+      "bytes": 25338,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/symbol-red.svg",
+      "sha256": "2f25d6f6e50c3c4f770036872537258ae9340a23bba0d6563596636ca8937110",
+      "bytes": 501,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/symbol-white.png",
+      "sha256": "7ddfd891ba3d135bb9832bf17227147e7d453bf3d9f768fef3b51c3c6b526563",
+      "bytes": 21312,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/symbol-white.svg",
+      "sha256": "609ba55e129a28ee4d2db9a01c52fa396d8b05f2ce34b552b3d51ebb0642c0fe",
+      "bytes": 503,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/wordmark-ink.png",
+      "sha256": "ea1e7d79d1ba6996c55c5af5e6c23dcdca3ed3f0cbaecfe01778df1e90e4a685",
+      "bytes": 39789,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/wordmark-ink.svg",
+      "sha256": "e5054e3a56b9d087e5d5d70c22aaa7bf95bef46b93be941cf8ef4edc9e881634",
+      "bytes": 3421,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/wordmark-red.png",
+      "sha256": "2f48f86633a99d6aa7b9a6201c8fbe9220e52436fda18783472edafde8a7fb5d",
+      "bytes": 40210,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/wordmark-red.svg",
+      "sha256": "b2c3d470f8bd63d7ac77785f21124e12b5de5edd4e1f13550277b8c135107d69",
+      "bytes": 3421,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/wordmark-white.png",
+      "sha256": "d525e29bf18684a224e5f8339772b48e925a76b977901287a3959a86196d2dcc",
+      "bytes": 30134,
+      "matches": true
+    },
+    {
+      "file": "/brand/logos/wordmark-white.svg",
+      "sha256": "6919104d6071f362689f5c95bfe5bf28dcace537a45a0827e001ae02da58114c",
+      "bytes": 3423,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/background-ink.png",
+      "sha256": "99b5054396bc69990bf15369c48b2dc55e70bbff116485075b3d4df6f03076c6",
+      "bytes": 281417,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/background-paper.png",
+      "sha256": "62ae848d2472bc7c411c48a4d4478b64bd933653664afdcbf83e70d733a13d1f",
+      "bytes": 302521,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/background-red.png",
+      "sha256": "3ee7898e7ae1f8e3dd13fd343d81ce119a0b08de50124e7557c40299cc65011b",
+      "bytes": 230342,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/header-linkedin-paper.png",
+      "sha256": "eed51cadff0c9a01833909c5f6f410c53edef928c0548e8464c754b272efe491",
+      "bytes": 104302,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/header-x-red.png",
+      "sha256": "b41e002533139a96f4210de798abc4116b022f597667babc599b7f32f4c5a626",
+      "bytes": 79048,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/header-youtube-ink.png",
+      "sha256": "76bf776401fbc3fe595279a87800f700643be12a4da72bb5a2556ce601f074c2",
+      "bytes": 308391,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/profile-ink.png",
+      "sha256": "1027ff6e367b056fda21e041b79789826a1c6d88f622b33eb199aa2cc5e22bfc",
+      "bytes": 142540,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/profile-paper.png",
+      "sha256": "aa65031f7d0f54d0c1603d45767f7d35c73a13cac329135a255aa2d41d515e29",
+      "bytes": 275065,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/profile-red.png",
+      "sha256": "44ba67b1aaa476a0c1f63ee68bdeb8bcebdedc886f277d54f2d7a41514651e30",
+      "bytes": 317545,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/social-portrait-budget.png",
+      "sha256": "21f12f43bafd2795289dcff51882e6886bef11584c3ca9cfab8b7273255bfb18",
+      "bytes": 213972,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/social-portrait-policy.png",
+      "sha256": "233e9453349449fd5272ad2a3c170126f6e724d82b87ad4c8c7b382674f7cf99",
+      "bytes": 138030,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/social-square-budget.png",
+      "sha256": "5cf254cd3f410845705ff4b84252cc3ecf7d114d2eaecd9d7ed32d51dff314b9",
+      "bytes": 443742,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/social-square-policy.png",
+      "sha256": "3f90bf5738b31973ec79d1494cc00954968096d6c2832321acad153a404310ea",
+      "bytes": 241378,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/social-square-receipt.png",
+      "sha256": "2d7775c077dde5ec9f30d29287d1d71e029f012ea8d4092e9a3ba0364ebc18f7",
+      "bytes": 347979,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/social-story-budget.png",
+      "sha256": "c1cbbb7cbb5b86ef2f3cc07ce168a81f1b379f63ae5c3aa32af1cf44e6756ad4",
+      "bytes": 244194,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/symbol-ink.png",
+      "sha256": "99060866df29e37f42b2ff0cb791ca8eecddd07c85621a04a2fd222b57f28fcd",
+      "bytes": 13875,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/symbol-red.png",
+      "sha256": "55f83d6ed27968ea843788507be36dcb49b8c315063cf59a4418ab7540915e43",
+      "bytes": 14101,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/symbol-white.png",
+      "sha256": "89e5d17b42343a873478ac2a307dc3e48ef25f9bec6aab2b7410fb764e919037",
+      "bytes": 11497,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wallpaper-desktop-paper.png",
+      "sha256": "8fb167448fb0cb614ce3d955696bf1ac8d97d182f36581c5b5af88fa3cab4349",
+      "bytes": 303662,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wallpaper-desktop-red.png",
+      "sha256": "8a94e8ef5ef21ebe217d587d2b99a3ef9a40813cc8369a31559ddedef5dd277c",
+      "bytes": 231538,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wallpaper-phone-ink.png",
+      "sha256": "d4547dc06cb2b668d0f06fc1a11187f6215ff68252a5641b674562741827cec6",
+      "bytes": 154785,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wallpaper-phone-paper.png",
+      "sha256": "fb730b4a9452fbf0e253746983df042cda9f63317571c4fdc4ca386479fba307",
+      "bytes": 304686,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wallpaper-phone-red.png",
+      "sha256": "9954e525d5e09a818f2432397725f65a542c7befa5f650f0ff24861f6263ae4e",
+      "bytes": 239555,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wordmark-ink.png",
+      "sha256": "a39f5e63c5232a8945019e3535c7981cb66bfe39ae530350f05595b8b515228d",
+      "bytes": 12535,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wordmark-red.png",
+      "sha256": "5214120435a4c5b7c72e97d9dd22cb383625d7aec46f08a923da8723d5969497",
+      "bytes": 12572,
+      "matches": true
+    },
+    {
+      "file": "/brand/previews/wordmark-white.png",
+      "sha256": "e42bc719c381bd502e9f5fe2724e3344d18d73d15dc939c8ec488628b66860e7",
+      "bytes": 9275,
+      "matches": true
+    },
+    {
+      "file": "/brand/profiles/profile-ink.png",
+      "sha256": "aabf0e699bfc4314ca2e594a4a6c2f1bc3883a9b6bd53f23ba6ca533fa88a3d6",
+      "bytes": 383077,
+      "matches": true
+    },
+    {
+      "file": "/brand/profiles/profile-ink.svg",
+      "sha256": "3dd8c59f829d512fb21ec6aa7ddb33674775b839ac757173cdbd814564dbe1b8",
+      "bytes": 896,
+      "matches": true
+    },
+    {
+      "file": "/brand/profiles/profile-paper.png",
+      "sha256": "d01740729b34f114f7fe4aa260c4b936c347bfcf9fc33449bb75f99f46b4374e",
+      "bytes": 710018,
+      "matches": true
+    },
+    {
+      "file": "/brand/profiles/profile-paper.svg",
+      "sha256": "db0c2ad22348d6f62db28fdb6feeba78a398f26dd57792e8acd14e4c152cc1b2",
+      "bytes": 506430,
+      "matches": true
+    },
+    {
+      "file": "/brand/profiles/profile-red.png",
+      "sha256": "8ea09cc2418f724911d8abd39b2c2e24d9d8bc09f28730e37c094f02867095bf",
+      "bytes": 829257,
+      "matches": true
+    },
+    {
+      "file": "/brand/profiles/profile-red.svg",
+      "sha256": "333f1f4d6e2c21e1925613ca1efebc7de4d446949fc66b0a98ab15bf9fbae6a2",
+      "bytes": 442276,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-portrait-budget.png",
+      "sha256": "9a5ff0645a78f7e9c2b0b556007320c2da2fc60c6076c8eb6dddbd4cf2accefd",
+      "bytes": 866815,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-portrait-budget.svg",
+      "sha256": "83215acefc7e5b15094f9f296c2c4fd7bcea8a7d5e51c1ffd36a2dd52aa14c49",
+      "bytes": 576722,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-portrait-policy.png",
+      "sha256": "074953a50c737a5f747b110b12945e0f750ee6bf5e71ecd93a2c6c3fc7f6e78a",
+      "bytes": 513591,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-portrait-policy.svg",
+      "sha256": "8b7b9f1489d98b538625cf5f71a3e41d745d38e5852923c23736ff96fd408b23",
+      "bytes": 531803,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-square-budget.png",
+      "sha256": "6f1f792809ab96e5a6e16c06745267ad8f314a13e2e778fbf417ab754f47d472",
+      "bytes": 1136956,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-square-budget.svg",
+      "sha256": "1ca11dac8d07262b92aefdbf7a0f6a9db44deac095edc156fd349b6ed39a0c6c",
+      "bytes": 463596,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-square-policy.png",
+      "sha256": "c4e67601cdd1b548e0e2f4648f5ff124eb5117451353dc825f3ee2b2b2b0ffa0",
+      "bytes": 676251,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-square-policy.svg",
+      "sha256": "deef4eb670ff11f2401f3f0c3e0d36793935bf568e2dc63daac5d4572a8f6864",
+      "bytes": 578353,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-square-receipt.png",
+      "sha256": "3f2f33bccf384073f3948ff0f5a91e3106a26325d61d312918a25e61d3a9508c",
+      "bytes": 853812,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-square-receipt.svg",
+      "sha256": "69b60cd47b4f6b866929c5b0bab56d4414076579cc16c596c6c103ae64434f28",
+      "bytes": 531631,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-story-budget.png",
+      "sha256": "9c47fa93e3e5f1448eeac6649d7494da471f2bf3dcb88f5e9b3ae89ac7f6a1c9",
+      "bytes": 1556437,
+      "matches": true
+    },
+    {
+      "file": "/brand/social/social-story-budget.svg",
+      "sha256": "0534f6cf9a638711d597d5af5947b1eb6f99c3382bb5fec7d730bd319d3f96ee",
+      "bytes": 469148,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-desktop-paper.png",
+      "sha256": "8f48b96d74445e9c2632853d5f5deadf3e28f4bcaa2585318b849eb54fc1a804",
+      "bytes": 5125650,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-desktop-paper.svg",
+      "sha256": "5f183aed7023ccdd916f0ec325d1715008cbffb80d0a75fd40fa98507ed1f515",
+      "bytes": 561442,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-desktop-red.png",
+      "sha256": "4ecc238df9ea3154960bf26eff5fe3693a2d1502688955fbbee2a6f50896f476",
+      "bytes": 3620650,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-desktop-red.svg",
+      "sha256": "e538e90f90afceb367fe3e4a304f2539450e7d512cd935013429daaae54305d7",
+      "bytes": 375960,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-phone-ink.png",
+      "sha256": "178b70c59a912dca40ed747f8ce24d1174df0e4fcf0975851d8bc13f313a8ba4",
+      "bytes": 1073756,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-phone-ink.svg",
+      "sha256": "d58916fa22dd0849de0946d13f647ea5e38ca7680ad88ccae30004da79740377",
+      "bytes": 511002,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-phone-paper.png",
+      "sha256": "1ebff4c510cfd7e2db9c00274cd9e43f5ad6d066afbd408925508711b2791b02",
+      "bytes": 1580330,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-phone-paper.svg",
+      "sha256": "345a0722cd62699798c14cef9e1391359d3af7eebecb93479dde12c1657f960f",
+      "bytes": 560392,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-phone-red.png",
+      "sha256": "3d2b03f30d370315c01635a3b5f5d8c77c4c93b750eb2212788ae62167be7da9",
+      "bytes": 1565250,
+      "matches": true
+    },
+    {
+      "file": "/brand/wallpapers/wallpaper-phone-red.svg",
+      "sha256": "f547f93713aaaa7b66e384b4333b964e0b4ece543a512baf556d70c7599acdb5",
+      "bytes": 446037,
+      "matches": true
+    }
+  ],
+  "paymentsPerformed": false
+}
