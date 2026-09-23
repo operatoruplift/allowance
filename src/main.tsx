@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { MotionProvider } from './motion';
 import './styles.css';
+import './landing-motion.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

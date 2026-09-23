@@ -65,6 +65,8 @@ import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
 import DecorativeFilm from './DecorativeFilm';
 import { useMotion } from './motion';
+import { useLandingMotion } from './useLandingMotion';
+import LandingStory from './LandingStory';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -411,14 +413,20 @@ function LandingReceipt() {
 }
 
 function Landing() {
+  const { ref, reduced } = useLandingMotion();
   return (
     <>
-      <main className="landing-page">
+      <main
+        ref={ref}
+        className="landing-page"
+        data-landing-motion={reduced ? 'reduced' : 'standard'}
+      >
+        <div className="landing-scroll-progress" aria-hidden="true" />
         <div className="edition-line page-width" aria-hidden="true">
           <span>Useful agents. Clear boundaries.</span>
           <span>Allowance / On Solana</span>
         </div>
-        <section className="hero page-width">
+        <section className="hero page-width" data-scroll-scene>
           <div className="hero-copy">
             <div className="eyebrow hero-eyebrow">
               <span className="eyebrow-rule" aria-hidden="true" />
@@ -450,6 +458,9 @@ function Landing() {
                 </b>
               </span>
             </div>
+            <a className="landing-scroll-cue" href="#allowance-story">
+              Follow the allowance <ArrowDown size={15} />
+            </a>
           </div>
           <div className="hero-media-stage">
             <DecorativeFilm
@@ -461,8 +472,12 @@ function Landing() {
             <LandingReceipt />
           </div>
         </section>
-        <section className="run-unfolds page-width" aria-labelledby="run-unfolds-title">
-          <div className="run-unfolds-copy">
+        <section
+          className="run-unfolds page-width"
+          aria-labelledby="run-unfolds-title"
+          data-scroll-scene
+        >
+          <div className="run-unfolds-copy" data-reveal>
             <div>
               <div className="eyebrow">How a run unfolds</div>
               <h2 id="run-unfolds-title">From a prompt to a more useful tomorrow.</h2>
@@ -472,17 +487,17 @@ function Landing() {
             </Link>
           </div>
           <ol className="run-unfolds-steps">
-            <li>
+            <li data-reveal>
               <span>01</span>
               <b>Set the allowance</b>
               <small>Choose the boundary first.</small>
             </li>
-            <li>
+            <li data-reveal>
               <span>02</span>
               <b>Let the agent request tools</b>
               <small>Only useful, permitted work.</small>
             </li>
-            <li>
+            <li data-reveal>
               <span>03</span>
               <b>Review the receipt</b>
               <small>See every decision and result.</small>
@@ -495,13 +510,14 @@ function Landing() {
             label="Constellation mountain film"
           />
         </section>
+        <LandingStory />
         <section className="principles page-width" aria-label="How Allowance works">
-          <div className="section-label">
+          <div className="section-label" data-reveal>
             <span>Enough freedom to be useful.</span>
             <span>Enough structure to trust the process.</span>
           </div>
           <div className="feature-grid">
-            <article className="feature-card">
+            <article className="feature-card" data-reveal>
               <span className="feature-icon">
                 <Gauge size={22} />
               </span>
@@ -513,7 +529,7 @@ function Landing() {
               </p>
               <span className="feature-tag">You set the boundaries</span>
             </article>
-            <article className="feature-card">
+            <article className="feature-card" data-reveal>
               <span className="feature-icon">
                 <Layers3 size={22} />
               </span>
@@ -525,7 +541,7 @@ function Landing() {
               </p>
               <span className="feature-tag">Useful work, visible prices</span>
             </article>
-            <article className="feature-card">
+            <article className="feature-card" data-reveal>
               <span className="feature-icon">
                 <ReceiptText size={22} />
               </span>
@@ -537,7 +553,7 @@ function Landing() {
               </p>
               <span className="feature-tag">A trail you can understand</span>
             </article>
-            <article className="feature-card">
+            <article className="feature-card" data-reveal>
               <span className="feature-icon">
                 <ShieldCheck size={22} />
               </span>
@@ -552,7 +568,7 @@ function Landing() {
           </div>
         </section>
         <section className="developer-teaser page-width">
-          <div>
+          <div data-reveal>
             <div className="eyebrow">Made for the builder</div>
             <h2>
               A small agent.
@@ -567,7 +583,7 @@ function Landing() {
               Read the developer guide <ArrowRight size={17} />
             </Link>
           </div>
-          <div className="terminal-card">
+          <div className="terminal-card" data-reveal>
             <div className="terminal-heading">
               <span>
                 <i />
@@ -2483,7 +2499,9 @@ function NotFound() {
 function ScrollReset() {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const anchor = document.getElementById(window.location.hash.slice(1));
+    if (anchor) anchor.scrollIntoView({ behavior: 'instant' });
+    else window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.title =
       rehearsalOnly &&
       (pathname === '/app' || pathname === '/login' || pathname.startsWith('/runs/'))
