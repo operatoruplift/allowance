@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-23",
+  "baselineCommit": "acaef7e5ad9ac40ac49e8c11c5cd53ec7f825dca",
+  "scope": "Brand artwork, gallery, downloads and social preview; payment engine unchanged",
+  "collections": [
+    "Red sculpture",
+    "Open sky",
+    "Paper study"
+  ],
+  "redesignedAssets": 20,
+  "preservedLogoAssets": 6,
+  "totalAssets": 26,
+  "generatedMasterPlates": 4,
+  "sourceChecks": [
+    {
+      "command": "npm run lint",
+      "startedAt": "2026-09-23T02:58:00.585Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/lint.txt"
+    },
+    {
+      "command": "npm run typecheck",
+      "startedAt": "2026-09-23T02:59:46.273Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/typecheck.txt"
+    }
+  ],
+  "buildBrowserChecks": [
+    {
+      "command": "npm run build",
+      "startedAt": "2026-09-23T03:06:32.103Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/build.txt"
+    },
+    {
+      "command": "npm run build:rehearsal",
+      "startedAt": "2026-09-23T03:09:23.312Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/build-rehearsal.txt"
+    },
+    {
+      "command": "npm run test:hosted",
+      "startedAt": "2026-09-23T03:10:05.852Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/test-hosted.txt"
+    }
+  ],
+  "localHostedTests": 4,
+  "assetVerification": "asset-checks.json",
+  "reviews": {
+    "code": "approved; no actionable findings",
+    "typescript": "approved; no blocking findings"
+  },
+  "provenance": [
+    "public/brand/art/provenance.json",
+    "public/brand/art/wide-provenance.json"
+  ],
+  "production": {
+    "status": "prepared; pending production deployment",
+    "url": "https://allowanceonsolana.vercel.app/brand"
+  }
+}

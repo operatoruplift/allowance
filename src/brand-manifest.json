@@ -1,6 +1,34 @@
 {
-  "version": "2026-09-19",
-  "name": "Allowance — Red edition",
+  "version": "2026-09-23",
+  "name": "Allowance — Material edition",
+  "collections": [
+    {
+      "id": "sculpture",
+      "title": "Red sculpture",
+      "description": "Tactile red forms. A little independence.",
+      "coverId": "wallpaper-desktop-red"
+    },
+    {
+      "id": "open-sky",
+      "title": "Open sky",
+      "description": "Open space. Clear boundaries.",
+      "coverId": "wallpaper-phone-paper"
+    },
+    {
+      "id": "paper-study",
+      "title": "Paper study",
+      "description": "Quiet material. Strong ideas.",
+      "coverId": "social-square-receipt"
+    }
+  ],
+  "featured": [
+    "wallpaper-desktop-red",
+    "wallpaper-phone-paper",
+    "social-square-receipt",
+    "header-x-red",
+    "social-portrait-budget",
+    "wallpaper-phone-ink"
+  ],
   "palette": [
     {
       "name": "Brand red",
@@ -104,242 +132,262 @@
     {
       "id": "profile-red",
       "title": "Profile picture · red",
-      "description": "A centered mark with generous room for circular profile crops. Made for social avatars.",
+      "description": "The canonical A on a softly lit material surface. Centered with room for circular profile crops.",
       "category": "profiles",
       "width": 1024,
       "height": 1024,
       "preview": "/brand/previews/profile-red.png",
       "png": "/brand/profiles/profile-red.png",
       "svg": "/brand/profiles/profile-red.svg",
-      "background": "#B42336"
+      "background": "#B42336",
+      "collection": "sculpture"
     },
     {
       "id": "profile-paper",
       "title": "Profile picture · paper",
-      "description": "A centered mark with generous room for circular profile crops. Made for social avatars.",
+      "description": "The canonical A on a softly lit material surface. Centered with room for circular profile crops.",
       "category": "profiles",
       "width": 1024,
       "height": 1024,
       "preview": "/brand/previews/profile-paper.png",
       "png": "/brand/profiles/profile-paper.png",
       "svg": "/brand/profiles/profile-paper.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "paper-study"
     },
     {
       "id": "profile-ink",
       "title": "Profile picture · ink",
-      "description": "A centered mark with generous room for circular profile crops. Made for social avatars.",
+      "description": "The canonical A on a softly lit material surface. Centered with room for circular profile crops.",
       "category": "profiles",
       "width": 1024,
       "height": 1024,
       "preview": "/brand/previews/profile-ink.png",
       "png": "/brand/profiles/profile-ink.png",
       "svg": "/brand/profiles/profile-ink.svg",
-      "background": "#281E20"
+      "background": "#281E20",
+      "collection": "sculpture"
     },
     {
       "id": "header-x-red",
-      "title": "X header · a clear limit",
-      "description": "Wide header with the lower-left profile overlap kept quiet. Keep text within the supplied composition.",
+      "title": "X header · open possibilities",
+      "description": "Sculptural red architecture in an open sky. The lower-left avatar overlap stays free of essential text.",
       "category": "headers",
       "width": 1500,
       "height": 500,
       "preview": "/brand/previews/header-x-red.png",
       "png": "/brand/headers/header-x-red.png",
       "svg": "/brand/headers/header-x-red.svg",
-      "background": "#B42336"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "header-linkedin-paper",
-      "title": "LinkedIn header · agent autonomy",
-      "description": "A clean wide composition. The profile-photo area on the left stays free of essential text.",
+      "title": "LinkedIn header · quiet confidence",
+      "description": "Ivory paper, warm light, and one clear idea. The left side is quiet for the profile-photo overlap.",
       "category": "headers",
       "width": 1584,
       "height": 396,
       "preview": "/brand/previews/header-linkedin-paper.png",
       "png": "/brand/headers/header-linkedin-paper.png",
       "svg": "/brand/headers/header-linkedin-paper.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "paper-study"
     },
     {
       "id": "header-youtube-ink",
-      "title": "YouTube banner · the allowance",
-      "description": "Core logo and message sit inside the central 1546 × 423 area for small-screen crops.",
+      "title": "YouTube banner · a wider world",
+      "description": "An architectural landscape. Essential logo and message remain inside the central 1546 × 423 safe area.",
       "category": "headers",
       "width": 2560,
       "height": 1440,
       "preview": "/brand/previews/header-youtube-ink.png",
       "png": "/brand/headers/header-youtube-ink.png",
       "svg": "/brand/headers/header-youtube-ink.svg",
-      "background": "#281E20"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "wallpaper-phone-red",
-      "title": "Phone wallpaper · red",
-      "description": "A calm top third leaves room for your clock. The curved A mark sits below the lock-screen controls.",
+      "title": "Phone wallpaper · red sculpture",
+      "description": "A tactile red study in light and shadow. Quiet space above leaves room for the lock-screen clock.",
       "category": "wallpapers",
       "width": 1080,
       "height": 1920,
       "preview": "/brand/previews/wallpaper-phone-red.png",
       "png": "/brand/wallpapers/wallpaper-phone-red.png",
       "svg": "/brand/wallpapers/wallpaper-phone-red.svg",
-      "background": "#B42336"
+      "background": "#B42336",
+      "collection": "sculpture"
     },
     {
       "id": "wallpaper-phone-paper",
-      "title": "Phone wallpaper · paper",
-      "description": "A calm top third leaves room for your clock. The curved A mark sits below the lock-screen controls.",
+      "title": "Phone wallpaper · open sky",
+      "description": "Red architecture under a luminous sky. Minimal branding and a calm upper canvas for the clock.",
       "category": "wallpapers",
       "width": 1080,
       "height": 1920,
       "preview": "/brand/previews/wallpaper-phone-paper.png",
       "png": "/brand/wallpapers/wallpaper-phone-paper.png",
       "svg": "/brand/wallpapers/wallpaper-phone-paper.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "wallpaper-phone-ink",
-      "title": "Phone wallpaper · ink",
-      "description": "A calm top third leaves room for your clock. The curved A mark sits below the lock-screen controls.",
+      "title": "Phone wallpaper · paper after dark",
+      "description": "A gallery-like paper study against deep ink. Deliberately quiet at the top, with no advertising headline.",
       "category": "wallpapers",
       "width": 1080,
       "height": 1920,
       "preview": "/brand/previews/wallpaper-phone-ink.png",
       "png": "/brand/wallpapers/wallpaper-phone-ink.png",
       "svg": "/brand/wallpapers/wallpaper-phone-ink.svg",
-      "background": "#281E20"
+      "background": "#281E20",
+      "collection": "paper-study"
     },
     {
       "id": "wallpaper-desktop-red",
-      "title": "Desktop wallpaper · red",
-      "description": "4K artwork with a quiet left side for desktop icons and a generous, graphic right side.",
+      "title": "Desktop wallpaper · red sculpture",
+      "description": "A 4K canvas with a sculptural artwork at right and continuous deep-red space for desktop icons at left.",
       "category": "wallpapers",
       "width": 3840,
       "height": 2160,
       "preview": "/brand/previews/wallpaper-desktop-red.png",
       "png": "/brand/wallpapers/wallpaper-desktop-red.png",
       "svg": "/brand/wallpapers/wallpaper-desktop-red.svg",
-      "background": "#B42336"
+      "background": "#281E20",
+      "collection": "sculpture"
     },
     {
       "id": "wallpaper-desktop-paper",
-      "title": "Desktop wallpaper · paper",
-      "description": "4K artwork with a quiet left side for desktop icons and a generous, graphic right side.",
+      "title": "Desktop wallpaper · open sky",
+      "description": "A 4K architectural landscape with expansive sky, warm light and a small, precise signature.",
       "category": "wallpapers",
       "width": 3840,
       "height": 2160,
       "preview": "/brand/previews/wallpaper-desktop-paper.png",
       "png": "/brand/wallpapers/wallpaper-desktop-paper.png",
       "svg": "/brand/wallpapers/wallpaper-desktop-paper.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "social-square-budget",
-      "title": "Square post · give it a budget",
-      "description": "Launch artwork for a social feed. Describes the public rehearsal without claiming a live payment.",
+      "title": "Square post · useful freedom",
+      "description": "Bold editorial type meets tactile red sculpture. A short message designed to read clearly in a feed.",
       "category": "social",
       "width": 1080,
       "height": 1080,
       "preview": "/brand/previews/social-square-budget.png",
       "png": "/brand/social/social-square-budget.png",
       "svg": "/brand/social/social-square-budget.svg",
-      "background": "#B42336"
+      "background": "#B42336",
+      "collection": "sculpture"
     },
     {
       "id": "social-square-policy",
-      "title": "Square post · the policy decides",
-      "description": "A strong editorial message for a feed post or square ad.",
+      "title": "Square post · you set the limit",
+      "description": "An open, airy campaign composition. The human sets the boundary; the agent gets room to act.",
       "category": "social",
       "width": 1080,
       "height": 1080,
       "preview": "/brand/previews/social-square-policy.png",
       "png": "/brand/social/social-square-policy.png",
       "svg": "/brand/social/social-square-policy.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "social-square-receipt",
-      "title": "Square post · a clear receipt",
-      "description": "An expressive brand post about spending limits and readable records. No transaction stats.",
+      "title": "Square post · nothing lost",
+      "description": "Oversized typography on a tactile paper study. The message is about records, without invented transaction stats.",
       "category": "social",
       "width": 1080,
       "height": 1080,
       "preview": "/brand/previews/social-square-receipt.png",
       "png": "/brand/social/social-square-receipt.png",
       "svg": "/brand/social/social-square-receipt.svg",
-      "background": "#281E20"
+      "background": "#FAF7F4",
+      "collection": "paper-study"
     },
     {
       "id": "social-portrait-budget",
       "title": "Portrait post · room to act",
-      "description": "A 4:5 feed or ad layout with the message and brand comfortably inside the canvas.",
+      "description": "A spacious 4:5 campaign image with emphatic typography and red architecture beneath an open sky.",
       "category": "social",
       "width": 1080,
       "height": 1350,
       "preview": "/brand/previews/social-portrait-budget.png",
       "png": "/brand/social/social-portrait-budget.png",
       "svg": "/brand/social/social-portrait-budget.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "social-portrait-policy",
-      "title": "Portrait post · the boundary",
-      "description": "A 4:5 red edition of the core policy message. Ready for a feed post or ad.",
+      "title": "Portrait post · your call",
+      "description": "An expressive paper-and-ink poster about human control. A red editorial column anchors the composition.",
       "category": "social",
       "width": 1080,
       "height": 1350,
       "preview": "/brand/previews/social-portrait-policy.png",
       "png": "/brand/social/social-portrait-policy.png",
       "svg": "/brand/social/social-portrait-policy.svg",
-      "background": "#B42336"
+      "background": "#B42336",
+      "collection": "paper-study"
     },
     {
       "id": "social-story-budget",
       "title": "Story · a little independence",
-      "description": "Vertical story artwork with the central message clear of common top and bottom interface controls.",
+      "description": "A vertical red campaign composition. Essential copy stays clear of the usual story controls at top and bottom.",
       "category": "social",
       "width": 1080,
       "height": 1920,
       "preview": "/brand/previews/social-story-budget.png",
       "png": "/brand/social/social-story-budget.png",
       "svg": "/brand/social/social-story-budget.svg",
-      "background": "#B42336"
+      "background": "#B42336",
+      "collection": "sculpture"
     },
     {
       "id": "background-red",
-      "title": "Background · red geometry",
-      "description": "Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.",
+      "title": "Background · red sculpture",
+      "description": "Text-free artwork with a continuous deep-red field at left for your own typography or presentation content.",
       "category": "backgrounds",
       "width": 1920,
       "height": 1080,
       "preview": "/brand/previews/background-red.png",
       "png": "/brand/backgrounds/background-red.png",
       "svg": "/brand/backgrounds/background-red.svg",
-      "background": "#B42336"
+      "background": "#281E20",
+      "collection": "sculpture"
     },
     {
       "id": "background-paper",
-      "title": "Background · paper geometry",
-      "description": "Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.",
+      "title": "Background · open sky",
+      "description": "Text-free architectural scenery with clear space at left. Ready for your own layouts and presentations.",
       "category": "backgrounds",
       "width": 1920,
       "height": 1080,
       "preview": "/brand/previews/background-paper.png",
       "png": "/brand/backgrounds/background-paper.png",
       "svg": "/brand/backgrounds/background-paper.svg",
-      "background": "#FAF7F4"
+      "background": "#FAF7F4",
+      "collection": "open-sky"
     },
     {
       "id": "background-ink",
-      "title": "Background · ink geometry",
-      "description": "Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.",
+      "title": "Background · paper study",
+      "description": "Text-free paper sculpture and soft shadows. Warm, quiet material for your own social designs.",
       "category": "backgrounds",
       "width": 1920,
       "height": 1080,
       "preview": "/brand/previews/background-ink.png",
       "png": "/brand/backgrounds/background-ink.png",
       "svg": "/brand/backgrounds/background-ink.svg",
-      "background": "#281E20"
+      "background": "#FAF7F4",
+      "collection": "paper-study"
     }
   ]
 }

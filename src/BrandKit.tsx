@@ -25,6 +25,7 @@ type Asset = {
   png: string;
   svg?: string;
   background: string;
+  collection?: string;
 };
 type BrandManifest = {
   version: string;
@@ -32,9 +33,44 @@ type BrandManifest = {
   palette: { name: string; hex: string }[];
   zip: string;
   assets: Asset[];
+  collections?: { id: string; title: string; description: string; coverId: string }[];
+  featured?: string[];
 };
 
 const kit = manifest as BrandManifest;
+const collectionArt: Record<string, string> = {
+  sculpture: '/brand/art/sculpture.jpg',
+  'open-sky': '/brand/art/sky.jpg',
+  'paper-study': '/brand/art/paper.jpg',
+};
+const categoryOrder: Exclude<Category, 'all'>[] = [
+  'wallpapers',
+  'social',
+  'headers',
+  'profiles',
+  'backgrounds',
+  'logos',
+];
+const categoryIntros: Record<Exclude<Category, 'all'>, string> = {
+  wallpapers: 'A new view, every time you look.',
+  social: 'Ideas with a little more impact.',
+  headers: 'Make a first impression that lasts.',
+  profiles: 'A small mark. Instantly yours.',
+  backgrounds: 'Room for your own ideas.',
+  logos: 'The essentials, in their purest form.',
+};
+
+function assetUrl(path: string) {
+  return `${path}?v=${encodeURIComponent(kit.version)}`;
+}
+
+function format(asset: Asset) {
+  return asset.width > asset.height * 1.4
+    ? 'wide'
+    : asset.height > asset.width * 1.4
+      ? 'tall'
+      : 'square';
+}
 
 function filename(path: string) {
   return path.split('/').pop();
@@ -43,13 +79,13 @@ function filename(path: string) {
 function AssetLinks({ asset }: { asset: Asset }) {
   return (
     <div className="bk-asset-links">
-      <a className="bk-download-link" href={asset.png} download={filename(asset.png)}>
+      <a className="bk-download-link" href={assetUrl(asset.png)} download={filename(asset.png)}>
         <ArrowDownToLine size={15} aria-hidden="true" />
         <span>Download PNG</span>
         <span className="bk-sr-only"> — {asset.title}</span>
       </a>
       {asset.svg && (
-        <a className="bk-svg-link" href={asset.svg} download={filename(asset.svg)}>
+        <a className="bk-svg-link" href={assetUrl(asset.svg)} download={filename(asset.svg)}>
           SVG <span className="bk-sr-only"> — {asset.title}</span>
         </a>
       )}
@@ -59,14 +95,28 @@ function AssetLinks({ asset }: { asset: Asset }) {
 
 export default function BrandKit() {
   const [category, setCategory] = useState<Category>('all');
+  const [collection, setCollection] = useState<string | null>(null);
   const [selected, setSelected] = useState<Asset | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [copyError, setCopyError] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const restoreFocus = useRef<HTMLElement | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const assets = kit.assets.filter((asset) => category === 'all' || asset.category === category);
-  const cover = kit.assets.find((asset) => asset.category === 'profiles') ?? kit.assets[0];
+  const assets = kit.assets.filter(
+    (asset) =>
+      (category === 'all' || asset.category === category) &&
+      (!collection || asset.collection === collection)
+  );
+  const cover = kit.assets.find((asset) => asset.id === 'wallpaper-desktop-red');
+  const phoneCover = kit.assets.find((asset) => asset.id === 'wallpaper-phone-red');
+  const selectedCollection = kit.collections?.find((item) => item.id === collection);
+  const groups = categoryOrder
+    .map((id) => ({
+      id,
+      title: categories.find((item) => item.id === id)!.label,
+      assets: assets.filter((asset) => asset.category === id),
+    }))
+    .filter((group) => group.assets.length > 0);
 
   useEffect(() => {
     if (selected && !dialogRef.current?.open) dialogRef.current?.showModal();
@@ -95,45 +145,123 @@ export default function BrandKit() {
   return (
     <main id="main" className="brand-kit-page">
       <section className="bk-hero" aria-labelledby="brand-title">
-        <div className="bk-hero-copy">
+        <div className="bk-hero-topline">
           <p className="bk-eyebrow">
-            <span /> THE ALLOWANCE BRAND KIT
+            <span /> ALLOWANCE / BRAND STUDIO
           </p>
+          <span className="bk-edition">THE RED COLLECTION · 2026</span>
+        </div>
+        <div className="bk-hero-heading">
           <h1 id="brand-title">
-            A little mark.
+            A little more
             <br />
-            <em>A lot of possibility.</em>
+            <em>possibility.</em>
           </h1>
-          <p className="bk-hero-description">
-            Bring Allowance to your corner of the internet. Profile pictures, wallpapers, headers,
-            and social artwork. All here. All ready to save.
-          </p>
-          <div className="bk-hero-actions">
-            <a className="bk-primary-link" href={kit.zip} download={filename(kit.zip)}>
-              Download the full kit <ArrowDownToLine size={18} aria-hidden="true" />
-            </a>
-            <a className="bk-text-link" href="#brand-assets">
-              Explore the assets <ArrowDown size={17} aria-hidden="true" />
-            </a>
+          <div className="bk-hero-copy">
+            <p className="bk-hero-description">
+              Bold forms. Open skies. A world of your own. Make Allowance yours with a collection of
+              wallpapers, social artwork, and everyday essentials.
+            </p>
+            <div className="bk-hero-actions">
+              <a className="bk-primary-link" href={assetUrl(kit.zip)} download={filename(kit.zip)}>
+                Download the full kit <ArrowDownToLine size={18} aria-hidden="true" />
+              </a>
+              <a className="bk-text-link" href="#brand-assets">
+                Find your next look <ArrowDown size={17} aria-hidden="true" />
+              </a>
+            </div>
+            <p className="bk-file-note">
+              {kit.assets.length} original assets · High-resolution PNG + SVG
+            </p>
           </div>
-          <p className="bk-file-note">PNG + editable SVG · Original Allowance artwork</p>
         </div>
         {cover && (
           <div className="bk-hero-art" aria-hidden="true">
-            <div className="bk-art-grid" />
-            <div className="bk-art-caption">
-              A LITTLE INDEPENDENCE.
-              <br />A CLEAR LIMIT.
+            <img
+              className="bk-hero-scene"
+              src={assetUrl('/brand/art/sky.jpg')}
+              alt=""
+              width={cover.width}
+              height={cover.height}
+            />
+            <div className="bk-hero-art-caption">
+              <span>ALLOWANCE, EVERYWHERE.</span>
+              <span>ARTWORK / EDITION 03</span>
             </div>
-            <div className="bk-art-card" style={{ background: cover.background }}>
-              <img src={cover.preview} alt="" width={cover.width} height={cover.height} />
+            {phoneCover && (
+              <div className="bk-hero-phone">
+                <img
+                  src={assetUrl(phoneCover.preview)}
+                  alt=""
+                  width={phoneCover.width}
+                  height={phoneCover.height}
+                />
+              </div>
+            )}
+            <div className="bk-hero-art-footer">
+              <span>
+                A clear boundary.
+                <br />
+                An open world.
+              </span>
+              <ArrowUpRight size={30} />
             </div>
-            <span className="bk-art-label">
-              <span /> Made to stand for something.
-            </span>
           </div>
         )}
       </section>
+
+      {kit.collections && kit.collections.length > 0 && (
+        <section className="bk-collections" aria-labelledby="collections-title">
+          <div className="bk-section-heading">
+            <div>
+              <p className="bk-eyebrow">01 / THREE WAYS TO MAKE IT YOURS</p>
+              <h2 id="collections-title">Pick a world.</h2>
+            </div>
+            <p className="bk-section-aside">One identity. Different points of view.</p>
+          </div>
+          <div className="bk-collection-grid">
+            {kit.collections.map((item, index) => {
+              const art = kit.assets.find((asset) => asset.id === item.coverId);
+              if (!art) return null;
+              return (
+                <a
+                  key={item.id}
+                  className="bk-collection"
+                  href="#brand-assets"
+                  onClick={() => {
+                    setCategory('all');
+                    setCollection(item.id);
+                  }}
+                  aria-label={`Explore ${item.title} collection`}
+                  aria-current={collection === item.id ? 'true' : undefined}
+                >
+                  <div
+                    className="bk-collection-art"
+                    data-collection={item.id}
+                    style={{ background: art.background }}
+                  >
+                    <img
+                      src={assetUrl(collectionArt[item.id] ?? art.preview)}
+                      width={art.width}
+                      height={art.height}
+                      alt=""
+                      loading="lazy"
+                    />
+                    <span className="bk-collection-number">0{index + 1}</span>
+                    <span className="bk-collection-arrow">
+                      <ArrowUpRight size={23} aria-hidden="true" />
+                    </span>
+                  </div>
+                  <div className="bk-collection-caption">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <aside className="bk-save-note" aria-labelledby="phone-save-title">
         <span className="bk-save-icon">
@@ -152,8 +280,8 @@ export default function BrandKit() {
       <section className="bk-library" id="brand-assets" aria-labelledby="library-title">
         <div className="bk-section-heading">
           <div>
-            <p className="bk-eyebrow">01 / THE ASSET LIBRARY</p>
-            <h2 id="library-title">Your next look starts here.</h2>
+            <p className="bk-eyebrow">02 / YOUR EVERYDAY COLLECTION</p>
+            <h2 id="library-title">{selectedCollection?.title ?? 'Find your next look.'}</h2>
           </div>
           <p className="bk-count" aria-live="polite">
             {assets.length} {assets.length === 1 ? 'asset' : 'assets'} · ready to use
@@ -164,8 +292,11 @@ export default function BrandKit() {
             <button
               key={item.id}
               type="button"
-              aria-pressed={category === item.id}
-              onClick={() => setCategory(item.id)}
+              aria-pressed={category === item.id && !collection}
+              onClick={() => {
+                setCategory(item.id);
+                setCollection(null);
+              }}
             >
               {item.label}
               <span>
@@ -176,52 +307,81 @@ export default function BrandKit() {
             </button>
           ))}
         </div>
-        <div className="bk-grid">
-          {assets.map((asset) => (
-            <article key={asset.id} className="bk-asset-card" data-category={asset.category}>
-              <button
-                type="button"
-                className="bk-preview-button"
-                style={{ backgroundColor: asset.background }}
-                aria-label={`Preview ${asset.title}`}
-                onClick={(event) => {
-                  restoreFocus.current = event.currentTarget;
-                  setSelected(asset);
-                }}
-              >
-                <img
-                  src={asset.preview}
-                  alt={asset.title}
-                  width={asset.width}
-                  height={asset.height}
-                  loading="lazy"
-                  decoding="async"
-                />
-                <span className="bk-preview-affordance">
-                  <ArrowUpRight size={19} aria-hidden="true" />
-                  <span className="bk-sr-only">Open preview</span>
-                </span>
-              </button>
-              <div className="bk-asset-details">
-                <p className="bk-asset-meta">
-                  {categories.find((item) => item.id === asset.category)?.label}{' '}
-                  <span>
-                    {asset.width} × {asset.height}
-                  </span>
-                </p>
-                <h3>{asset.title}</h3>
-                <p className="bk-asset-description">{asset.description}</p>
-                <AssetLinks asset={asset} />
-              </div>
-            </article>
-          ))}
-        </div>
+        {selectedCollection && (
+          <div className="bk-active-collection">
+            <span>{selectedCollection.description}</span>
+            <button type="button" onClick={() => setCollection(null)}>
+              Show all collections <X size={14} aria-hidden="true" />
+            </button>
+          </div>
+        )}
+        {groups.map((group) => (
+          <section
+            key={group.id}
+            className="bk-asset-group"
+            aria-labelledby={`bk-group-${group.id}`}
+          >
+            <div className="bk-group-heading">
+              <h3 id={`bk-group-${group.id}`}>{group.title}</h3>
+              <p>{categoryIntros[group.id]}</p>
+            </div>
+            <div className="bk-grid" data-group={group.id}>
+              {group.assets.map((asset) => (
+                <article
+                  key={asset.id}
+                  className="bk-asset-card"
+                  data-category={asset.category}
+                  data-format={format(asset)}
+                >
+                  <button
+                    type="button"
+                    className="bk-preview-button"
+                    style={{
+                      backgroundColor: asset.background,
+                      aspectRatio:
+                        asset.category === 'logos' ? '1.35' : `${asset.width} / ${asset.height}`,
+                    }}
+                    aria-label={`Preview ${asset.title}`}
+                    onClick={(event) => {
+                      restoreFocus.current = event.currentTarget;
+                      setSelected(asset);
+                    }}
+                  >
+                    <img
+                      src={assetUrl(asset.preview)}
+                      alt={asset.title}
+                      width={asset.width}
+                      height={asset.height}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span className="bk-preview-affordance">
+                      <span>Take a closer look</span>
+                      <ArrowUpRight size={18} aria-hidden="true" />
+                    </span>
+                  </button>
+                  <div className="bk-asset-details">
+                    <p className="bk-asset-meta">
+                      <span>
+                        {asset.width} × {asset.height}
+                      </span>
+                      <span>PNG{asset.svg ? ' + SVG' : ''}</span>
+                    </p>
+                    <h4>{asset.title}</h4>
+                    <p className="bk-asset-description">{asset.description}</p>
+                    <AssetLinks asset={asset} />
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
       </section>
 
       <section className="bk-palette-section" aria-labelledby="palette-title">
         <div className="bk-section-heading">
           <div>
-            <p className="bk-eyebrow">02 / THE PALETTE</p>
+            <p className="bk-eyebrow">03 / THE PALETTE</p>
             <h2 id="palette-title">Warm. Clear. A little bold.</h2>
           </div>
           <p className="bk-palette-hint">Tap a color to copy its hex code.</p>
@@ -267,7 +427,7 @@ export default function BrandKit() {
             evidence of a payment or an endorsement by Solana.
           </p>
         </div>
-        <a className="bk-text-link" href={kit.zip} download={filename(kit.zip)}>
+        <a className="bk-text-link" href={assetUrl(kit.zip)} download={filename(kit.zip)}>
           Everything in one ZIP <ArrowDownToLine size={17} aria-hidden="true" />
         </a>
       </section>
@@ -294,7 +454,7 @@ export default function BrandKit() {
             </div>
             <div className="bk-dialog-image" style={{ backgroundColor: selected.background }}>
               <img
-                src={selected.preview}
+                src={assetUrl(selected.preview)}
                 width={selected.width}
                 height={selected.height}
                 alt={selected.title}
@@ -309,7 +469,7 @@ export default function BrandKit() {
               <AssetLinks asset={selected} />
               <a
                 className="bk-open-image"
-                href={selected.png}
+                href={assetUrl(selected.png)}
                 target="_blank"
                 rel="noopener noreferrer"
               >

@@ -1,0 +1,15 @@
+
+> allowance@0.1.0 build:rehearsal
+> tsx scripts/build-rehearsal.ts
+
+vite v8.3.0 building client environment for rehearsal...
+transforming...
+✓ 1977 modules transformed.
+rendering chunks...
+computing gzip size...
+.vercel/output/static/index.html                   2.08 kB │ gzip:   0.90 kB
+.vercel/output/static/assets/index-B7qHrgXf.css  104.32 kB │ gzip:  20.35 kB
+.vercel/output/static/assets/index-DPz10ked.js   436.92 kB │ gzip: 131.61 kB
+
+✓ built in 16.05s
+Static rehearsal prepared. No backend functions, signing or model runtime.

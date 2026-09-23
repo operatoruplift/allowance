@@ -27,12 +27,31 @@ test('brand library filters assets, previews accessibly, and downloads the origi
     }
   });
 
+  await page.setViewportSize({ width: 1440, height: 1100 });
   await page.goto('/brand');
-  await expect(
-    page.getByRole('heading', { name: 'A little mark. A lot of possibility.' })
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'A little more possibility.' })).toBeVisible();
   await expect(page.locator('.bk-asset-card')).toHaveCount(manifest.assets.length);
-  await page.screenshot({ path: 'evidence/brand-kit-desktop.png', animations: 'disabled' });
+  await page.screenshot({
+    path: 'evidence/brand-kit-2026-09-23-desktop.png',
+    animations: 'disabled',
+  });
+
+  const collections =
+    (manifest as typeof manifest & { collections?: { id: string; title: string }[] }).collections ??
+    [];
+  expect(collections).toHaveLength(3);
+  await page
+    .getByRole('link', { name: `Explore ${collections[0].title} collection`, exact: true })
+    .click();
+  const collectionAssets = manifest.assets.filter(
+    (asset) => (asset as typeof asset & { collection?: string }).collection === collections[0].id
+  );
+  await expect(page.locator('.bk-asset-card')).toHaveCount(collectionAssets.length);
+  await expect(
+    page.getByRole('heading', { name: collections[0].title, exact: true, level: 2 })
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Show all collections' }).click();
+  await expect(page.locator('.bk-asset-card')).toHaveCount(manifest.assets.length);
 
   for (const [category, label] of Object.entries(filters)) {
     const filter = page.getByRole('button', { name: new RegExp(`^${label}`) });
@@ -55,7 +74,7 @@ test('brand library filters assets, previews accessibly, and downloads the origi
   await expect(dialog.getByRole('button', { name: 'Close asset preview' })).toBeFocused();
   await expect(dialog.getByRole('link', { name: /Open full-size image/ })).toHaveAttribute(
     'href',
-    asset.png
+    `${asset.png}?v=${encodeURIComponent(manifest.version)}`
   );
   await expect(dialog.getByRole('link', { name: /Open full-size image/ })).toHaveAttribute(
     'target',
@@ -91,10 +110,21 @@ test('brand kit and full-size save flow fit narrow phones without clipping', asy
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/brand');
     await expect(page.getByRole('heading', { name: 'Saving to your phone?' })).toBeVisible();
+    await page.screenshot({
+      path: `evidence/brand-kit-2026-09-23-mobile-${width}.png`,
+      animations: 'disabled',
+    });
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
     ).toBe(true);
     await page.getByRole('button', { name: /^Wallpapers/ }).click();
+    const portrait = page.locator('.bk-asset-card[data-format="tall"] .bk-preview-button').first();
+    const portraitBounds = await portrait.boundingBox();
+    expect(portraitBounds!.height).toBeGreaterThan(portraitBounds!.width * 1.6);
+    await page.screenshot({
+      path: `evidence/brand-kit-2026-09-23-wallpapers-${width}.png`,
+      animations: 'disabled',
+    });
     await page
       .getByRole('button', { name: /^Preview / })
       .first()
@@ -119,11 +149,4 @@ test('brand kit and full-size save flow fit narrow phones without clipping', asy
     await dialog.getByRole('button', { name: 'Close asset preview' }).click();
     await expect(dialog).not.toBeVisible();
   }
-  await page.getByRole('button', { name: /^Profile pictures/ }).click();
-  await page.getByRole('heading', { name: 'A little mark. A lot of possibility.' }).click();
-  await page.screenshot({
-    path: 'evidence/brand-kit-mobile.png',
-    fullPage: true,
-    animations: 'disabled',
-  });
 });

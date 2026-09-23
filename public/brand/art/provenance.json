@@ -1,0 +1,23 @@
+{
+  "createdAt": "2026-09-23",
+  "method": "OpenAI built-in image generation",
+  "purpose": "New original abstract art plates; exact Allowance logo and typography are composed separately from local vector sources.",
+  "processing": "JPEG encoding for distribution; original generated PNGs retained. No third-party stock imagery. Canvas exports may exceed native raster resolution.",
+  "sources": [
+    {
+      "id": "sculpture",
+      "file": "sculpture.jpg",
+      "prompt": "Create a high-end brand campaign art plate for Allowance. Use case: ads-marketing / sculptural abstract artwork. Portrait 2:3, maximum resolution. A huge vermilion crimson sculptural ribbon of lacquered folded aluminum, one dramatic sweeping curved sail and one smaller separate angular folded form; the tension between a fluid arc and precise triangle is the motif. They hover almost imperceptibly over a dark oxblood seamless surface. Bold minimalist art photography, exquisite materials, restrained micrograin, glancing light, soft long shadow, hot scarlet highlights fading into deep burgundy. Form mainly in the lower two-thirds with calm dark red negative space in the upper third for phone clock. Form fills width with fascinating close cropped depth. Art directed luxury editorial, rich tactile, not flat illustration, not generic tech gradient. Entire canvas composed as finished abstract wallpaper. NO text, no letters, no brand marks, no borders, no UI, no mockup, no watermark. Colors anchored #B42336 #911A2B #281E20 with warmer scarlet light. Visually arresting dimensional sculpture, rigorous composition, sharp detail."
+    },
+    {
+      "id": "sky",
+      "file": "sky.jpg",
+      "prompt": "Create a sophisticated cinematic photographic art plate for Allowance's visual identity. Use case: ads-marketing / abstract architectural landscape. Wide 16:9 landscape, maximum resolution ideally3840x2160. A monumental matte deep crimson curved sculptural sail and a separate smaller sharp triangular red volume stand on a flat pale rose salt plain on the RIGHT third. Their shapes evoke freedom and precision without depicting any actual letter or logo. Enormous luminous blue-grey sky and soft cumulus clouds, late afternoon side light, pale warm horizon, distant reflective surface, very subtle film grain. Left half mostly calm sky/open air for editorial type, rich red sculpture on right, dramatic but refined. Architectural photography meets premium art-book cover, tangible subtle concrete/satin-metal texture. Big quiet negative space, extraordinary atmospheric depth and beautiful natural light. No stock sci-fi arches, no rings, no space, no chrome balls. NO text, letters, logos, watermarks, charts, UI, frame or mockup. Restrained brand colors warm offwhite #FAF7F4, saturated crimson #B42336, muted sky blue. A complete beautiful landscape wallpaper."
+    },
+    {
+      "id": "paper",
+      "file": "paper.jpg",
+      "prompt": "Create an exquisite tactile art plate for Allowance brand campaign. Use case: ads-marketing / material study. Portrait 2:3 maximum resolution. Abstract oversized ivory sculptural paper folds viewed close-up: a broad sweeping curved folded paper sail sweeping diagonally from bottom-left toward upper-right, a separate triangular red paper fold nested subtly at lower right. Pale warm white #FAF7F4 and deep brand red #B42336 only, with warm charcoal contact shadows. Soft raking studio daylight from upperleft reveals genuine paper fibers, layered edges and sculptural depth. Upperleft and topquarter mostly blank warm ivory for phone clock and editorial lettering. Precise architecture, minimalist contemporary art photography, luxury printed object, photorealistic gorgeous material study with disciplined asymmetry. No words, no letters, no logos, no UI, no grid, no decorative circles, no watermark, no frame, no mockup. Don't depict an actual letter. Quietly powerful and richly dimensional, not a flat gradient."
+    }
+  ]
+}

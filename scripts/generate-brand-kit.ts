@@ -27,6 +27,7 @@ function font(file: string, weight: number) {
   return loaded.getVariation({ wght: weight });
 }
 const display = font('Figtree-Variable.ttf', 600);
+const strong = font('Figtree-Variable.ttf', 650);
 const regular = font('Figtree-Variable.ttf', 400);
 const mono = font('GeistMono-Variable.ttf', 500);
 
@@ -76,20 +77,6 @@ function mark(x: number, y: number, size: number, color: string, opacity = 1) {
 function lockup(x: number, y: number, width: number, color: string) {
   return `<g transform="translate(${x} ${y}) scale(${width / 1024})">${mark(0, 0, 224, color)}${text('Allowance.', 280, 166, 147, color)}</g>`;
 }
-function rule(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  color: string,
-  opacity = 1,
-  width = 1
-) {
-  return `<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${color}" stroke-width="${width}" opacity="${opacity}"/>`;
-}
-function ring(x: number, y: number, radius: number, color: string, opacity = 1, width = 1) {
-  return `<circle cx="${x}" cy="${y}" r="${radius}" fill="none" stroke="${color}" stroke-width="${width}" opacity="${opacity}"/>`;
-}
 function label(
   value: string,
   x: number,
@@ -114,6 +101,7 @@ function lines(
     .join('');
 }
 
+type Collection = 'sculpture' | 'open-sky' | 'paper-study';
 type Category = 'logos' | 'profiles' | 'wallpapers' | 'headers' | 'social' | 'backgrounds';
 type Asset = {
   id: string;
@@ -126,6 +114,7 @@ type Asset = {
   png: string;
   svg: string;
   background: string;
+  collection?: Collection;
 };
 type Composition = { asset: Asset; source: string };
 const compositions: Composition[] = [];
@@ -139,9 +128,10 @@ function add(
   height: number,
   background: string | null,
   artwork: string,
-  previewBackground = background ?? paper
+  previewBackground = background ?? paper,
+  collection?: Collection
 ) {
-  const source = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${escape(title)} — Allowance</title><desc>${escape(description)} Original Allowance artwork. Typography outlined from OFL-licensed Figtree and Geist Mono.</desc>${background ? `<rect width="${width}" height="${height}" fill="${background}"/>` : ''}${artwork}</svg>`;
+  const source = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>${escape(title)} — Allowance</title><desc>${escape(description)} ${category === 'logos' ? 'Original Allowance artwork.' : 'Allowance composition with the canonical vector A and, where present, an AI-generated art plate.'} Typography outlined from OFL-licensed Figtree and Geist Mono.</desc>${background ? `<rect width="${width}" height="${height}" fill="${background}"/>` : ''}${artwork}</svg>`;
   compositions.push({
     source,
     asset: {
@@ -155,6 +145,7 @@ function add(
       png: `/brand/${category}/${id}.png`,
       svg: `/brand/${category}/${id}.svg`,
       background: previewBackground,
+      ...(collection ? { collection } : {}),
     },
   });
 }
@@ -188,247 +179,330 @@ for (const [name, color, backdrop] of [
   );
 }
 
-for (const [name, background, foreground] of [
-  ['red', red, paper],
-  ['paper', paper, red],
-  ['ink', ink, paper],
-]) {
+// Original generated art is embedded, so each exported SVG remains self-contained.
+// Logos and type stay exact vector geometry; the artwork is a raster photograph-style plate.
+const plates = Object.fromEntries(
+  await Promise.all(
+    ['sculpture', 'sculpture-wide', 'sky', 'paper'].map(async (name) => [
+      name,
+      `data:image/jpeg;base64,${(await fs.readFile(path.join(output, 'art', `${name}.jpg`))).toString('base64')}`,
+    ])
+  )
+) as Record<'sculpture' | 'sculpture-wide' | 'sky' | 'paper', string>;
+function plate(
+  name: keyof typeof plates,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  alignment = 'xMidYMid slice'
+) {
+  return `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden"><image href="${plates[name]}" width="${width}" height="${height}" preserveAspectRatio="${alignment}"/></svg>`;
+}
+function block(x: number, y: number, width: number, height: number, color: string, opacity = 1) {
+  return `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${color}" opacity="${opacity}"/>`;
+}
+function headline(
+  values: string[],
+  x: number,
+  y: number,
+  size: number,
+  color: string,
+  leading = 0.97
+) {
+  return lines(values, x, y, size, color, leading, strong);
+}
+function edition(x: number, y: number, color: string, name: string, size = 14) {
+  return label(`ALLOWANCE / ${name}`, x, y, color, size);
+}
+function rehearsal(x: number, y: number, color: string, size = 13) {
+  return label('TRY THE EXAMPLE · NO REAL PAYMENTS', x, y, color, size);
+}
+
+for (const [name, foreground, collection] of [
+  ['red', paper, 'sculpture'],
+  ['paper', red, 'paper-study'],
+  ['ink', paper, 'sculpture'],
+] as const) {
+  const backdrop = name === 'red' ? red : name === 'paper' ? paper : ink;
+  const material =
+    name === 'red'
+      ? plate('sculpture', 0, 0, 1024, 1024, 'xMidYMin slice') +
+        block(0, 0, 1024, 1024, '#40050D', 0.23)
+      : name === 'paper'
+        ? plate('paper', 0, 0, 1024, 1024, 'xMidYMin slice') + block(0, 0, 1024, 1024, paper, 0.47)
+        : `<defs><radialGradient id="profile-light" cx="28%" cy="15%" r="95%"><stop stop-color="#544044"/><stop offset="1" stop-color="#160F11"/></radialGradient></defs>${block(0, 0, 1024, 1024, 'url(#profile-light)')}`;
   add(
     `profile-${name}`,
     `Profile picture · ${name}`,
-    'A centered mark with generous room for circular profile crops. Made for social avatars.',
+    'The canonical A on a softly lit material surface. Centered with room for circular profile crops.',
     'profiles',
     1024,
     1024,
-    background,
-    mark(197, 197, 630, foreground)
+    backdrop,
+    material + mark(197, 197, 630, foreground),
+    backdrop,
+    collection
   );
 }
 
 add(
   'header-x-red',
-  'X header · a clear limit',
-  'Wide header with the lower-left profile overlap kept quiet. Keep text within the supplied composition.',
+  'X header · open possibilities',
+  'Sculptural red architecture in an open sky. The lower-left avatar overlap stays free of essential text.',
   'headers',
   1500,
   500,
-  red,
-  ring(190, 380, 345, paper, 0.18) +
-    ring(190, 380, 245, paper, 0.15) +
-    lockup(525, 88, 510, paper) +
-    lines(['A little independence.', 'A clear limit.'], 544, 279, 58, paper, 1.13) +
-    label('AGENT AUTONOMY. WITH AN ALLOWANCE.', 548, 437, paper, 13) +
-    mark(1220, 111, 224, paper, 0.13)
+  paper,
+  plate('sky', 925, 0, 575, 500, 'xMaxYMid slice') +
+    lockup(421, 55, 240, red) +
+    headline(['A little', 'independence.'], 416, 228, 68, ink, 1.03) +
+    text('A clear limit.', 421, 389, 33, red, regular),
+  paper,
+  'open-sky'
 );
 add(
   'header-linkedin-paper',
-  'LinkedIn header · agent autonomy',
-  'A clean wide composition. The profile-photo area on the left stays free of essential text.',
+  'LinkedIn header · quiet confidence',
+  'Ivory paper, warm light, and one clear idea. The left side is quiet for the profile-photo overlap.',
   'headers',
   1584,
   396,
   paper,
-  rule(450, 56, 1514, 56, line, 1, 2) +
-    lockup(456, 82, 400, red) +
-    text('Give your agent a budget.', 460, 260, 58, ink) +
-    label('USEFUL TOOLS. CLEAR BOUNDARIES.', 464, 330, muted, 13) +
-    mark(1220, 84, 215, red, 0.14) +
-    ring(205, 325, 250, red, 0.15)
+  plate('paper', 0, 0, 1584, 396, 'xMidYMid slice') +
+    block(410, 0, 1174, 396, paper, 0.6) +
+    lockup(472, 64, 288, red) +
+    text('Room to do useful things.', 474, 244, 64, ink, strong) +
+    label('AGENT AUTONOMY. WITH AN ALLOWANCE.', 477, 302, red, 13),
+  paper,
+  'paper-study'
 );
 add(
   'header-youtube-ink',
-  'YouTube banner · the allowance',
-  'Core logo and message sit inside the central 1546 × 423 area for small-screen crops.',
+  'YouTube banner · a wider world',
+  'An architectural landscape. Essential logo and message remain inside the central 1546 × 423 safe area.',
   'headers',
   2560,
   1440,
-  ink,
-  ring(2170, 870, 900, paper, 0.13, 2) +
-    ring(2170, 870, 630, paper, 0.1, 2) +
-    mark(-165, 330, 810, red, 0.6) +
-    lockup(656, 570, 740, paper) +
-    text('A little independence. A clear limit.', 674, 844, 59, paper) +
-    label('AGENT AUTONOMY. WITH AN ALLOWANCE.', 675, 908, paper, 19)
+  paper,
+  plate('sky', 0, 0, 2560, 1440) +
+    lockup(592, 556, 433, ink) +
+    headline(['A little independence.', 'A clear limit.'], 595, 764, 83, ink, 1.03),
+  paper,
+  'open-sky'
 );
 
-for (const [name, background, foreground, accent] of [
-  ['red', red, paper, paper],
-  ['paper', paper, red, ink],
-  ['ink', ink, paper, red],
-]) {
-  add(
-    `wallpaper-phone-${name}`,
-    `Phone wallpaper · ${name}`,
-    'A calm top third leaves room for your clock. The curved A mark sits below the lock-screen controls.',
-    'wallpapers',
-    1080,
-    1920,
-    background,
-    ring(965, 1035, 635, foreground, 0.16, 2) +
-      ring(965, 1035, 420, foreground, 0.12, 2) +
-      mark(206, 690, 660, foreground) +
-      label('A LITTLE INDEPENDENCE.', 540, 1450, accent, 20, 'middle') +
-      label('A CLEAR LIMIT.', 540, 1490, accent, 20, 'middle') +
-      rule(100, 1680, 980, 1680, foreground, 0.25, 2) +
-      label('ALLOWANCE', 100, 1730, foreground, 16) +
-      label('ROOM TO DO USEFUL THINGS.', 980, 1730, foreground, 14, 'end')
-  );
-}
-for (const [name, background, foreground, accent] of [
-  ['red', red, paper, paper],
-  ['paper', paper, red, ink],
-]) {
-  add(
-    `wallpaper-desktop-${name}`,
-    `Desktop wallpaper · ${name}`,
-    '4K artwork with a quiet left side for desktop icons and a generous, graphic right side.',
-    'wallpapers',
-    3840,
-    2160,
-    background,
-    ring(3060, 1150, 1010, foreground, 0.15, 3) +
-      ring(3060, 1150, 740, foreground, 0.1, 3) +
-      mark(2520, 510, 1130, foreground) +
-      lockup(220, 230, 720, foreground) +
-      lines(['A little independence.', 'A clear limit.'], 242, 1460, 170, accent, 1.15) +
-      rule(240, 1900, 3600, 1900, foreground, 0.3, 3) +
-      label('ALLOWANCE / AGENT AUTONOMY', 246, 1980, foreground, 29) +
-      label('ROOM TO DO USEFUL THINGS.', 3600, 1980, foreground, 27, 'end')
-  );
-}
+add(
+  'wallpaper-phone-red',
+  'Phone wallpaper · red sculpture',
+  'A tactile red study in light and shadow. Quiet space above leaves room for the lock-screen clock.',
+  'wallpapers',
+  1080,
+  1920,
+  red,
+  plate('sculpture', 0, 0, 1080, 1920, 'xMidYMax slice') +
+    mark(75, 1540, 112, paper) +
+    edition(78, 1733, paper, 'FORM 01', 14),
+  red,
+  'sculpture'
+);
+add(
+  'wallpaper-phone-paper',
+  'Phone wallpaper · open sky',
+  'Red architecture under a luminous sky. Minimal branding and a calm upper canvas for the clock.',
+  'wallpapers',
+  1080,
+  1920,
+  paper,
+  plate('sky', 0, 0, 1080, 1920, 'xMaxYMid slice') +
+    mark(76, 1505, 118, ink) +
+    edition(79, 1728, ink, 'OPEN SKY', 14),
+  paper,
+  'open-sky'
+);
+add(
+  'wallpaper-phone-ink',
+  'Phone wallpaper · paper after dark',
+  'A gallery-like paper study against deep ink. Deliberately quiet at the top, with no advertising headline.',
+  'wallpapers',
+  1080,
+  1920,
+  ink,
+  plate('paper', 72, 597, 936, 1138, 'xMidYMax slice') +
+    mark(91, 475, 69, paper) +
+    edition(88, 1792, paper, 'PAPER STUDY', 13),
+  ink,
+  'paper-study'
+);
+add(
+  'wallpaper-desktop-red',
+  'Desktop wallpaper · red sculpture',
+  'A 4K canvas with a sculptural artwork at right and continuous deep-red space for desktop icons at left.',
+  'wallpapers',
+  3840,
+  2160,
+  ink,
+  plate('sculpture-wide', 0, 0, 3840, 2160) +
+    mark(140, 1644, 170, paper) +
+    edition(145, 1920, paper, 'RED SCULPTURE / 01', 22),
+  ink,
+  'sculpture'
+);
+add(
+  'wallpaper-desktop-paper',
+  'Desktop wallpaper · open sky',
+  'A 4K architectural landscape with expansive sky, warm light and a small, precise signature.',
+  'wallpapers',
+  3840,
+  2160,
+  paper,
+  plate('sky', 0, 0, 3840, 2160) +
+    mark(145, 1730, 157, ink) +
+    edition(150, 1980, ink, 'OPEN SKY / 02', 23),
+  paper,
+  'open-sky'
+);
 
-function socialFooter(height: number, color: string, backgroundLine: string) {
-  return (
-    rule(70, height - 138, 1010, height - 138, backgroundLine, 0.42, 2) +
-    label('PUBLIC REHEARSAL · NO REAL PAYMENTS', 72, height - 90, color, 14) +
-    label('ALLOWANCEONSOLANA.VERCEL.APP', 72, height - 57, color, 12)
-  );
-}
 add(
   'social-square-budget',
-  'Square post · give it a budget',
-  'Launch artwork for a social feed. Describes the public rehearsal without claiming a live payment.',
+  'Square post · useful freedom',
+  'Bold editorial type meets tactile red sculpture. A short message designed to read clearly in a feed.',
   'social',
   1080,
   1080,
   red,
-  lockup(65, 57, 370, paper) +
-    lines(['Give your agent', 'a budget.'], 73, 310, 100, paper, 1.04) +
-    mark(532, 437, 433, paper) +
-    label('A LITTLE INDEPENDENCE.', 75, 669, paper, 14) +
-    label('A CLEAR LIMIT.', 75, 698, paper, 14) +
-    socialFooter(1080, paper, paper)
+  plate('sculpture', 0, 0, 1080, 1080, 'xMidYMax slice') +
+    lockup(65, 48, 283, paper) +
+    headline(['Useful', 'freedom.'], 62, 307, 156, paper) +
+    text('Give your agent a budget.', 71, 647, 31, paper, regular) +
+    rehearsal(71, 1008, paper, 12),
+  red,
+  'sculpture'
 );
 add(
   'social-square-policy',
-  'Square post · the policy decides',
-  'A strong editorial message for a feed post or square ad.',
+  'Square post · you set the limit',
+  'An open, airy campaign composition. The human sets the boundary; the agent gets room to act.',
   'social',
   1080,
   1080,
   paper,
-  lockup(65, 57, 370, red) +
-    label('AGENT AUTONOMY. WITH AN ALLOWANCE.', 75, 248, muted, 15) +
-    lines(['The model asks.', 'The policy', 'decides.'], 73, 409, 110, ink, 1.06) +
-    rule(77, 672, 594, 672, red, 1, 9) +
-    mark(726, 705, 230, red) +
-    socialFooter(1080, muted, line)
+  plate('sky', 0, 445, 1080, 635) +
+    lockup(68, 48, 272, ink) +
+    headline(['You set the limit.'], 62, 275, 105, ink) +
+    text('Your agent takes it from there.', 73, 352, 31, red, regular) +
+    block(0, 990, 1080, 90, ink) +
+    rehearsal(72, 1040, paper, 12),
+  paper,
+  'open-sky'
 );
 add(
   'social-square-receipt',
-  'Square post · a clear receipt',
-  'An expressive brand post about spending limits and readable records. No transaction stats.',
+  'Square post · nothing lost',
+  'Oversized typography on a tactile paper study. The message is about records, without invented transaction stats.',
   'social',
   1080,
   1080,
-  ink,
-  lockup(65, 57, 370, paper) +
-    lines(['A small budget.', 'A clear receipt.'], 72, 361, 99, paper, 1.09) +
-    `<rect x="715" y="586" width="280" height="284" rx="4" fill="${paper}"/>` +
-    mark(784, 620, 143, red) +
-    rule(757, 800, 953, 800, line, 1, 3) +
-    rule(757, 824, 899, 824, line, 1, 3) +
-    label('EVERY DECISION', 75, 730, paper, 18) +
-    label('LEAVES A RECORD.', 75, 767, paper, 18) +
-    socialFooter(1080, paper, paper)
+  paper,
+  plate('paper', 0, 0, 1080, 1080, 'xMidYMin slice') +
+    lockup(65, 51, 273, red) +
+    headline(['Small budget.', 'Full picture.'], 61, 321, 113, ink, 1.03) +
+    text('Every decision leaves a record.', 69, 561, 32, red, regular) +
+    rehearsal(72, 1008, ink, 12),
+  paper,
+  'paper-study'
 );
 add(
   'social-portrait-budget',
   'Portrait post · room to act',
-  'A 4:5 feed or ad layout with the message and brand comfortably inside the canvas.',
+  'A spacious 4:5 campaign image with emphatic typography and red architecture beneath an open sky.',
   'social',
   1080,
   1350,
   paper,
-  lockup(65, 65, 380, red) +
-    label('USEFUL AGENTS. CLEAR BOUNDARIES.', 74, 267, muted, 16) +
-    lines(['Give your', 'agent a', 'budget.'], 65, 418, 140, ink, 1.0) +
-    `<rect x="687" y="710" width="315" height="381" rx="4" fill="${red}"/>` +
-    mark(720, 774, 253, paper) +
-    lines(
-      ['Let it buy the tools it needs.', 'See where every cent went.'],
-      76,
-      919,
-      33,
-      muted,
-      1.5,
-      regular
-    ) +
-    socialFooter(1350, muted, line)
+  plate('sky', 0, 683, 1080, 667) +
+    lockup(68, 50, 281, red) +
+    headline(['Room to act.'], 50, 341, 170, ink) +
+    text('Give your agent a budget.', 66, 439, 36, red, regular) +
+    rehearsal(68, 576, ink, 12),
+  paper,
+  'open-sky'
 );
 add(
   'social-portrait-policy',
-  'Portrait post · the boundary',
-  'A 4:5 red edition of the core policy message. Ready for a feed post or ad.',
+  'Portrait post · your call',
+  'An expressive paper-and-ink poster about human control. A red editorial column anchors the composition.',
   'social',
   1080,
   1350,
   red,
-  lockup(65, 65, 380, paper) +
-    lines(['The model', 'asks.', 'The policy', 'decides.'], 70, 356, 117, paper, 1.07) +
-    ring(950, 976, 233, paper, 0.3, 2) +
-    mark(775, 851, 264, paper) +
-    label('INDEPENDENCE, WITHIN REACH.', 75, 1034, paper, 17) +
-    socialFooter(1350, paper, paper)
+  plate('paper', 408, 0, 672, 1350, 'xMaxYMid slice') +
+    lockup(64, 49, 283, paper) +
+    block(46, 214, 930, 193, red) +
+    text('The model asks.', 65, 351, 113, paper, strong) +
+    block(46, 496, 800, 554, red) +
+    headline(['Your', 'call.'], 56, 764, 239, paper, 0.94) +
+    text('A little independence.', 65, 1124, 27, paper, regular) +
+    text('A clear limit.', 65, 1164, 27, paper, regular) +
+    block(0, 1241, 1080, 109, red) +
+    rehearsal(65, 1300, paper, 12),
+  red,
+  'paper-study'
 );
 add(
   'social-story-budget',
   'Story · a little independence',
-  'Vertical story artwork with the central message clear of common top and bottom interface controls.',
+  'A vertical red campaign composition. Essential copy stays clear of the usual story controls at top and bottom.',
   'social',
   1080,
   1920,
   red,
-  lockup(69, 290, 405, paper) +
-    lines(['Give your', 'agent a', 'budget.'], 76, 617, 142, paper, 1.03) +
-    mark(566, 1000, 410, paper) +
-    label('USEFUL TOOLS.', 80, 1260, paper, 20) +
-    label('CLEAR CONTROL.', 80, 1302, paper, 20) +
-    rule(80, 1542, 1000, 1542, paper, 0.4, 2) +
-    label('PUBLIC REHEARSAL · NO REAL PAYMENTS', 80, 1599, paper, 17) +
-    label('ALLOWANCEONSOLANA.VERCEL.APP', 80, 1639, paper, 16)
+  plate('sculpture', 0, 0, 1080, 1920, 'xMidYMax slice') +
+    lockup(74, 288, 322, paper) +
+    headline(['Give it', 'room.'], 63, 628, 206, paper) +
+    text('Give your agent an allowance.', 77, 1021, 34, paper, regular) +
+    rehearsal(79, 1588, paper, 13) +
+    label('ALLOWANCEONSOLANA.VERCEL.APP', 79, 1630, paper, 12),
+  red,
+  'sculpture'
 );
 
-for (const [name, background, foreground] of [
-  ['red', red, paper],
-  ['paper', paper, red],
-  ['ink', ink, paper],
-]) {
-  add(
-    `background-${name}`,
-    `Background · ${name} geometry`,
-    'Text-free 16:9 artwork with open space on the left. Use behind your own social layouts or presentations.',
-    'backgrounds',
-    1920,
-    1080,
-    background,
-    ring(1490, 575, 690, foreground, 0.18, 2) +
-      ring(1490, 575, 455, foreground, 0.14, 2) +
-      mark(1220, 275, 635, foreground, name === 'paper' ? 0.84 : 0.75) +
-      rule(96, 940, 1824, 940, foreground, 0.18, 1) +
-      `<circle cx="99" cy="99" r="4" fill="${foreground}" opacity="0.5"/>`
-  );
-}
+add(
+  'background-red',
+  'Background · red sculpture',
+  'Text-free artwork with a continuous deep-red field at left for your own typography or presentation content.',
+  'backgrounds',
+  1920,
+  1080,
+  ink,
+  plate('sculpture-wide', 0, 0, 1920, 1080),
+  ink,
+  'sculpture'
+);
+add(
+  'background-paper',
+  'Background · open sky',
+  'Text-free architectural scenery with clear space at left. Ready for your own layouts and presentations.',
+  'backgrounds',
+  1920,
+  1080,
+  paper,
+  plate('sky', 0, 0, 1920, 1080),
+  paper,
+  'open-sky'
+);
+add(
+  'background-ink',
+  'Background · paper study',
+  'Text-free paper sculpture and soft shadows. Warm, quiet material for your own social designs.',
+  'backgrounds',
+  1920,
+  1080,
+  paper,
+  plate('paper', 0, 0, 1920, 1080, 'xMidYMax slice'),
+  paper,
+  'paper-study'
+);
 
 await fs.mkdir(path.join(output, 'previews'), { recursive: true });
 for (const category of new Set(compositions.map(({ asset }) => asset.category))) {
@@ -446,22 +520,40 @@ try {
   ] as const) {
     await page.setViewportSize({ width: size, height: size });
     await page.setContent(
-      `<style>body{margin:0}svg{display:block;width:100vw;height:100vh}</style>${favicon}`
+      `<style>body{margin:0}body>svg{display:block;width:100vw;height:100vh}</style>${favicon}`
     );
     await page.screenshot({ path: path.join(root, 'public', filename), omitBackground: true });
   }
-  const shareImage = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="${red}"/>${lockup(64, 48, 330, paper)}${lines(['Give your agent', 'a budget.'], 64, 260, 86, paper)}${text('Useful tools. Clear limits. Every decision recorded.', 68, 451, 27, paper, regular)}${rule(64, 518, 1136, 518, paper, 0.3)}${label('AI AGENT SPENDING CONTROLS ON SOLANA', 68, 560, paper, 17)}${mark(827, 168, 300, paper)}</svg>`;
+  const shareImage = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="${paper}"/>${plate('sky', 735, 0, 465, 630, 'xMaxYMid slice')}${lockup(52, 38, 260, red)}${headline(['Give your agent', 'a budget.'], 47, 263, 85, ink, 1.02)}${text('Useful freedom. Clear limits.', 54, 481, 30, red, regular)}${rehearsal(54, 569, ink, 11)}</svg>`;
   await page.setViewportSize({ width: 1200, height: 630 });
   await page.setContent(
-    `<style>body{margin:0}svg{display:block;width:100vw;height:100vh}</style>${shareImage}`
+    `<style>body{margin:0}body>svg{display:block;width:100vw;height:100vh}</style>${shareImage}`
   );
+  await page.evaluate(async () => {
+    await Promise.all(
+      [...document.querySelectorAll('svg image')].map((element) => {
+        const image = new Image();
+        image.src = element.getAttribute('href') ?? '';
+        return image.decode();
+      })
+    );
+  });
   await page.screenshot({ path: path.join(root, 'public/allowance-share.png') });
   for (const { source, asset } of compositions) {
     await fs.writeFile(path.join(root, 'public', asset.svg), source);
     await page.setViewportSize({ width: asset.width, height: asset.height });
     await page.setContent(
-      `<style>html,body{margin:0;width:100%;height:100%;background:transparent}svg{display:block;width:100vw;height:100vh}</style>${source}`
+      `<style>html,body{margin:0;width:100%;height:100%;background:transparent}body>svg{display:block;width:100vw;height:100vh}</style>${source}`
     );
+    await page.evaluate(async () => {
+      await Promise.all(
+        [...document.querySelectorAll('svg image')].map((element) => {
+          const image = new Image();
+          image.src = element.getAttribute('href') ?? '';
+          return image.decode();
+        })
+      );
+    });
     await page.screenshot({ path: path.join(root, 'public', asset.png), omitBackground: true });
     const ratio = Math.min(600 / asset.width, 600 / asset.height, 1);
     await page.setViewportSize({
@@ -471,16 +563,44 @@ try {
     await page.screenshot({ path: path.join(root, 'public', asset.preview), omitBackground: true });
     process.stdout.write(`Rendered ${asset.id} (${asset.width} × ${asset.height})\n`);
   }
+  const artOrder = [
+    'wallpaper-desktop-red',
+    'wallpaper-phone-paper',
+    'social-square-receipt',
+    'social-square-budget',
+    'social-square-policy',
+    'social-portrait-budget',
+    'social-portrait-policy',
+    'social-story-budget',
+    'wallpaper-phone-red',
+    'wallpaper-phone-ink',
+    'wallpaper-desktop-paper',
+    'header-x-red',
+    'header-linkedin-paper',
+    'header-youtube-ink',
+    'background-red',
+    'background-paper',
+    'background-ink',
+  ];
+  const ordered = [
+    ...artOrder.map((id) => compositions.find(({ asset }) => asset.id === id)!),
+    ...compositions.filter(
+      ({ asset }) => asset.category === 'profiles' || asset.category === 'logos'
+    ),
+  ];
   const contactTiles = await Promise.all(
-    compositions.map(
+    ordered.map(
       async ({ asset }) =>
-        `<div class="tile"><div class="image" style="background:${asset.background}"><img src="data:image/png;base64,${(await fs.readFile(path.join(root, 'public', asset.preview))).toString('base64')}" /></div><div class="caption">${escape(asset.title)}<small>${asset.width} × ${asset.height}</small></div></div>`
+        `<div class="tile ${asset.category === 'logos' || asset.category === 'profiles' ? 'identity' : 'art'}"><div class="image" style="background:${asset.background}"><img alt="${escape(asset.title)}" src="data:image/png;base64,${(await fs.readFile(path.join(root, 'public', asset.preview))).toString('base64')}" /></div><div class="caption">${escape(asset.title)}<small>${asset.width} × ${asset.height} · ${asset.category}</small></div></div>`
     )
   );
   await page.setViewportSize({ width: 1440, height: 2100 });
   await page.setContent(
-    `<style>*{box-sizing:border-box}body{margin:0;padding:38px;background:${paper};color:${ink};font:14px Arial,sans-serif}h1{font-size:38px;letter-spacing:-1px;margin:0 0 8px}p{color:${muted};margin:0 0 28px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.tile{border:1px solid ${line};background:white}.image{height:207px;padding:8px;display:flex;align-items:center;justify-content:center}.image img{max-width:100%;max-height:100%}.caption{font-weight:600;padding:12px}.caption small{display:block;font-weight:400;font-size:11px;color:${muted};margin-top:6px}</style><h1>Allowance. The red edition.</h1><p>26 original assets · PNG + outlined SVG · Profiles, wallpapers, headers, posts and backgrounds</p><div class="grid">${contactTiles.join('')}</div>`
+    `<style>*{box-sizing:border-box}body{margin:0;padding:60px;background:${paper};color:${ink};font:14px Arial,sans-serif}h1{font-size:64px;letter-spacing:-3px;line-height:1;margin:18px 0 28px}p{color:${muted};margin:0 0 48px;line-height:1.5;max-width:820px}.kicker{font:12px monospace;letter-spacing:3px;color:${red}}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:32px 22px}.tile.art{grid-column:span 2}.tile.identity{grid-column:span 1}.image{height:340px;display:flex;align-items:center;justify-content:center;overflow:hidden}.image img{max-width:100%;max-height:100%}.identity .image{height:143px;padding:15px}.caption{font-weight:600;padding:12px 0;line-height:1.4}.caption small{display:block;font-weight:400;font-size:11px;color:${muted};margin-top:4px}.footer{border-top:1px solid ${line};margin-top:45px;padding-top:20px;font:12px monospace}</style><div class="kicker">ALLOWANCE / THE MATERIAL EDITION / 2026</div><h1>A little independence.<br>A more expressive identity.</h1><p>Red sculpture. Open sky. Paper study. A collection of 26 finished artworks and identity essentials.<br>PNG for sharing. Self-contained SVG with exact vector lettering and embedded art.</p><div class="grid">${contactTiles.join('')}</div><div class="footer">CANONICAL A / ORIGINAL AI-GENERATED ART PLATES / FIGTREE + GEIST MONO</div>`
   );
+  await page.evaluate(async () => {
+    await Promise.all([...document.images].map((item) => item.decode()));
+  });
   await page.screenshot({ path: path.join(output, 'brand-overview.png'), fullPage: true });
 } finally {
   await browser.close();
@@ -495,48 +615,88 @@ for (const file of ['Figtree-LICENSE.txt', 'GeistMono-LICENSE.txt']) {
 }
 await fs.writeFile(
   path.join(output, 'README.md'),
-  `# Allowance brand kit — red edition
+  `# Allowance brand kit — material edition
 
-26 original compositions, each in PNG and outlined SVG. All symbols derive from the canonical two-part curved A mark. SVG lettering is outlined, so it stays consistent without installing fonts. Transparent logo PNGs preserve alpha; put the white versions on a dark background.
+26 finished compositions in PNG and self-contained SVG. Three original art collections: Red sculpture, Open sky and Paper study. All symbols derive from the canonical two-part curved A mark. The six transparent logo files preserve pure vector geometry. Campaign SVGs combine embedded JPEG art with outlined vector lettering and logos; they are not entirely vector illustrations.
 
 ## Save an image to your phone
 
-- On the website, preview the asset and choose **Open full-size image**.
-- On iPhone, press and hold the image, then choose Save to Photos or Save Image. Available wording depends on iOS and the browser.
+- Preview an asset on the website and choose **Open full-size image**.
+- On iPhone, press and hold the image, then choose Save to Photos or Save Image. Wording depends on the browser and iOS version.
 - On Android, press and hold and choose Download image. Your browser may save it to Downloads first.
-- A Download PNG button or the ZIP may save to Files rather than Photos. Unzip the kit in Files and use the share sheet to save individual images where your device supports it.
-- SVG files are editable vector source. PNG files are ready for social-media uploads.
+- Download PNG and ZIP buttons may save to Files rather than Photos. Unzip the kit in Files and use the share sheet to save images where your device supports it.
+- PNG files are ready for social uploads. Self-contained SVGs retain the exact vector logo and type, and include the raster art without external requests.
 
 ## Contents
 
-- Logos: transparent red, white and ink symbols and wordmarks.
-- Profiles: 1024 × 1024 red, paper and ink avatars; centered for circular crops.
-- Headers: X 1500 × 500, LinkedIn 1584 × 396, YouTube 2560 × 1440. YouTube's essential logo and copy sit in the central 1546 × 423 area. Platform interfaces and crops can change; check the platform's preview before saving your profile.
-- Wallpapers: three 1080 × 1920 phone versions and two 3840 × 2160 desktop versions.
-- Social: three 1080 × 1080 posts, two 1080 × 1350 portrait posts and one 1080 × 1920 story.
-- Backgrounds: three text-free 1920 × 1080 compositions.
+- Logos: six transparent red, white and ink symbols and wordmarks. White versions need a dark backdrop.
+- Profiles: three 1024 × 1024 material editions, centered for circular crops.
+- Headers: X 1500 × 500, LinkedIn 1584 × 396, YouTube 2560 × 1440. YouTube's essential logo and copy sit in the central 1546 × 423 area. Check each platform's preview before uploading; interfaces and crops can change.
+- Wallpapers: three 1080 × 1920 phone canvases and two 3840 × 2160 desktop canvases. Desktop exports have 4K output dimensions; the embedded original raster masters have lower native resolution, recorded below.
+- Social: three 1080 × 1080 posts, two 1080 × 1350 portraits and one 1080 × 1920 story. Rehearsal copy never claims an actual payment.
+- Backgrounds: three text-free 1920 × 1080 art compositions.
+- Original art plates, generation provenance, local fonts, font notices and this guide.
 
-## Color and typography
+## Materials, color and typography
+
+Red sculpture uses tactile red forms and deep shadow. Open sky uses monumental red architecture, warm light and open space. Paper study uses ivory folds, a red accent and strong editorial typography. Wallpapers keep advertising copy out of the way; campaign layouts use a deliberately short headline.
 
 Brand red ${red}; paper ${paper}; ink ${ink}; muted ${muted}; line ${line}; soft red ${soft}.
-Figtree 600 for the wordmark and headlines; Figtree 400 for supporting copy; Geist Mono 500 for labels.
+Figtree 600 for the wordmark, Figtree 650 for campaign headlines, Figtree 400 for supporting copy, and Geist Mono 500 for labels.
 
-Keep the logo's proportions and leave clear space around it. Use the supplied contrasting versions. The social designs describe Allowance's public rehearsal; no real payment, verified settlement or Solana endorsement is claimed.
+Keep the logo's proportions and clear space. Use supplied contrasting variants. The designs do not assert real settlement, audited security, onchain policy enforcement or Solana endorsement.
+
+## Art source and usage
+
+The four art plates were created with OpenAI image generation for this Allowance collection on September 23, 2026. They depict imagined materials and architecture, not photographs of real places or products. The source prompts, export sizes and encoding details are in art/provenance.json and art/wide-provenance.json. The canonical A and exact typography were applied separately by the local generator.
+
+JPEG masters: sculpture.jpg 1024 × 1536; sculpture-wide.jpg 1672 × 941; sky.jpg 1672 × 941; paper.jpg 1024 × 1536. They are embedded unchanged in the composition SVGs. Exporting a larger PNG canvas does not add native photographic detail. AI-generated visual material should not be assumed to carry exclusive copyright rights or a third-party stock-photo license. These project assets are provided for use in Allowance branding; accompanying font licenses remain applicable. No outside brand or platform endorsement is claimed.
 
 ## Font source and licenses
 
-The included original font files are distributed under their accompanying SIL Open Font Licenses. They were obtained from the official Google Fonts repository:
+The original font files are distributed under their accompanying SIL Open Font Licenses, obtained from the official Google Fonts repository:
 - https://github.com/google/fonts/tree/main/ofl/figtree
 - https://github.com/google/fonts/tree/main/ofl/geistmono
 
-The application uses WOFF2 versions of these families. The generator uses the original variable TTF files because fontkit 2.0.4 cannot apply variations reliably to WOFF2 fonts. No network access is needed to regenerate the kit.
+The application uses WOFF2 versions. The asset generator uses original variable TTF files for reliable local fontkit variation support.
 
-Run **npm run brand:generate** in the source repository after installing dependencies and Playwright Chromium. The generator reads the canonical SVG, outlines the locally licensed fonts, exports PNGs with Chromium, writes the manifest and packages this ZIP. Generated composition source is in **scripts/generate-brand-kit.ts**.
-`
+## Regenerate
+
+Run **npm run brand:generate** after installing dependencies and Playwright Chromium. The generator reads the canonical SVG and saved JPEG masters, outlines local fonts, exports PNGs with Chromium, writes the catalog and packages the ZIP. Regeneration does not call any image-generation service or access the network. Composition source lives in **scripts/generate-brand-kit.ts**.
+
+`.trimEnd() + '\n'
 );
 const manifest = {
-  version: '2026-09-19',
-  name: 'Allowance — Red edition',
+  version: '2026-09-23',
+  name: 'Allowance — Material edition',
+  collections: [
+    {
+      id: 'sculpture',
+      title: 'Red sculpture',
+      description: 'Tactile red forms. A little independence.',
+      coverId: 'wallpaper-desktop-red',
+    },
+    {
+      id: 'open-sky',
+      title: 'Open sky',
+      description: 'Open space. Clear boundaries.',
+      coverId: 'wallpaper-phone-paper',
+    },
+    {
+      id: 'paper-study',
+      title: 'Paper study',
+      description: 'Quiet material. Strong ideas.',
+      coverId: 'social-square-receipt',
+    },
+  ],
+  featured: [
+    'wallpaper-desktop-red',
+    'wallpaper-phone-paper',
+    'social-square-receipt',
+    'header-x-red',
+    'social-portrait-budget',
+    'wallpaper-phone-ink',
+  ],
   palette: [
     { name: 'Brand red', hex: red },
     { name: 'Paper', hex: paper },
@@ -557,7 +717,11 @@ const zipEntries = [
   'manifest.json',
   'brand-overview.png',
   'fonts',
-  ...new Set(compositions.map(({ asset }) => asset.category)),
+  'art',
+  ...compositions.flatMap(({ asset }) => [
+    asset.png.replace('/brand/', ''),
+    asset.svg.replace('/brand/', ''),
+  ]),
 ];
 const temporaryZip = path.join(output, 'allowance-brand-kit-next.zip');
 await fs.rm(temporaryZip, { force: true });

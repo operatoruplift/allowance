@@ -1,0 +1,7 @@
+{
+  "id": "sculpture-wide",
+  "file": "sculpture-wide.jpg",
+  "method": "Built-in image generation: wide recomposition of the original sculpture plate.",
+  "source": "sculpture.jpg",
+  "prompt": "Create a landscape 16:9 version of this exact red sculptural material study for a premium desktop wallpaper and wide social headers. Preserve its lacquered red aluminum ribbon and separate folded triangular form, rich oxblood/crimson palette, glancing highlights, convincing metal grain and long soft shadow. Recompose with the complete sculptural forms mainly in the RIGHT half, a continuous dark burgundy seamless studio background and floor extending calmly through the LEFT half. No vertical split, no hard black panels, no artificial rectangular transition. Quiet left half for desktop icons. Sculpture dramatically fills right half without being lost at small size; richly dimensional and precise editorial art photography. Output a single finished wide artwork at highest available resolution. No text, logos, UI, borders, watermarks or mockup."
+}

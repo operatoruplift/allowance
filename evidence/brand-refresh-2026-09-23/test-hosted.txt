@@ -1,0 +1,21 @@
+
+> allowance@0.1.0 test:hosted
+> playwright test --config playwright.hosted.config.ts
+
+[WebServer] (node:82581) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:82667) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 2 workers
+
+(node:82781) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82780) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [chromium] › tests/browser/hosted-rehearsal.spec.ts:4:1 › hosted private routes explain the backend boundary without accessing any API (15.9s)
+  ✓  1 [chromium] › tests/browser/brand-kit.spec.ts:14:1 › brand library filters assets, previews accessibly, and downloads the original PNG and kit (23.3s)
+  ✓  3 [chromium] › tests/browser/hosted-rehearsal.spec.ts:59:1 › hosted rehearsal exports fixture accounting without a signature or network service (21.1s)
+  ✓  4 [chromium] › tests/browser/brand-kit.spec.ts:107:1 › brand kit and full-size save flow fit narrow phones without clipping (21.3s)
+
+  4 passed (1.8m)

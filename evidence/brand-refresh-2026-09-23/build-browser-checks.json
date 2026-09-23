@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "command": "npm run build",
+      "startedAt": "2026-09-23T03:06:32.103Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/build.txt"
+    },
+    {
+      "command": "npm run build:rehearsal",
+      "startedAt": "2026-09-23T03:09:23.312Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/build-rehearsal.txt"
+    },
+    {
+      "command": "npm run test:hosted",
+      "startedAt": "2026-09-23T03:10:05.852Z",
+      "exitCode": 0,
+      "log": "evidence/brand-refresh-2026-09-23/test-hosted.txt"
+    }
+  ]
+}
