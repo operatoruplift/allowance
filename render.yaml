@@ -1,0 +1,63 @@
+# Provision only after selecting the Render workspace and paid service plan.
+# Initial deployment serves the complete application with spending disabled.
+services:
+  - type: web
+    name: allowance-mainnet
+    runtime: docker
+    plan: starter
+    region: singapore
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    numInstances: 1
+    autoDeployTrigger: off
+    healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 40
+    disk:
+      name: allowance-journal
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: '10000'
+      - key: DATABASE_PATH
+        value: /data/allowance.sqlite
+      - key: APP_ORIGIN
+        fromService:
+          type: web
+          name: allowance-mainnet
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: PROXY_HOPS
+        value: '1'
+      - key: OPERATOR_PASSWORD_HASH
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PAYMENT_NETWORK
+        value: mainnet
+      - key: LIVE_PAYMENTS_ENABLED
+        value: 'false'
+      - key: MAINNET_PAYMENTS_ACKNOWLEDGED
+        value: 'false'
+      - key: PAYMENT_RPC_URL
+        value: https://api.mainnet-beta.solana.com
+      - key: DATA_NETWORK
+        value: mainnet
+      - key: DATA_RPC_URL
+        value: https://api.mainnet-beta.solana.com
+      - key: ALLOW_MAINNET_READ_ONLY
+        value: 'true'
+      - key: DAILY_USDC_CEILING
+        value: '0.100000'
+      - key: MAX_RUN_ALLOWANCE
+        value: '0.040000'
+      - key: LLM_MAX_CALLS
+        value: '5'
+      - key: LLM_MAX_OUTPUT_TOKENS
+        value: '1200'
+      - key: MCP_ENABLED
+        value: 'false'

@@ -63,6 +63,32 @@ try {
   assert.notEqual(native.uid, 0);
   assert.equal(native.integrity, 'ok');
   assert.equal(native.argon2, true);
+  const preflight = inContainer(`
+    import { spawnSync } from 'node:child_process';
+    import { existsSync } from 'node:fs';
+    import Database from 'better-sqlite3';
+    const db = new Database('/data/allowance.sqlite', { readonly: true });
+    const ownerBefore = db.prepare('SELECT owner FROM service_lease WHERE singleton=1').get();
+    const result = spawnSync('npm', ['run', 'preflight', '--silent'], {
+      encoding: 'utf8', timeout: 15000,
+      env: { ...process.env, ALLOW_MAINNET_READ_ONLY: 'false' }
+    });
+    const ownerAfter = db.prepare('SELECT owner FROM service_lease WHERE singleton=1').get();
+    db.close();
+    console.log(JSON.stringify({
+      status: result.status,
+      evidence: result.stdout ? JSON.parse(result.stdout) : null,
+      ownerBefore, ownerAfter,
+      developmentRuntimePresent: existsSync('node_modules/tsx')
+    }));
+  `);
+  assert.equal(preflight.status, 1, 'Unconfigured production preflight must fail closed.');
+  assert.equal(preflight.developmentRuntimePresent, false);
+  assert.equal(preflight.evidence.paymentNetwork, 'mainnet');
+  assert.equal(preflight.evidence.payments.ready, false);
+  assert.equal(preflight.evidence.data.ready, false);
+  assert.ok(preflight.ownerBefore?.owner);
+  assert.deepEqual(preflight.ownerAfter, preflight.ownerBefore);
   const session = request('/api/session');
   assert.equal(session.body.authenticated, false);
   assert.equal(session.body.configured, false);
@@ -94,6 +120,8 @@ try {
         unprivileged: true,
         nativeSqlite: true,
         nativeArgon2: true,
+        productionPreflight: true,
+        preflightServiceLeasePreserved: true,
         persistentVolume: true,
         restartSessionPreserved: true,
         secureProxyCookie: true,

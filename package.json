@@ -18,7 +18,7 @@
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "setup:operator": "tsx scripts/setup-operator.ts",
-    "preflight": "tsx scripts/preflight.ts",
+    "preflight": "node dist/server/preflight.js",
     "db:maintenance": "tsx server/db/maintenance.ts",
     "test:container": "node scripts/verify-container.mjs",
     "smoke:devnet": "tsx scripts/smoke-devnet.ts",

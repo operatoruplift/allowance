@@ -53,20 +53,13 @@ import {
   type ToolName,
 } from '../shared/domain';
 import { api, ApiError, downloadJSON, type Session } from './api';
-import {
-  createDemo,
-  demoProbe,
-  fixtureStep,
-  reconcileDemo,
-  stopDemo,
-  type DemoScenario,
-} from './demo';
 import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
 import DecorativeFilm from './DecorativeFilm';
 import { useMotion } from './motion';
 import { useLandingMotion } from './useLandingMotion';
 import LandingStory from './LandingStory';
+import PolicyLab from './PolicyLab';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -103,8 +96,8 @@ function Header() {
           aria-label="Main navigation"
           className={open ? 'main-nav is-open' : 'main-nav'}
         >
-          <Link className={pathname === '/demo' ? 'nav-link active' : 'nav-link'} to="/demo">
-            The example
+          <Link className={pathname === '/lab' ? 'nav-link active' : 'nav-link'} to="/lab">
+            Policy lab
           </Link>
           <Link
             className={pathname === '/developers' ? 'nav-link active' : 'nav-link'}
@@ -128,20 +121,20 @@ function Header() {
             <Sparkles size={13} /> {reduced ? 'Motion reduced' : 'Reduce motion'}
           </button>
           <Link className="button button-small button-outline mobile-console-link" to="/app">
-            {rehearsalOnly ? 'About live runs' : 'Open console'} <ArrowUpRight size={15} />
+            {rehearsalOnly ? 'Operator access' : 'Open console'} <ArrowUpRight size={15} />
           </Link>
         </nav>
         <div className="header-context">
           <ShieldCheck size={21} />
           <span>
-            {rehearsalOnly || pathname === '/' || pathname === '/demo' || pathname === '/brand'
-              ? 'Public rehearsal · Mainnet preview · No real payments'
+            {rehearsalOnly || pathname === '/' || pathname === '/lab' || pathname === '/brand'
+              ? 'USDC · Solana mainnet'
               : 'Application policies · Network shown per run'}
           </span>
           <Link
             className="header-console-link"
             to="/app"
-            aria-label={rehearsalOnly ? 'About live runs' : 'Open console'}
+            aria-label={rehearsalOnly ? 'Operator access' : 'Open console'}
           >
             <ArrowUpRight size={16} />
           </Link>
@@ -159,7 +152,7 @@ function Footer() {
       </div>
       <div className="footer-right">
         <nav className="footer-links" aria-label="Footer navigation">
-          <Link to="/demo">The example</Link>
+          <Link to="/lab">Policy lab</Link>
           <Link to="/developers">For developers</Link>
           <Link to="/brand">
             Brand kit <ArrowUpRight size={13} />
@@ -171,7 +164,7 @@ function Footer() {
         <span>Built for Solana agentic payments</span>
         <span className="small muted">
           {rehearsalOnly
-            ? 'Public rehearsal · Mainnet preview · Fixture receipts · No onchain payments'
+            ? 'Set a boundary. Plan the work. Keep control.'
             : 'First-party tools · Network-bound payments · Durable receipts'}
         </span>
       </div>
@@ -179,7 +172,7 @@ function Footer() {
   );
 }
 function NetworkPills({
-  mode = 'rehearsal',
+  mode = 'live',
   data,
   payment,
 }: {
@@ -187,16 +180,16 @@ function NetworkPills({
   data?: string;
   payment?: PaymentNetwork;
 }) {
-  const paymentLabel = mode === 'rehearsal' ? 'mainnet preview' : (payment ?? 'checking');
+  const paymentLabel = mode === 'rehearsal' ? 'no funds moved' : (payment ?? 'checking');
   return (
     <div className="network-pills">
       <span className="pill">
         <span className={mode === 'live' ? 'status-dot' : 'status-dot quiet'} />
-        {mode === 'live' ? 'Live execution' : 'Rehearsal'}
+        {mode === 'live' ? 'Live execution' : 'Offline plan'}
       </span>
       <span>Payments: {paymentLabel}</span>
       <span className="pill-divider">/</span>
-      <span>Data: {mode === 'rehearsal' ? 'example only' : (data ?? 'checking')}</span>
+      <span>Data: {mode === 'rehearsal' ? 'not requested' : (data ?? 'checking')}</span>
     </div>
   );
 }
@@ -270,7 +263,7 @@ function BudgetMeter({
       <div className="budget-title">
         <span className="eyebrow">Your allowance</span>
         <span className="currency-label">
-          USDC <span>· {run.mode === 'rehearsal' ? 'mainnet preview' : run.paymentNetwork}</span>
+          USDC <span>· {run.mode === 'rehearsal' ? 'no funds moved' : run.paymentNetwork}</span>
         </span>
       </div>
       <div className="budget-total">
@@ -311,9 +304,9 @@ function BudgetMeter({
 function LandingReceipt() {
   const [selected, setSelected] = useState(2);
   const descriptions = [
-    'A useful first look: SOL balance and recent transaction history. Fixture price: 0.010000 USDC.',
-    'A grounded explanation of one transaction. Fixture price: 0.020000 USDC.',
-    'Separate policy probe: the proposed 0.020000 request exceeds the 0.010000 left. Denied before signing.',
+    'A useful first look: SOL balance and recent transaction history. Catalog price: 0.010000 USDC.',
+    'A grounded explanation of one transaction. Catalog price: 0.020000 USDC.',
+    'Budget check: the proposed 0.020000 request exceeds the 0.010000 left. Outside the planned allowance.',
   ];
   return (
     <div className="hero-receipt-wrap">
@@ -327,22 +320,37 @@ function LandingReceipt() {
             <ReceiptText size={22} />
           </div>
           <div>
-            <span className="eyebrow">A receipt, not a mystery</span>
-            <h2>Wallet activity brief</h2>
+            <span className="eyebrow">Plan before you spend</span>
+            <h2>Your tool budget</h2>
           </div>
-          <span className="pill green-pill">Example</span>
+          <span className="pill subtle-pill">Policy plan</span>
         </div>
-        <BudgetMeter
-          compact
-          run={{
-            authorized: '40000',
-            settled: '30000',
-            held: '0',
-            remaining: '10000',
-            mode: 'rehearsal',
-            paymentNetwork: 'mainnet',
-          }}
-        />
+        <section className="budget-meter compact" aria-label="Planned budget">
+          <div className="budget-title">
+            <span className="eyebrow">Your allowance</span>
+            <span className="currency-label">USDC · mainnet</span>
+          </div>
+          <div className="budget-total">
+            <span>0.04</span>
+            <span className="budget-total-decimals">0000</span>
+            <ShieldCheck size={25} />
+          </div>
+          <div
+            className="meter-track"
+            role="img"
+            aria-label="0.030000 USDC planned out of 0.040000"
+          >
+            <div className="meter-settled" style={{ width: '75%' }} />
+          </div>
+          <div className="meter-legend">
+            <span>
+              Planned costs<b>0.030000</b>
+            </span>
+            <span>
+              Capacity left<b>0.010000</b>
+            </span>
+          </div>
+        </section>
         <div className="receipt-items">
           {[
             {
@@ -350,19 +358,19 @@ function LandingReceipt() {
               title: 'Wallet snapshot',
               subtitle: 'A useful starting point',
               cost: '0.010000',
-              state: 'Purchased',
+              state: 'Within limit',
             },
             {
               icon: <FileText size={18} />,
               title: 'Transaction explanation',
               subtitle: 'The story behind a transaction',
               cost: '0.020000',
-              state: 'Purchased',
+              state: 'Within limit',
             },
             {
               icon: <ShieldCheck size={18} />,
               title: 'One more transaction',
-              subtitle: 'Separate policy probe',
+              subtitle: 'Budget check',
               cost: '0.020000',
               state: 'Blocked',
             },
@@ -395,9 +403,9 @@ function LandingReceipt() {
         <div className="receipt-bottom">
           <span>
             <span className="status-dot quiet" />
-            Deterministic rehearsal
+            Policy plan
           </span>
-          <span>No real payments</span>
+          <span>No funds moved</span>
         </div>
       </div>
       <div className="receipt-caption">
@@ -439,8 +447,8 @@ function Landing() {
               Let it buy the tools it needs. See where every cent went.
             </p>
             <div className="hero-actions">
-              <Link to="/demo" className="button button-primary">
-                Try the example <ArrowUpRight size={18} />
+              <Link to="/lab" className="button button-primary">
+                Explore the policy lab <ArrowUpRight size={18} />
               </Link>
               <Link to="/developers" className="text-link">
                 See how it works <ArrowRight size={16} />
@@ -453,9 +461,7 @@ function Landing() {
               <span>
                 No account. No wallet. No spending.
                 <br />
-                <b>
-                  {rehearsalOnly ? 'This site is a public rehearsal.' : 'Just a working example.'}
-                </b>
+                <b>Explore your spending limits in the policy lab.</b>
               </span>
             </div>
             <a className="landing-scroll-cue" href="#allowance-story">
@@ -482,8 +488,8 @@ function Landing() {
               <div className="eyebrow">How a run unfolds</div>
               <h2 id="run-unfolds-title">From a prompt to a more useful tomorrow.</h2>
             </div>
-            <Link className="text-link" to="/demo">
-              See the working example <ArrowRight size={16} />
+            <Link className="text-link" to="/lab">
+              Plan your allowance <ArrowRight size={16} />
             </Link>
           </div>
           <ol className="run-unfolds-steps">
@@ -577,7 +583,7 @@ function Landing() {
             <p>
               One task, two paid tools, and a reusable guarded client.
               <br />
-              Start with the example. Inspect how the pieces fit.
+              Start with a budget. Inspect how the pieces fit.
             </p>
             <Link className="text-link" to="/developers">
               Read the developer guide <ArrowRight size={17} />
@@ -618,29 +624,6 @@ function Landing() {
     </>
   );
 }
-const demoScenarios: Record<DemoScenario, { title: string; detail: string }> = {
-  standard: {
-    title: 'Useful work, inside the limit',
-    detail:
-      'Two example tools cost 0.030000 USDC. Then test why another 0.020000 request is blocked.',
-  },
-  empty: {
-    title: 'An empty wallet is a valid answer',
-    detail:
-      'The 0.010000 snapshot finds no history, so the agent skips the transaction explanation.',
-  },
-  failure: {
-    title: 'No response. No charge.',
-    detail:
-      'The service fails before signing. Its 0.010000 reservation returns to the available budget.',
-  },
-  ambiguous: {
-    title: 'Recover before trying again',
-    detail:
-      'A simulated timeout holds 0.010000. Reconcile the original request to see what settled without paying twice.',
-  },
-};
-
 const terminalStatuses = new Set<RunDTO['status']>([
   'completed',
   'stopped',
@@ -648,216 +631,6 @@ const terminalStatuses = new Set<RunDTO['status']>([
   'failed',
   'interrupted',
 ]);
-function Demo() {
-  const [run, setRun] = useState<RunDTO>(createDemo);
-  const [step, setStep] = useState<number | null>(null);
-  const [scenario, setScenario] = useState<DemoScenario>('standard');
-  useEffect(() => {
-    if (step === null) return;
-    const timer = setTimeout(
-      () => {
-        setRun((old) => fixtureStep(old, step, scenario));
-        setStep(step < 5 && !(step === 2 && scenario !== 'standard') ? step + 1 : null);
-      },
-      step === 0 ? 80 : 650
-    );
-    return () => clearTimeout(timer);
-  }, [step, scenario]);
-  const start = () => {
-    setRun(createDemo());
-    setStep(0);
-  };
-  const stop = () => {
-    setStep(null);
-    setRun(stopDemo);
-  };
-  return (
-    <main className="console-page demo-page page-width">
-      <PageHeading
-        eyebrow="The working example"
-        title="A little budget. Useful work."
-        action={<NetworkPills />}
-      >
-        Authorize a boundary. Rehearse useful purchases, a separate denial, and an honest recovery.
-      </PageHeading>
-      <div className="notice rehearsal-notice">
-        <Sparkles size={18} />
-        <div>
-          <b>You’re in rehearsal.</b> These are deterministic fixtures. No signing, model calls, RPC
-          calls, or paid requests.
-          <span>
-            {rehearsalOnly
-              ? 'Refreshing resets this example. Actual agent runs require the separate persistent backend.'
-              : 'Refreshing resets this local example. Live runs are saved on the server.'}
-          </span>
-        </div>
-      </div>
-      <div className="workspace-grid">
-        <section className="card composer demo-composer">
-          <div className="card-heading">
-            <span className="section-index">01</span>
-            <h2>Try an outcome</h2>
-            <span className="pill subtle-pill">Read-only example</span>
-          </div>
-          <div className="form-content">
-            <div className="demo-scenario">
-              <label htmlFor="scenario">Choose an example</label>
-              <select
-                id="scenario"
-                aria-describedby="scenario-help"
-                value={scenario}
-                disabled={step !== null}
-                onChange={(e) => {
-                  setScenario(e.target.value as DemoScenario);
-                  setRun(createDemo());
-                }}
-              >
-                <option value="standard">Two purchases + a budget boundary</option>
-                <option value="empty">Wallet with no transaction history</option>
-                <option value="failure">Service failure before signing</option>
-                <option value="ambiguous">Settlement unknown, then reconcile</option>
-              </select>
-              <div className="scenario-explanation" id="scenario-help" aria-live="polite">
-                <b>{demoScenarios[scenario].title}</b>
-                <p>{demoScenarios[scenario].detail}</p>
-                <small>All amounts and outcomes are simulated. No funds are spent.</small>
-              </div>
-            </div>
-            <button
-              className="button button-primary full-width"
-              disabled={step !== null}
-              onClick={start}
-            >
-              {step !== null ? (
-                <>
-                  <LoaderCircle size={17} className="spin" />
-                  Running the example…
-                </>
-              ) : (
-                <>
-                  {run.status === 'queued' ? 'Run the rehearsal' : 'Run rehearsal again'}
-                  <ArrowRight size={17} />
-                </>
-              )}
-            </button>
-            <div className="form-footnote">
-              <ShieldCheck size={13} />
-              No keys or funds needed. Every step stays in your browser.
-            </div>
-            <details className="demo-assignment">
-              <summary>
-                View the sample task and spending policy <ChevronDown size={16} />
-              </summary>
-              <div className="demo-assignment-content">
-                <label className="field-label" htmlFor="demo-wallet">
-                  Solana wallet<span>Fixture address</span>
-                </label>
-                <div className="input-with-icon">
-                  <Wallet size={17} />
-                  <input id="demo-wallet" value={run.wallet} readOnly />
-                </div>
-                <label className="field-label" htmlFor="demo-task">
-                  What should the agent do?
-                </label>
-                <textarea id="demo-task" value={run.task} readOnly rows={4} />
-                <div className="two-fields">
-                  <div>
-                    <span className="field-label">Total allowance</span>
-                    <div className="static-input">
-                      0.040000 <span>USDC</span>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="field-label">Per-request cap</span>
-                    <div className="static-input">
-                      0.020000 <span>USDC</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="field-label">
-                  Permitted services<span>First-party sample merchants</span>
-                </div>
-                <ToolList />
-              </div>
-            </details>
-          </div>
-        </section>
-        <div className="workspace-right">
-          <section className="card budget-card">
-            <BudgetMeter run={run} />
-            <div className="budget-limits">
-              <span>
-                <Gauge size={14} />
-                Per request <b>0.020000 USDC</b>
-              </span>
-              <span>
-                <LockKeyhole size={14} />
-                Policy <b>Fixture only</b>
-              </span>
-            </div>
-          </section>
-          <ProgressCard run={run} stop={stop} pending={false} />
-          <div className="small-note">
-            <Info size={16} />
-            <p>
-              In live mode, USDC tool charges, SOL fees and rent, and OpenAI usage are separate
-              costs. This rehearsal incurs none.
-            </p>
-          </div>
-        </div>
-      </div>
-      <section className="demo-guide" aria-label="How to use the working example">
-        <div className="demo-guide-heading">
-          <div className="eyebrow">A quick guided tour</div>
-          <p>
-            Choose an example and press run. Watch a small budget turn into useful information and a
-            clear receipt.
-          </p>
-        </div>
-        <ol className="demo-guide-steps">
-          <li>
-            <span>01</span>
-            <b>Choose an example</b>
-            <small>Useful work, an empty wallet, a failure, or recovery.</small>
-          </li>
-          <li>
-            <span>02</span>
-            <b>Watch the budget</b>
-            <small>See what is held, settled, and still available.</small>
-          </li>
-          <li>
-            <span>03</span>
-            <b>Try the next step</b>
-            <small>Test the spending limit or resolve a timed-out request.</small>
-          </li>
-          <li>
-            <span>04</span>
-            <b>Keep the receipt</b>
-            <small>Expand each purchase, then save or print the evidence.</small>
-          </li>
-        </ol>
-      </section>
-      <RunDetails
-        run={run}
-        probe={() => setRun((old) => demoProbe(old))}
-        reconcile={() => setRun((old) => reconcileDemo(old))}
-        exportReceipt={() => downloadJSON(run, 'allowance-rehearsal-receipt.json')}
-        probePending={false}
-      />
-      <div className="under-console">
-        <span>
-          {rehearsalOnly
-            ? 'Ready to explore actual agent runs?'
-            : 'Ready to connect configured tools?'}
-        </span>
-        <Link to="/app" className="text-link">
-          {rehearsalOnly ? 'About live runs' : 'Open the operator console'}{' '}
-          <ArrowUpRight size={16} />
-        </Link>
-      </div>
-    </main>
-  );
-}
 function ToolList({
   selected,
   onToggle,
@@ -961,7 +734,7 @@ function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; p
           </button>
           <small>
             {run.mode === 'rehearsal'
-              ? 'Stops the example and returns unsigned reservations to the budget.'
+              ? 'Stops the offline plan and clears unsigned reservations.'
               : 'Stops new payments. Submitted payments can still settle.'}
           </small>
         </div>
@@ -975,7 +748,7 @@ function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; p
                 : run.mode === 'rehearsal'
                   ? run.status === 'interrupted'
                     ? 'Run interrupted. Review the recovery and receipt below.'
-                    : 'Example ended. Review the receipt or try another outcome.'
+                    : 'Offline plan ended. No funds moved.'
                   : `Run ${run.status}. Start a new run to authorize more work.`}
             </span>
             <a href="#run-details" className="text-link">
@@ -1032,7 +805,7 @@ function PurchaseRow({
           <b>{CATALOG.find((t) => t.name === purchase.tool)?.title ?? purchase.tool}</b>
           <small>
             {purchase.source === 'policy-probe' ? 'Separate policy probe' : 'Agent request'} ·{' '}
-            {demo ? 'Fixture' : 'First-party merchant'}
+            {demo ? 'Offline record' : 'First-party merchant'}
           </small>
         </span>
         <span className="purchase-amount">
@@ -1049,7 +822,7 @@ function PurchaseRow({
             <dt>Payment state</dt>
             <dd>
               {statusLabel(purchase)}
-              {demo ? ' (simulated)' : ''}
+              {demo ? ' (no funds moved)' : ''}
             </dd>
           </div>
           <div>
@@ -1060,7 +833,7 @@ function PurchaseRow({
             <dt>Chain evidence</dt>
             <dd>
               {demo
-                ? 'None — deterministic rehearsal'
+                ? 'None — no transaction submitted'
                 : purchase.chainVerified
                   ? 'Token movement verified using RPC'
                   : 'Not chain-verified'}
@@ -1190,8 +963,8 @@ function RunDetails({
             </div>
             <h3>Your agent’s paper trail starts here.</h3>
             <p>
-              Run the {run.mode === 'rehearsal' ? 'rehearsal' : 'task'} to see each decision,
-              purchase, and policy check.
+              Run the {run.mode === 'rehearsal' ? 'plan' : 'task'} to see each decision, purchase,
+              and policy check.
             </p>
           </div>
         ) : (
@@ -1235,8 +1008,8 @@ function RunDetails({
         <div className="receipt-table-head">
           <h3>Purchase receipt</h3>
           <span>
-            Amounts in {run.mode === 'rehearsal' ? 'mainnet preview' : run.paymentNetwork} USDC{' '}
-            {run.mode === 'rehearsal' && '· simulated'}
+            Amounts in {run.mode === 'rehearsal' ? 'no funds moved' : run.paymentNetwork} USDC{' '}
+            {run.mode === 'rehearsal' && '· no transaction submitted'}
           </span>
         </div>
         {run.purchases.length ? (
@@ -1271,7 +1044,7 @@ function RunDetails({
         <div className="receipt-cost-note">
           USDC amounts cover merchant tools only. SOL fees/rent and OpenAI usage are separate.{' '}
           {run.mode === 'rehearsal'
-            ? 'This fixture incurred no costs and has no transaction signatures.'
+            ? 'This offline record incurred no costs and has no transaction signatures.'
             : run.llm.note}
         </div>
       </section>
@@ -1317,13 +1090,13 @@ function RunDetails({
             <span className="eyebrow">Deterministic recovery</span>
             <h3>Reconcile the original hold.</h3>
             <p>
-              The fixture timed out after signing. Reconcile the original intent to clear the hold;
-              this never creates a second signature or invents delivery.
+              The offline record represents an unresolved request. Reconcile the original intent to
+              clear the hold; this never creates a second signature or invents delivery.
             </p>
           </div>
           <button className="button button-outline" onClick={reconcile}>
             <RotateCcw size={16} />
-            Reconcile fixture hold
+            Review offline hold
           </button>
         </section>
       ) : null}
@@ -1340,7 +1113,7 @@ function RunDetails({
             <span className={`pill ${run.status === 'completed' ? 'green-pill' : 'amber-pill'}`}>
               {run.status === 'completed'
                 ? run.mode === 'rehearsal'
-                  ? 'Fixture report'
+                  ? 'Offline report'
                   : 'Final report'
                 : 'Recovery report'}
             </span>
@@ -1354,7 +1127,7 @@ function RunDetails({
             <Fingerprint size={15} />
             <span>
               {run.mode === 'rehearsal'
-                ? 'Deterministic fixture · No live RPC or model evidence'
+                ? 'Offline record · No RPC or model evidence'
                 : `Data: ${run.dataNetwork} · Payments: ${run.paymentNetwork} · Tool data is cited in the brief`}
             </span>
           </div>
@@ -1365,11 +1138,11 @@ function RunDetails({
         <h2>Allowance receipt</h2>
         <p>
           Run {run.id} · Execution: {run.mode} · Payments:{' '}
-          {run.mode === 'rehearsal' ? 'mainnet preview' : run.paymentNetwork} · Data:{' '}
-          {run.mode === 'rehearsal' ? 'deterministic example' : run.dataNetwork}
+          {run.mode === 'rehearsal' ? 'no funds moved' : run.paymentNetwork} · Data:{' '}
+          {run.mode === 'rehearsal' ? 'offline plan' : run.dataNetwork}
         </p>
         {run.mode === 'rehearsal' && (
-          <p>Deterministic fixture. No real signatures, payments, RPC calls or model calls.</p>
+          <p>Offline record. No signatures, payments, RPC calls or model calls.</p>
         )}
       </div>
     </div>
@@ -1379,16 +1152,16 @@ function HostedConsole() {
   return (
     <main className="login-page page-width">
       <section className="login-story">
-        <div className="eyebrow">The public rehearsal</div>
+        <div className="eyebrow">Operator access / Mainnet</div>
         <h1>
-          Explore the agent.
+          Useful autonomy.
           <br />
-          See the boundary.
+          Under your control.
         </h1>
         <p>
-          Follow a useful task from allowance to receipt.
+          Give your agent a durable spending policy.
           <br />
-          Try the spending limit for yourself.
+          Keep the authorization and every receipt together.
         </p>
         <div className="login-illustration" aria-hidden="true">
           <div className="limit-ceiling" />
@@ -1405,25 +1178,25 @@ function HostedConsole() {
         <div className="login-key">
           <Layers3 size={25} />
         </div>
-        <h2>Live runs need a persistent backend.</h2>
+        <h2>Mainnet setup required.</h2>
         <p>
-          This Vercel site hosts the public rehearsal and developer guide. Operator sign-in, actual
-          AI agent runs, and live mainnet payments are available only on a separately configured
-          server. This public surface stays a no-spend mainnet preview.
+          The operator backend is not connected to this deployment. Sign-in, agent execution, and
+          payments become available once the persistent server and its credentials are configured.
+          No funds can move from this site.
         </p>
         <div className="notice">
           <Info size={19} />
           <div>
-            <b>Fixture receipts, clearly labeled.</b>
+            <b>What remains to connect</b>
             <p>
-              The rehearsal makes no model, RPC, or paid API calls. It creates no signatures or
-              verified onchain transactions.
+              A persistent host, operator access, a funded payer, a separate merchant, and a
+              reviewed payment provider. Built-in agent runs also require a model provider.
             </p>
           </div>
         </div>
         <div className="login-bottom">
-          <Link className="button button-primary full-width" to="/demo">
-            Try the rehearsal <ArrowRight size={16} />
+          <Link className="button button-primary full-width" to="/lab">
+            Explore the policy lab <ArrowRight size={16} />
           </Link>
           <Link className="text-link" to="/developers">
             Read the backend setup guide <ArrowUpRight size={15} />
@@ -1544,8 +1317,8 @@ function Login() {
         )}
         <div className="login-bottom">
           Just looking around?
-          <Link className="text-link" to="/demo">
-            Try the no-account rehearsal <ArrowUpRight size={15} />
+          <Link className="text-link" to="/lab">
+            Explore the policy lab <ArrowUpRight size={15} />
           </Link>
         </div>
       </section>
@@ -1735,12 +1508,12 @@ function OperatorApp() {
               <span>
                 {config.ready
                   ? 'Starting a run authorizes paid tool calls within the policy below. No per-request approval is required.'
-                  : 'The readiness checks below explain what is missing. The no-account rehearsal is always available.'}
+                  : 'The readiness checks below explain what is missing. The policy lab is always available.'}
               </span>
             </div>
             {!config.ready && (
-              <Link to="/demo" className="text-link">
-                Try rehearsal <ArrowUpRight size={15} />
+              <Link to="/lab" className="text-link">
+                Open policy lab <ArrowUpRight size={15} />
               </Link>
             )}
           </div>
@@ -1808,7 +1581,7 @@ function OperatorApp() {
                   </div>
                 </div>
                 <div className="field-label">
-                  Permitted services<span>First-party sample merchants</span>
+                  Permitted services<span>First-party merchants</span>
                 </div>
                 <ToolList
                   tools={config.tools}
@@ -2224,7 +1997,7 @@ function LiveRun() {
     </main>
   );
 }
-const clientExample = `// Server-side only. See examples/paid-tool.ts.
+const clientExample = `// Server-side only. Use the repository’s guarded client.
 import { createRuntime } from "./server/runtime.js";
 
 const runtime = await createRuntime();
@@ -2268,9 +2041,9 @@ function Developers() {
         <div className="notice rehearsal-notice">
           <Info size={18} />
           <div>
-            <b>This site hosts the public rehearsal.</b> The architecture and endpoints below
-            describe the separately configured persistent backend. This static deployment does not
-            run an agent, expose paid APIs, or verify live payments.
+            <b>Payment execution requires the operator backend.</b> The architecture and endpoints
+            below describe the separately configured persistent backend. This static deployment does
+            not run an agent, expose paid APIs, or verify live payments.
           </div>
         </div>
       )}
@@ -2289,8 +2062,8 @@ function Developers() {
           <div className="notice small-notice">
             <Info size={16} />
             <p>
-              The sample merchants are first-party demonstration services. Controls are enforced by
-              the application using a server-managed signer and a fixed payment network.
+              These two paid APIs are first-party services. Controls are enforced by the application
+              using a server-managed signer and a fixed payment network.
             </p>
           </div>
         </div>
@@ -2356,9 +2129,7 @@ function Developers() {
                   </li>
                 ))}
               </ul>
-              <div className="merchant-note">
-                First-party sample merchant · Exact per-request price
-              </div>
+              <div className="merchant-note">First-party merchant · Exact per-request price</div>
             </article>
           ))}
         </div>
@@ -2377,7 +2148,7 @@ function Developers() {
             it.
           </p>
           <p>
-            See the repository’s tested client example for dependency initialization and the
+            See the repository’s tested client integration for dependency initialization and the
             controlled HTTP integration test.
           </p>
           <div className="client-tags">
@@ -2392,7 +2163,7 @@ function Developers() {
             <button
               onClick={() => void copy()}
               className="code-copy"
-              aria-label="Copy guarded client example"
+              aria-label="Copy guarded client code"
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? 'Copied' : 'Copy'}
@@ -2407,18 +2178,18 @@ function Developers() {
       <section className="card setup-guide">
         <div className="card-heading">
           <Terminal size={19} />
-          <h2>From rehearsal to mainnet</h2>
+          <h2>Set up mainnet execution</h2>
         </div>
         <div className="setup-grid">
           <div>
             <span className="section-index">01</span>
             <h3>Run it locally</h3>
             <pre>
-              <code>{'npm ci\ncp .env.example .env\nnpm run setup:operator\nnpm run dev'}</code>
+              <code>{'npm ci\nnpm run setup:operator\nnpm run dev'}</code>
             </pre>
             <p>
-              Open 127.0.0.1:4318. Configure the generated password hash on the server. Rehearsal
-              works without payment or model configuration.
+              Open 127.0.0.1:4318. Save the generated password hash and a session secret in your
+              server environment. The policy lab works without payment or model credentials.
             </p>
           </div>
           <div>
@@ -2443,8 +2214,8 @@ function Developers() {
               the README for the authorization flag and complete setup.
             </p>
             <p>
-              A working fixture or an unpaid 402 response is separate from evidence of real mainnet
-              settlement.
+              Only a verified onchain transaction proves mainnet settlement. An unpaid 402 response
+              establishes the payment terms.
             </p>
           </div>
         </div>
@@ -2477,8 +2248,8 @@ function Developers() {
         >
           Solana agentic payments <ArrowUpRight size={15} />
         </a>
-        <Link to="/demo">
-          Try the rehearsal <ArrowUpRight size={15} />
+        <Link to="/lab">
+          Explore the policy lab <ArrowUpRight size={15} />
         </Link>
       </div>
     </main>
@@ -2489,9 +2260,9 @@ function NotFound() {
     <main className="not-found page-width">
       <span className="eyebrow">404 / Outside this allowance</span>
       <h1>This page isn’t here.</h1>
-      <p>The example is a good place to start.</p>
-      <Link className="button button-primary" to="/demo">
-        Try the example <ArrowRight size={17} />
+      <p>The policy lab is a good place to start.</p>
+      <Link className="button button-primary" to="/lab">
+        Explore the policy lab <ArrowRight size={17} />
       </Link>
     </main>
   );
@@ -2505,10 +2276,10 @@ function ScrollReset() {
     document.title =
       rehearsalOnly &&
       (pathname === '/app' || pathname === '/login' || pathname.startsWith('/runs/'))
-        ? 'About live runs · Allowance'
+        ? 'Operator access · Allowance'
         : pathname === '/'
           ? 'Allowance — Give your agent a budget.'
-          : `${pathname === '/brand' ? 'Brand kit' : pathname === '/demo' ? 'Rehearsal' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
+          : `${pathname === '/brand' ? 'Brand kit' : pathname === '/lab' ? 'Policy lab' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
   }, [pathname]);
   return null;
 }
@@ -2523,7 +2294,16 @@ export default function App() {
       <div id="main-content" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/demo" element={<Demo />} />
+          <Route path="/demo" element={<Navigate to="/lab" replace />} />
+          <Route
+            path="/lab"
+            element={
+              <>
+                <PolicyLab />
+                <Footer />
+              </>
+            }
+          />
           <Route path="/login" element={rehearsalOnly ? <HostedConsole /> : <Login />} />
           <Route path="/app" element={rehearsalOnly ? <HostedConsole /> : <OperatorApp />} />
           <Route path="/runs/:id" element={rehearsalOnly ? <HostedConsole /> : <LiveRun />} />

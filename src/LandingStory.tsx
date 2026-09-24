@@ -16,7 +16,7 @@ export default function LandingStory() {
           <br />
           <span>Reasons to trust.</span>
         </h2>
-        <p>Follow one small allowance, from the boundary you set to the record you keep.</p>
+        <p>Set a boundary. Plan useful work. See how the policy responds before any funds move.</p>
       </div>
       <div className="story-layout">
         <div className="story-visual-column">
@@ -32,13 +32,13 @@ export default function LandingStory() {
             <div className="story-stage-shade" />
             <div className="story-stage-top">
               <img src="/allowance-a.svg?v=3" alt="" width="26" height="26" />
-              <span>THE ALLOWANCE, IN MOTION</span>
+              <span>THE POLICY, IN MOTION</span>
             </div>
             <div className="story-orbit orbit-one" />
             <div className="story-orbit orbit-two" />
             <div className="story-budget">
               <span className="story-budget-label">
-                <ShieldCheck size={15} /> Your boundary
+                <ShieldCheck size={15} /> Allowance limit
               </span>
               <strong>
                 0.040000 <small>USDC</small>
@@ -47,35 +47,39 @@ export default function LandingStory() {
                 <i />
                 <i />
               </div>
-              <span className="story-budget-caption">A little freedom. A fixed ceiling.</span>
+              <span className="story-budget-caption">Your ceiling. Every request checked.</span>
             </div>
             <div className="story-purchase purchase-snapshot">
               <Check size={15} />
-              <span>Wallet snapshot</span>
+              <span>
+                Wallet snapshot <small>Within limit</small>
+              </span>
               <b>0.010000</b>
             </div>
             <div className="story-purchase purchase-explanation">
               <Check size={15} />
-              <span>Transaction explained</span>
+              <span>
+                Transaction explanation <small>Within limit</small>
+              </span>
               <b>0.020000</b>
             </div>
             <div className="story-receipt">
               <div>
                 <ReceiptText size={18} />
-                <b>Every decision, kept.</b>
+                <b>Policy outcome</b>
               </div>
               <span>
-                Example purchases <b>0.030000</b>
+                Planned tool costs <b>0.030000</b>
               </span>
               <span>
-                Still available <b>0.010000</b>
+                Available capacity <b>0.010000</b>
               </span>
               <span className="story-denied">
                 <X size={13} /> One more request <b>Blocked</b>
               </span>
             </div>
             <div className="story-stage-foot">
-              <span>ILLUSTRATIVE REHEARSAL · NO PAYMENTS</span>
+              <span>POLICY PLAN · NO FUNDS MOVED</span>
               <span className="story-dots">
                 <i />
                 <i />
@@ -115,18 +119,17 @@ export default function LandingStory() {
             </span>
           </article>
           <article data-story-step="2" data-reveal>
-            <span className="story-chapter-number">03 / THE RECEIPT</span>
+            <span className="story-chapter-number">03 / THE DECISION</span>
             <h3>
-              The work ends.
-              <br />
-              The record stays.
+              A clear plan.
+              <br />A visible boundary.
             </h3>
             <p>
-              See what was purchased, what remains, and what the policy refused. A useful result,
-              with every spending decision attached.
+              Compare proposed costs with the capacity left. A request above your limit is blocked
+              before signing, so useful work always starts with a clear decision.
             </p>
-            <Link to="/demo" className="text-link">
-              Try this in the example <ArrowUpRight size={17} />
+            <Link to="/lab" className="text-link">
+              Explore the policy lab <ArrowUpRight size={17} />
             </Link>
           </article>
         </div>
