@@ -137,3 +137,7 @@ The red brand edition includes 26 compositions in full-size PNG and outlined SVG
 - [Sources, SDK reuse and licenses](docs/sources.md)
 
 Payment Channels and remote MCP are future adapters. The local stdio MCP bridge is implemented and uses the same application service, policy, ledger and receipts. Allowance is a working product name; trademark availability has not been assessed. Original application code and artwork use the MIT license. Third-party dependencies retain their own licenses.
+
+## Seeker, Android and PWA
+
+Allowance installs as a PWA and ships an Android WebView shell (`android/`) for the Solana Seeker and dApp Store, with Solana Mobile Wallet Adapter support where the app connects a wallet. Build, test and publishing steps: [docs/seeker-and-pwa.md](docs/seeker-and-pwa.md).

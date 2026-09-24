@@ -28,7 +28,10 @@ const securityHeaders = {
     "img-src 'self' data:",
     "font-src 'self'",
     "media-src 'self'",
-    "connect-src 'none'",
+    // The service worker fetches the app's own shell and hashed assets; nothing cross-origin.
+    "connect-src 'self'",
+    "worker-src 'self'",
+    "manifest-src 'self'",
     "object-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",

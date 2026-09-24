@@ -1,0 +1,9 @@
+{
+  "packageId": "com.operatoruplift.allowance",
+  "host": "allowanceonsolana.vercel.app",
+  "name": "Allowance",
+  "launcherName": "Allowance",
+  "startUrl": "/",
+  "fallbackType": "webview",
+  "generatorApp": "webshell-cli"
+}
