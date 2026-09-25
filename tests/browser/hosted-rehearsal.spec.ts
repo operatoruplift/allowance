@@ -17,23 +17,18 @@ test('hosted private routes explain the backend boundary without accessing any A
 
   for (const route of ['/login', '/app', '/runs/hosted-private-receipt']) {
     await page.goto(new URL(route, baseURL).href);
-    await expect(
-      page.getByRole('heading', { name: 'Live runs need a persistent backend.' })
-    ).toBeVisible();
-    await expect(page).toHaveTitle('About live runs · Allowance');
+    await expect(page.getByRole('heading', { name: 'Mainnet setup required.' })).toBeVisible();
+    await expect(page).toHaveTitle('Operator access · Allowance');
     await expect(page.getByLabel('Operator password')).toHaveCount(0);
-    await expect(page.getByText('Fixture receipts, clearly labeled.')).toBeVisible();
     await page.getByRole('link', { name: 'Read the backend setup guide' }).click();
-    await expect(page.getByText('This site hosts the public rehearsal.')).toBeVisible();
+    await expect(page).toHaveTitle('For developers · Allowance');
     await page.goBack();
-    await page.getByRole('link', { name: 'Try the rehearsal', exact: true }).click();
-    await expect(
-      page.getByRole('button', { name: 'Run the rehearsal', exact: true })
-    ).toBeVisible();
+    await page.getByRole('link', { name: 'Explore the policy lab' }).first().click();
+    await expect(page.getByRole('heading', { name: /Find the right/ })).toBeVisible();
   }
 
   await page.goto(new URL('/app', baseURL).href);
-  await page.getByRole('heading', { name: /Explore the agent/ }).click();
+  await page.getByRole('heading', { name: 'Mainnet setup required.' }).click();
   await page.screenshot({
     path: 'evidence/hosted-rehearsal-console.png',
     fullPage: true,
@@ -41,13 +36,11 @@ test('hosted private routes explain the backend boundary without accessing any A
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(new URL('/app', baseURL).href);
-  await expect(
-    page.getByRole('heading', { name: 'Live runs need a persistent backend.' })
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mainnet setup required.' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true
   );
-  await page.getByRole('heading', { name: /Explore the agent/ }).click();
+  await page.getByRole('heading', { name: 'Mainnet setup required.' }).click();
   await page.screenshot({
     path: 'evidence/hosted-console-mobile.png',
     fullPage: true,
@@ -73,7 +66,7 @@ test('hosted rehearsal exports fixture accounting without a signature or network
   });
 
   await page.goto(new URL('/', baseURL).href);
-  await expect(page.getByText('This site is a public rehearsal.')).toBeVisible();
+  await expect(page.getByText('Set a boundary. Plan the work. Keep control.')).toBeVisible();
   await page.getByRole('heading', { name: 'Give your agent a budget.' }).click();
   await page.screenshot({
     path: 'evidence/hosted-landing-desktop.png',
