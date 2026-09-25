@@ -53,7 +53,7 @@ const config = {
       headers: { Allow: 'GET, HEAD' },
     },
     { handle: 'filesystem' },
-    { src: '/(?:demo|developers|brand|login|app|runs/[^/]+)?/?', dest: '/index.html' },
+    { src: '/(?:demo|lab|developers|brand|login|app|runs/[^/]+)?/?', dest: '/index.html' },
   ],
 };
 await fs.writeFile(path.join(output, 'config.json'), `${JSON.stringify(config, null, 2)}\n`);
