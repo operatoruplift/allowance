@@ -1,5 +1,7 @@
 # Allowance
 
+> **In 20 seconds.** Allowance gives an AI agent a fixed, human-approved USDC budget for exact x402 payments on Solana, with the spending policy enforced outside the model and every decision and receipt recorded. Try the public rehearsal: [allowanceonsolana.vercel.app/lab](https://allowanceonsolana.vercel.app/lab). Built by Matt ([RVAClassic](https://x.com/operatoruplift), Operator Uplift) for the Solana Foundation **Agentic Payments** sprint, September 2026. Real today: policy lab, durable receipts, MCP bridge, installable PWA, Seeker Android shell. Not yet: live devnet or mainnet settlement, which needs the persistent backend and an authorized smoke test. Everything below is verification detail; nothing claims traction or audits that have not happened.
+
 **Give your agent a budget.** A small, single-operator application for buying useful Solana data with exact x402 USDC payments on Solana, with spending decisions enforced outside the model.
 
 **Short description:** Allowance gives an AI agent a fixed, human-approved budget to buy useful Solana data through exact x402 payments, with every decision and receipt visible.
