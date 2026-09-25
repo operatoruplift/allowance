@@ -52,6 +52,14 @@ import {
   type RunDTO,
   type ToolName,
 } from '../shared/domain';
+import {
+  createDemo,
+  demoProbe,
+  fixtureStep,
+  reconcileDemo,
+  stopDemo,
+  type DemoScenario,
+} from './demo';
 import { api, ApiError, downloadJSON, type Session } from './api';
 import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
@@ -450,6 +458,9 @@ function Landing() {
               <Link to="/lab" className="button button-primary">
                 Explore the policy lab <ArrowUpRight size={18} />
               </Link>
+              <Link to="/demo" className="text-link">
+                Try the example <ArrowRight size={16} />
+              </Link>
               <Link to="/developers" className="text-link">
                 See how it works <ArrowRight size={16} />
               </Link>
@@ -631,6 +642,240 @@ const terminalStatuses = new Set<RunDTO['status']>([
   'failed',
   'interrupted',
 ]);
+const demoScenarios: Record<DemoScenario, { title: string; detail: string }> = {
+  standard: {
+    title: 'Useful work, inside the limit',
+    detail:
+      'Two example tools cost 0.030000 USDC. Then test why another 0.020000 request is blocked.',
+  },
+  empty: {
+    title: 'An empty wallet is a valid answer',
+    detail:
+      'The 0.010000 snapshot finds no history, so the agent skips the transaction explanation.',
+  },
+  failure: {
+    title: 'No response. No charge.',
+    detail:
+      'The service fails before signing. Its 0.010000 reservation returns to the available budget.',
+  },
+  ambiguous: {
+    title: 'Recover before trying again',
+    detail:
+      'A simulated timeout holds 0.010000. Reconcile the original request to see what settled without paying twice.',
+  },
+};
+
+function Demo() {
+  const [run, setRun] = useState<RunDTO>(createDemo);
+  const [step, setStep] = useState<number | null>(null);
+  const [scenario, setScenario] = useState<DemoScenario>('standard');
+  useEffect(() => {
+    if (step === null) return;
+    const timer = setTimeout(
+      () => {
+        setRun((old) => fixtureStep(old, step, scenario));
+        setStep(step < 5 && !(step === 2 && scenario !== 'standard') ? step + 1 : null);
+      },
+      step === 0 ? 80 : 650
+    );
+    return () => clearTimeout(timer);
+  }, [step, scenario]);
+  const start = () => {
+    setRun(createDemo());
+    setStep(0);
+  };
+  const stop = () => {
+    setStep(null);
+    setRun(stopDemo);
+  };
+  return (
+    <main className="console-page demo-page page-width">
+      <PageHeading
+        eyebrow="The working example"
+        title="A little budget. Useful work."
+        action={<NetworkPills />}
+      >
+        Authorize a boundary. Rehearse useful purchases, a separate denial, and an honest recovery.
+      </PageHeading>
+      <div className="notice rehearsal-notice">
+        <Sparkles size={18} />
+        <div>
+          <b>You’re in rehearsal.</b> These are deterministic fixtures. No signing, model calls, RPC
+          calls, or paid requests.
+          <span>
+            {rehearsalOnly
+              ? 'Refreshing resets this example. Actual agent runs require the separate persistent backend.'
+              : 'Refreshing resets this local example. Live runs are saved on the server.'}
+          </span>
+        </div>
+      </div>
+      <div className="workspace-grid">
+        <section className="card composer demo-composer">
+          <div className="card-heading">
+            <span className="section-index">01</span>
+            <h2>Try an outcome</h2>
+            <span className="pill subtle-pill">Read-only example</span>
+          </div>
+          <div className="form-content">
+            <div className="demo-scenario">
+              <label htmlFor="scenario">Choose an example</label>
+              <select
+                id="scenario"
+                aria-describedby="scenario-help"
+                value={scenario}
+                disabled={step !== null}
+                onChange={(e) => {
+                  setScenario(e.target.value as DemoScenario);
+                  setRun(createDemo());
+                }}
+              >
+                <option value="standard">Two purchases + a budget boundary</option>
+                <option value="empty">Wallet with no transaction history</option>
+                <option value="failure">Service failure before signing</option>
+                <option value="ambiguous">Settlement unknown, then reconcile</option>
+              </select>
+              <div className="scenario-explanation" id="scenario-help" aria-live="polite">
+                <b>{demoScenarios[scenario].title}</b>
+                <p>{demoScenarios[scenario].detail}</p>
+                <small>All amounts and outcomes are simulated. No funds are spent.</small>
+              </div>
+            </div>
+            <button
+              className="button button-primary full-width"
+              disabled={step !== null}
+              onClick={start}
+            >
+              {step !== null ? (
+                <>
+                  <LoaderCircle size={17} className="spin" />
+                  Running the example…
+                </>
+              ) : (
+                <>
+                  {run.status === 'queued' ? 'Run the rehearsal' : 'Run rehearsal again'}
+                  <ArrowRight size={17} />
+                </>
+              )}
+            </button>
+            <div className="form-footnote">
+              <ShieldCheck size={13} />
+              No keys or funds needed. Every step stays in your browser.
+            </div>
+            <details className="demo-assignment">
+              <summary>
+                View the sample task and spending policy <ChevronDown size={16} />
+              </summary>
+              <div className="demo-assignment-content">
+                <label className="field-label" htmlFor="demo-wallet">
+                  Solana wallet<span>Fixture address</span>
+                </label>
+                <div className="input-with-icon">
+                  <Wallet size={17} />
+                  <input id="demo-wallet" value={run.wallet} readOnly />
+                </div>
+                <label className="field-label" htmlFor="demo-task">
+                  What should the agent do?
+                </label>
+                <textarea id="demo-task" value={run.task} readOnly rows={4} />
+                <div className="two-fields">
+                  <div>
+                    <span className="field-label">Total allowance</span>
+                    <div className="static-input">
+                      0.040000 <span>USDC</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span className="field-label">Per-request cap</span>
+                    <div className="static-input">
+                      0.020000 <span>USDC</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="field-label">
+                  Permitted services<span>First-party sample merchants</span>
+                </div>
+                <ToolList />
+              </div>
+            </details>
+          </div>
+        </section>
+        <div className="workspace-right">
+          <section className="card budget-card">
+            <BudgetMeter run={run} />
+            <div className="budget-limits">
+              <span>
+                <Gauge size={14} />
+                Per request <b>0.020000 USDC</b>
+              </span>
+              <span>
+                <LockKeyhole size={14} />
+                Policy <b>Fixture only</b>
+              </span>
+            </div>
+          </section>
+          <ProgressCard run={run} stop={stop} pending={false} />
+          <div className="small-note">
+            <Info size={16} />
+            <p>
+              In live mode, USDC tool charges, SOL fees and rent, and OpenAI usage are separate
+              costs. This rehearsal incurs none.
+            </p>
+          </div>
+        </div>
+      </div>
+      <section className="demo-guide" aria-label="How to use the working example">
+        <div className="demo-guide-heading">
+          <div className="eyebrow">A quick guided tour</div>
+          <p>
+            Choose an example and press run. Watch a small budget turn into useful information and a
+            clear receipt.
+          </p>
+        </div>
+        <ol className="demo-guide-steps">
+          <li>
+            <span>01</span>
+            <b>Choose an example</b>
+            <small>Useful work, an empty wallet, a failure, or recovery.</small>
+          </li>
+          <li>
+            <span>02</span>
+            <b>Watch the budget</b>
+            <small>See what is held, settled, and still available.</small>
+          </li>
+          <li>
+            <span>03</span>
+            <b>Try the next step</b>
+            <small>Test the spending limit or resolve a timed-out request.</small>
+          </li>
+          <li>
+            <span>04</span>
+            <b>Keep the receipt</b>
+            <small>Expand each purchase, then save or print the evidence.</small>
+          </li>
+        </ol>
+      </section>
+      <RunDetails
+        run={run}
+        probe={() => setRun((old) => demoProbe(old))}
+        reconcile={() => setRun((old) => reconcileDemo(old))}
+        exportReceipt={() => downloadJSON(run, 'allowance-rehearsal-receipt.json')}
+        probePending={false}
+      />
+      <div className="under-console">
+        <span>
+          {rehearsalOnly
+            ? 'Ready to explore actual agent runs?'
+            : 'Ready to connect configured tools?'}
+        </span>
+        <Link to="/app" className="text-link">
+          {rehearsalOnly ? 'About live runs' : 'Open the operator console'}{' '}
+          <ArrowUpRight size={16} />
+        </Link>
+      </div>
+    </main>
+  );
+}
+
 function ToolList({
   selected,
   onToggle,
@@ -2294,7 +2539,7 @@ export default function App() {
       <div id="main-content" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/demo" element={<Navigate to="/lab" replace />} />
+          <Route path="/demo" element={<Demo />} />
           <Route
             path="/lab"
             element={
