@@ -1,12 +1,23 @@
 {
+  "id": "/",
   "name": "Allowance — Give your agent a budget",
   "short_name": "Allowance",
+  "description": "Give an AI agent a fixed, human-approved USDC budget for exact x402 payments on Solana, with every decision and receipt visible.",
   "start_url": "/",
-  "display": "browser",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "en",
+  "categories": ["finance", "productivity"],
   "background_color": "#FAF7F4",
   "theme_color": "#B42336",
   "icons": [
-    { "src": "/allowance-icon-192.png?v=3", "sizes": "192x192", "type": "image/png" },
-    { "src": "/allowance-icon-512.png?v=3", "sizes": "512x512", "type": "image/png" }
+    { "src": "/allowance-icon-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/allowance-icon-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/allowance-icon-maskable-512.png?v=1", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Policy lab", "url": "/lab", "description": "Try a spending policy against real requests." },
+    { "name": "Operator console", "url": "/app", "description": "Open the budget console." }
   ]
 }

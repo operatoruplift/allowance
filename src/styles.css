@@ -44,6 +44,8 @@
 body {
   margin: 0;
   min-width: 320px;
+  /* Keep content clear of notches and gesture bars when installed or wrapped as an Android app. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 button,
 input,
