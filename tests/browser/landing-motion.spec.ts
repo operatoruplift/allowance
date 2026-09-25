@@ -8,14 +8,19 @@ const storyStep = (page: Page, step: number) =>
 
 async function centerStoryStep(page: Page, step: number) {
   const article = storyStep(page, step);
-  await article.evaluate((element) =>
-    element.scrollIntoView({ block: 'center', behavior: 'instant' })
-  );
+  // A native anchor scroll started by an earlier click can still be settling
+  // here, and it carries the page past the step this just centred. Re-centre
+  // until the stage agrees, so the assertion measures the active-step rule
+  // rather than which scroll happened to finish first.
+  await expect
+    .poll(async () => {
+      await article.evaluate((element) =>
+        element.scrollIntoView({ block: 'center', behavior: 'instant' })
+      );
+      return page.locator('.allowance-story-stage').getAttribute('data-active-step');
+    })
+    .toBe(String(step));
   await expect(article).toBeInViewport();
-  await expect(page.locator('.allowance-story-stage')).toHaveAttribute(
-    'data-active-step',
-    String(step)
-  );
 }
 
 async function expectUnobscuredReveals(page: Page) {

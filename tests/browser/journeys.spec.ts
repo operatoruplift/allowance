@@ -54,7 +54,7 @@ test('full fixture, separate probe and JSON export have exact accounting and no 
   await expect(page.locator('body')).toHaveAttribute('data-print-called', 'true');
   await page.emulateMedia({ media: 'print' });
   await expect(page.locator('.receipt-card')).toBeVisible();
-  await expect(page.getByText('None — deterministic rehearsal', { exact: true })).toHaveCount(3);
+  await expect(page.getByText('None — no transaction submitted', { exact: true })).toHaveCount(3);
   await expect(page.locator('.purchase-expanded').first()).toBeVisible();
   await page.emulateMedia({ media: 'screen' });
   await page.getByRole('button', { name: /^Receipt/ }).click();
@@ -140,8 +140,8 @@ test('deterministic recovery keeps an ambiguous hold until the original intent i
   await page.getByLabel('Choose an example').selectOption('ambiguous');
   await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
   await expect(page.getByText(/settlement evidence is unknown/)).toBeVisible({ timeout: 15000 });
-  await expect(page.getByRole('button', { name: 'Reconcile fixture hold' })).toBeVisible();
-  await page.getByRole('button', { name: 'Reconcile fixture hold' }).click();
+  await expect(page.getByRole('button', { name: 'Review offline hold' })).toBeVisible();
+  await page.getByRole('button', { name: 'Review offline hold' }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
   await expect(page.getByText('Original hold reconciled')).toBeVisible();
   await expect(page.locator('.progress-finished')).toContainText('Run interrupted');

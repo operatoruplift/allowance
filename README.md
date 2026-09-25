@@ -38,6 +38,7 @@ Production startup is **`npm start`**; Express serves `dist/client` and runs the
 | ------------- | ----------------------------------------------------------------------------- |
 | `/`           | Landing and interactive receipt preview                                       |
 | `/demo`       | Isolated deterministic rehearsal, including empty, failure and ambiguous recovery fixtures |
+| `/lab`        | Policy lab: set an allowance, a per-request cap and a daily limit, then save the plan       |
 | `/login`      | Single-operator password login                                                |
 | `/app`        | Authenticated readiness checks and task/policy composer                       |
 | `/runs/:id`   | Private durable run, report, JSON export, print view and stop                 |

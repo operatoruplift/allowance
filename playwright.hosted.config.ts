@@ -10,6 +10,10 @@ export default defineConfig({
   use: {
     baseURL: hostedURL || 'http://127.0.0.1:4328',
     trace: 'retain-on-failure',
+    // The rehearsal build ships a service worker, and requests it answers never
+    // reach page.route, so it would silently defeat the network mocking these
+    // specs rely on. The worker is verified against the deployed site instead.
+    serviceWorkers: 'block',
   },
   webServer: hostedURL
     ? undefined
