@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { SPA_ROUTE } from '../scripts/rehearsal-config';
 
 // The rehearsal is a static deploy: Vercel serves index.html for client routes
 // only when they appear in the rewrite list. A route added to <Routes> but not
@@ -24,22 +25,19 @@ async function routerPaths(): Promise<string[]> {
 }
 
 /** The SPA rewrite Vercel applies, anchored the way the platform anchors it. */
-async function rewrite(): Promise<RegExp> {
-  const source = await readFile(path.join(root, 'scripts/build-rehearsal.ts'), 'utf8');
-  const match = source.match(/\{ src: '([^']+)', dest: '\/index\.html' \}/);
-  expect(match, 'build-rehearsal.ts should declare one SPA rewrite to /index.html').not.toBeNull();
-  return new RegExp(`^${match![1]}$`);
+function rewrite(): RegExp {
+  return new RegExp(`^${SPA_ROUTE}$`);
 }
 
 describe('static rehearsal SPA rewrite', () => {
   it('serves every client route on a direct load', async () => {
-    const pattern = await rewrite();
+    const pattern = rewrite();
     const missing = (await routerPaths()).filter((route) => !pattern.test(route));
     expect(missing, `these routes would 404 on refresh: ${missing.join(', ')}`).toEqual([]);
   });
 
   it('still refuses paths the router does not claim', async () => {
-    const pattern = await rewrite();
+    const pattern = rewrite();
     for (const route of ['/api', '/merchant', '/tools', '/nope', '/lab/extra']) {
       expect(pattern.test(route), `${route} should not fall through to the shell`).toBe(false);
     }
