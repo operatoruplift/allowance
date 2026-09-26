@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
-import { config } from './rehearsal-config';
+import { config, NOT_FOUND_FILE } from './rehearsal-config';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, '.vercel/output');
@@ -20,6 +20,10 @@ await build({
   define: { 'import.meta.env.VITE_REHEARSAL_ONLY': JSON.stringify('true') },
   build: { outDir: path.join(output, 'static'), emptyOutDir: true },
 });
+
+// The error phase serves this copy, so the router renders its own not-found
+// page with the site header and a home link instead of the platform's.
+await fs.copyFile(path.join(output, 'static/index.html'), path.join(output, 'static', NOT_FOUND_FILE));
 
 await fs.writeFile(path.join(output, 'config.json'), `${JSON.stringify(config, null, 2)}\n`);
 process.stdout.write(

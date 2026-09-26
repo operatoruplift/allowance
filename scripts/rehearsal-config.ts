@@ -5,6 +5,14 @@ import { SPA_ROUTE } from '../shared/routes.js';
 
 export { SPA_ROUTE };
 
+/**
+ * The shell copy the error phase serves. It must be a real emitted file: a
+ * dest in that phase is resolved against the build output and never re-enters
+ * the filesystem phase, so pointing it at index.html leaves the platform's own
+ * not-found page in place.
+ */
+export const NOT_FOUND_FILE = '404.html';
+
 // A rehearsal document never calls the network: the site is static and every
 // route under /api, /merchant and /tools is refused. `connect-src 'none'` states
 // that in the policy, so a script injected into a document cannot reach anywhere
@@ -81,6 +89,6 @@ export const config: { version: number; routes: RehearsalRoute[] } = {
     // 404 status that says so. Restricted to document methods: a POST already
     // answered 405 above and keeps that status.
     { handle: 'error' },
-    { src: '/.*', methods: ['GET', 'HEAD'], status: 404, dest: '/index.html' },
+    { src: '/.*', methods: ['GET', 'HEAD'], status: 404, dest: '/404.html' },
   ],
 };

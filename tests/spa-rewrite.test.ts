@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { config, SPA_ROUTE } from '../scripts/rehearsal-config';
+import { config, NOT_FOUND_FILE, SPA_ROUTE } from '../scripts/rehearsal-config';
 import { CLIENT_ROUTES, isClientRoute } from '../shared/routes';
 
 // The rehearsal is a static deploy: Vercel serves index.html for client routes
@@ -69,7 +69,7 @@ describe('unmatched addresses', () => {
   it('answer with the app shell under a 404 status', () => {
     expect(errorRoutes().find((route) => route.src === '/.*')).toMatchObject({
       status: 404,
-      dest: '/index.html',
+      dest: `/${NOT_FOUND_FILE}`,
     });
   });
 
@@ -93,3 +93,4 @@ describe('unmatched addresses', () => {
     );
   });
 });
+
