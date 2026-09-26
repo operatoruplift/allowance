@@ -1,6 +1,10 @@
 // The deploy configuration for the static rehearsal, kept apart from the build
 // that writes it so tests can assert on the real values rather than on a copy.
 
+import { SPA_ROUTE } from '../shared/routes.js';
+
+export { SPA_ROUTE };
+
 // A rehearsal document never calls the network: the site is static and every
 // route under /api, /merchant and /tools is refused. `connect-src 'none'` states
 // that in the policy, so a script injected into a document cannot reach anywhere
@@ -39,7 +43,6 @@ export const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
 
-/** Every client route the router serves, so a direct load does not 404. */
 /** One entry of the Vercel build output v3 route table. */
 export type RehearsalRoute = {
   src?: string;
@@ -50,8 +53,6 @@ export type RehearsalRoute = {
   methods?: string[];
   handle?: string;
 };
-
-export const SPA_ROUTE = '/(?:demo|lab|developers|brand|login|app|runs/[^/]+)?/?';
 
 export const config: { version: number; routes: RehearsalRoute[] } = {
   version: 3,
@@ -72,6 +73,14 @@ export const config: { version: number; routes: RehearsalRoute[] } = {
       headers: { Allow: 'GET, HEAD' },
     },
     { handle: 'filesystem' },
+    // Every client route the router serves, so a direct load or a refresh does
+    // not 404.
     { src: SPA_ROUTE, dest: '/index.html' },
+    // Anything else is not a page here. Serve the app shell so the router's own
+    // 404 renders with the site header, navigation and a home link, and keep the
+    // 404 status that says so. Restricted to document methods: a POST already
+    // answered 405 above and keeps that status.
+    { handle: 'error' },
+    { src: '/.*', methods: ['GET', 'HEAD'], status: 404, dest: '/index.html' },
   ],
 };

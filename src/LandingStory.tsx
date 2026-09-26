@@ -72,7 +72,7 @@ export default function LandingStory() {
                 Planned tool costs <b>0.030000</b>
               </span>
               <span>
-                Available capacity <b>0.010000</b>
+                Allowance left <b>0.010000</b>
               </span>
               <span className="story-denied">
                 <X size={13} /> One more request <b>Blocked</b>
@@ -125,7 +125,7 @@ export default function LandingStory() {
               <br />A visible boundary.
             </h3>
             <p>
-              Compare proposed costs with the capacity left. A request above your limit is blocked
+              Compare proposed costs with the allowance left. A request above your limit is blocked
               before signing, so useful work always starts with a clear decision.
             </p>
             <Link to="/lab" className="text-link">

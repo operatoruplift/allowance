@@ -32,7 +32,7 @@ npx --yes vercel@59.16.0 deploy --prebuilt --prod --yes
 
 Choose the intended Vercel account/team when linking; add `--scope TEAM` when necessary. The link and CLI-generated environment files remain ignored. Deploy with `--prebuilt` to upload only the prepared output. The repository's `vercel.json` also defines the rehearsal build explicitly so source builds cannot select the Express backend automatically.
 
-API and merchant routes return 404; mutation methods return 405 where no earlier route applies. Only supported page routes receive the SPA fallback. The generated Content Security Policy permits same-origin scripts and blocks fetch/XHR connections. JSON export and print remain local browser operations.
+API and merchant routes return 404; mutation methods return 405 where no earlier route applies. Supported page routes receive the SPA fallback with a 200. Every other address receives the same shell under a 404 status, so an unknown link lands on the site's own 404 page — header, navigation and a home link — instead of the platform error template, and the status still says the page is not there. The generated Content Security Policy permits same-origin scripts and blocks fetch/XHR connections. JSON export and print remain local browser operations.
 
 For current source/test/deployment status, see the [September 20 release report](release-2026-09-20.md). Persistent backend deployment uses the separate [runtime runbook](runtime-recovery.md); no payment credentials belong in this Vercel project.
 
