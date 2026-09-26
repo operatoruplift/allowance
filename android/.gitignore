@@ -16,3 +16,7 @@ local.properties
 # Release signing material never belongs in the repository.
 *.keystore
 *.jks
+
+# Gradle output and caches from local APK builds
+build/
+.gradle/
