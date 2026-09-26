@@ -344,12 +344,14 @@
   font-size: 12px;
   transition: background 150ms ease;
 }
+/* The count inherits the button's colour in every state, active included. A fade
+   here put the inactive numerals at 3.3:1 on the cream ground; the smaller
+   monospace face is what keeps them subordinate to the label. */
 .bk-filters button span {
   font:
     10px/1 'SFMono-Regular',
     Consolas,
     monospace;
-  opacity: 0.75;
 }
 .bk-filters button:hover {
   background: var(--bk-soft);

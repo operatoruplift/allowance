@@ -41,6 +41,17 @@
 * {
   box-sizing: border-box;
 }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 body {
   margin: 0;
   min-width: 320px;
@@ -67,7 +78,8 @@ a {
 button {
   cursor: pointer;
 }
-button:disabled {
+button:disabled,
+button[aria-disabled='true'] {
   cursor: not-allowed;
 }
 button,
@@ -167,7 +179,7 @@ strong {
   border: 1px solid transparent;
   line-height: 1.4;
 }
-.button:hover:not(:disabled) {
+.button:hover:not(:disabled):not([aria-disabled='true']) {
   transform: translateY(-1px);
 }
 .button-primary {
@@ -175,10 +187,11 @@ strong {
   color: white;
   box-shadow: 0 3px 4px #281e2010;
 }
-.button-primary:hover:not(:disabled) {
+.button-primary:hover:not(:disabled):not([aria-disabled='true']) {
   background: var(--accent-dark);
 }
-.button-primary:disabled {
+.button-primary:disabled,
+.button-primary[aria-disabled='true'] {
   background: var(--border);
   color: var(--secondary);
   box-shadow: none;
@@ -187,8 +200,12 @@ strong {
   border-color: var(--border);
   background: transparent;
 }
-.button-outline:hover:not(:disabled) {
+.button-outline:hover:not(:disabled):not([aria-disabled='true']) {
   background: var(--background);
+}
+.button-outline[aria-disabled='true'] {
+  color: var(--secondary);
+  background: transparent;
 }
 .button-plain {
   background: transparent;
@@ -1824,6 +1841,19 @@ select {
   white-space: nowrap;
   color: var(--secondary);
 }
+.probe-action {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+/* The probe answers once. Its trigger stays in place to hold focus, and reads as
+   answered rather than as still waiting to be pressed. */
+.probe-card .button[aria-disabled='true'] {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--secondary);
+}
 .probe-completed {
   background: #faf5ec;
   border-color: #e9decc;
@@ -2546,7 +2576,13 @@ select {
   color: var(--secondary);
   margin-top: 20px;
 }
-.not-found .button {
+.not-found-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  /* On the row, not on each button: a per-item margin would push the buttons off
+     the centre line the text link beside them sits on. */
   margin-top: 25px;
 }
 @media (min-width: 1500px) {
@@ -2690,7 +2726,7 @@ select {
   .probe-card p {
     font-size: 9px;
   }
-  .probe-card > .pill {
+  .probe-card .pill {
     font-size: 8px;
   }
   .login-page {
@@ -2970,7 +3006,8 @@ select {
     flex-basis: calc(100% - 58px);
   }
   .probe-card > .button,
-  .probe-card > .pill {
+  .probe-card > .pill,
+  .probe-card > .probe-action {
     margin-left: 54px;
   }
   .payer-balances {
@@ -3714,7 +3751,8 @@ select {
     line-height: 1.8;
   }
   .probe-card > .button,
-  .probe-card > .pill {
+  .probe-card > .pill,
+  .probe-card > .probe-action {
     margin-left: 48px;
   }
   .probe-card .button {
@@ -5090,7 +5128,7 @@ select {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .button:hover:not(:disabled) {
+  .button:hover:not(:disabled):not([aria-disabled='true']) {
     transform: none;
   }
 }
@@ -5215,7 +5253,8 @@ select {
   gap: 5px;
   padding-inline: 8px;
 }
-.readiness-check:disabled {
+.readiness-check:disabled,
+.readiness-check[aria-disabled='true'] {
   opacity: 0.6;
 }
 .readiness-card .card-heading {

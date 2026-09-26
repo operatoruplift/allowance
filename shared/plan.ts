@@ -8,6 +8,29 @@ export interface PlanInput {
   requests: ToolName[];
 }
 
+/** The three amount fields, in the order the lab presents them. */
+export const PLAN_AMOUNT_FIELDS = ['allowance', 'perRequestCap', 'dailyAvailable'] as const;
+export type PlanAmountField = (typeof PLAN_AMOUNT_FIELDS)[number];
+
+/**
+ * Which field each amount problem belongs to, so a form can show the message
+ * beside the input that caused it instead of in one shared banner. `planSpending`
+ * throws the first problem it meets; this reports every field at once.
+ */
+export function planFieldErrors(input: PlanInput): Partial<Record<PlanAmountField, string>> {
+  const errors: Partial<Record<PlanAmountField, string>> = {};
+  for (const field of PLAN_AMOUNT_FIELDS) {
+    try {
+      // A daily figure of zero is a real answer: nothing is available today.
+      if (parseMoney(input[field]) === 0 && field !== 'dailyAvailable')
+        errors[field] = 'Enter an amount greater than zero.';
+    } catch (cause) {
+      errors[field] = cause instanceof Error ? cause.message : 'Enter an amount in USDC.';
+    }
+  }
+  return errors;
+}
+
 /** Capacity planning only. This is neither an executable policy nor a payment receipt. */
 export function planSpending(input: PlanInput) {
   const allowance = parseMoney(input.allowance);

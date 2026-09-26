@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planSpending, type PlanInput } from '../shared/plan';
+import { PLAN_AMOUNT_FIELDS, planFieldErrors, planSpending, type PlanInput } from '../shared/plan';
 
 const input: PlanInput = {
   allowance: '0.04',
@@ -50,6 +50,43 @@ describe('policy capacity planner', () => {
       })
     ).toThrow();
   });
+  it('attributes each amount problem to the field it came from', () => {
+    // The planner throws the first problem it meets, which is why a form needs
+    // this: the message has to be shown at the field that caused it.
+    expect(planFieldErrors(input)).toEqual({});
+    expect(planFieldErrors({ ...input, allowance: 'abc' })).toEqual({
+      allowance: 'Use a positive decimal with at most six decimal places.',
+    });
+    expect(planFieldErrors({ ...input, perRequestCap: '-5' })).toEqual({
+      perRequestCap: 'Use a positive decimal with at most six decimal places.',
+    });
+    expect(planFieldErrors({ ...input, dailyAvailable: '0.0000001' })).toEqual({
+      dailyAvailable: 'Use a positive decimal with at most six decimal places.',
+    });
+    expect(planFieldErrors({ ...input, allowance: '0', perRequestCap: '0' })).toEqual({
+      allowance: 'Enter an amount greater than zero.',
+      perRequestCap: 'Enter an amount greater than zero.',
+    });
+    // Nothing available today is an answer, not a mistake.
+    expect(planFieldErrors({ ...input, dailyAvailable: '0' })).toEqual({});
+    expect(planFieldErrors({ ...input, allowance: '1000001' })).toEqual({
+      allowance: 'Amount exceeds the supported limit.',
+    });
+  });
+
+  it('covers every amount the planner reads, so none can go unreported', () => {
+    expect(PLAN_AMOUNT_FIELDS).toEqual(['allowance', 'perRequestCap', 'dailyAvailable']);
+    for (const field of PLAN_AMOUNT_FIELDS) {
+      expect(planFieldErrors({ ...input, [field]: 'abc' })).toHaveProperty(field);
+      expect(() => planSpending({ ...input, [field]: 'abc' })).toThrow();
+    }
+  });
+
+  it('reports a field problem without inventing a plan-level one', () => {
+    const errors = planFieldErrors({ ...input, allowance: 'abc' });
+    expect(Object.keys(errors)).toEqual(['allowance']);
+  });
+
   it('handles an empty plan without mutation of inputs', () => {
     const original = structuredClone(input);
     planSpending(input);

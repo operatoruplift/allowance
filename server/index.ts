@@ -1,14 +1,12 @@
-import path from 'node:path';
-import express from 'express';
 import { createRuntime } from './runtime.js';
 import { createApp } from './app.js';
+import { serveClient } from './frontend.js';
 const runtime = await createRuntime();
 const { config, db, ledger, payments, runner, data } = runtime;
 const app = createApp(config, db, ledger, payments, runner, () => data.probe());
 let closeFrontend: (() => Promise<void>) | undefined;
 if (config.production) {
-  app.use(express.static(path.resolve('dist/client'), { index: false }));
-  app.get('/{*path}', (_req, res) => res.sendFile(path.resolve('dist/client/index.html')));
+  serveClient(app, 'dist/client');
 } else {
   const { createServer } = await import('vite');
   const vite = await createServer({ server: { middlewareMode: true }, appType: 'spa' });

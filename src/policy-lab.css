@@ -94,6 +94,25 @@
   margin-top: 7px;
   line-height: 1.5;
 }
+/* An invalid amount shows on the field itself: the border clears 3:1 against the
+   page either side of it, and the reason sits under the input it belongs to. */
+.lab-field input[aria-invalid='true'] {
+  border-color: #b56b5f;
+  background: #fdf7f5;
+}
+.lab-field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #985449;
+}
+.lab-field-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 .lab-permissions {
   border: 0;
   padding: 0;
@@ -168,8 +187,9 @@
 }
 .lab-balance-bottom {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 15px;
+  gap: 15px 18px;
   margin-top: 23px;
   font-size: 11px;
   color: #ffe1dc;

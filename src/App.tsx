@@ -61,6 +61,7 @@ import {
   type DemoScenario,
 } from './demo';
 import { api, ApiError, downloadJSON, type Session } from './api';
+import { runAnnouncement, runOutcome } from './run-status';
 import { rehearsalOnly } from './deployment';
 import BrandKit from './BrandKit';
 import DecorativeFilm from './DecorativeFilm';
@@ -179,12 +180,15 @@ function Footer() {
     </footer>
   );
 }
+// `mode` is required on purpose: a call site that forgets it must not be able to
+// announce live execution, or to leave the two network labels reading "checking"
+// with nothing on the way to resolve them.
 function NetworkPills({
-  mode = 'live',
+  mode,
   data,
   payment,
 }: {
-  mode?: 'rehearsal' | 'live';
+  mode: 'rehearsal' | 'live';
   data?: string;
   payment?: PaymentNetwork;
 }) {
@@ -355,7 +359,7 @@ function LandingReceipt() {
               Planned costs<b>0.030000</b>
             </span>
             <span>
-              Capacity left<b>0.010000</b>
+              Allowance left<b>0.010000</b>
             </span>
           </div>
         </section>
@@ -680,6 +684,7 @@ function Demo() {
     );
     return () => clearTimeout(timer);
   }, [step, scenario]);
+  const running = step !== null;
   const start = () => {
     setRun(createDemo());
     setStep(0);
@@ -693,7 +698,9 @@ function Demo() {
       <PageHeading
         eyebrow="The working example"
         title="A little budget. Useful work."
-        action={<NetworkPills />}
+        action={
+          <NetworkPills mode={run.mode} data={run.dataNetwork} payment={run.paymentNetwork} />
+        }
       >
         Authorize a boundary. Rehearse useful purchases, a separate denial, and an honest recovery.
       </PageHeading>
@@ -709,6 +716,9 @@ function Demo() {
           </span>
         </div>
       </div>
+      <p className="visually-hidden" role="status">
+        {runAnnouncement(run, running)}
+      </p>
       <div className="workspace-grid">
         <section className="card composer demo-composer">
           <div className="card-heading">
@@ -723,7 +733,7 @@ function Demo() {
                 id="scenario"
                 aria-describedby="scenario-help"
                 value={scenario}
-                disabled={step !== null}
+                disabled={running}
                 onChange={(e) => {
                   setScenario(e.target.value as DemoScenario);
                   setRun(createDemo());
@@ -742,10 +752,15 @@ function Demo() {
             </div>
             <button
               className="button button-primary full-width"
-              disabled={step !== null}
-              onClick={start}
+              // The element stays mounted and focusable for the whole run, so the
+              // keyboard does not land back on <body> the moment it is pressed.
+              aria-disabled={running}
+              aria-busy={running}
+              onClick={() => {
+                if (!running) start();
+              }}
             >
-              {step !== null ? (
+              {running ? (
                 <>
                   <LoaderCircle size={17} className="spin" />
                   Running the example…
@@ -987,15 +1002,7 @@ function ProgressCard({ run, stop, pending }: { run: RunDTO; stop: () => void; p
         finished && (
           <div className="progress-finished">
             {run.status === 'completed' ? <CircleCheck size={16} /> : <CircleStop size={16} />}
-            <span>
-              {run.status === 'completed'
-                ? 'Task finished within its allowance.'
-                : run.mode === 'rehearsal'
-                  ? run.status === 'interrupted'
-                    ? 'Run interrupted. Review the recovery and receipt below.'
-                    : 'Offline plan ended. No funds moved.'
-                  : `Run ${run.status}. Start a new run to authorize more work.`}
-            </span>
+            <span>{runOutcome(run)}</span>
             <a href="#run-details" className="text-link">
               View details <ArrowDown size={14} />
             </a>
@@ -1150,7 +1157,7 @@ function PurchaseRow({
     </div>
   );
 }
-function RunDetails({
+export function RunDetails({
   run,
   probe,
   reconcile,
@@ -1309,8 +1316,17 @@ function RunDetails({
                 : 'Send a 0.020000 proposal through the budget guard with only 0.010000 left. This is a separate check, outside the agent trace.'}
             </p>
           </div>
-          {!probed ? (
-            <button className="button button-outline" onClick={probe} disabled={probePending}>
+          <div className="probe-action">
+            <button
+              className="button button-outline"
+              // Same reason as the run trigger: the button that was pressed stays
+              // mounted, so activating it never drops focus to <body>.
+              aria-disabled={probed || probePending}
+              aria-busy={probePending}
+              onClick={() => {
+                if (!probed && !probePending) probe();
+              }}
+            >
               {probePending ? (
                 <LoaderCircle className="spin" size={15} />
               ) : (
@@ -1318,12 +1334,13 @@ function RunDetails({
               )}
               Test the boundary
             </button>
-          ) : (
-            <span className="pill red-pill">
-              <X size={12} />
-              Denied before signing
-            </span>
-          )}
+            {probed && (
+              <span className="pill red-pill">
+                <X size={12} />
+                Denied before signing
+              </span>
+            )}
+          </div>
         </section>
       ) : null}
       {unresolved && reconcile ? (
@@ -1959,8 +1976,13 @@ function OperatorApp() {
                   <h2>Readiness</h2>
                   <button
                     className="button button-small button-plain readiness-check"
-                    onClick={() => void checkReadiness()}
-                    disabled={checking}
+                    // The same reason as the rehearsal triggers: a check that runs
+                    // must not take the keyboard's place with it.
+                    onClick={() => {
+                      if (!checking) void checkReadiness();
+                    }}
+                    aria-disabled={checking}
+                    aria-busy={checking}
                   >
                     {checking ? (
                       <LoaderCircle className="spin" size={14} />
@@ -2505,10 +2527,21 @@ function NotFound() {
     <main className="not-found page-width">
       <span className="eyebrow">404 / Outside this allowance</span>
       <h1>This page isn’t here.</h1>
-      <p>The policy lab is a good place to start.</p>
-      <Link className="button button-primary" to="/lab">
-        Explore the policy lab <ArrowRight size={17} />
-      </Link>
+      <p>
+        This address is not one of ours. The home page, the policy lab and the working example are
+        each one step away.
+      </p>
+      <div className="not-found-actions">
+        <Link className="button button-primary" to="/lab">
+          Explore the policy lab <ArrowRight size={17} />
+        </Link>
+        <Link className="button button-outline" to="/">
+          Go to the home page
+        </Link>
+        <Link className="text-link" to="/demo">
+          Try the working example <ArrowRight size={15} />
+        </Link>
+      </div>
     </main>
   );
 }
@@ -2562,7 +2595,15 @@ export default function App() {
               </>
             }
           />
-          <Route path="*" element={<NotFound />} />
+          <Route
+            path="*"
+            element={
+              <>
+                <NotFound />
+                <Footer />
+              </>
+            }
+          />
         </Routes>
       </div>
     </>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Check,
+  CircleAlert,
   Download,
   FileText,
   Plus,
@@ -12,7 +13,12 @@ import {
   X,
 } from 'lucide-react';
 import { CATALOG, formatMoney } from '../shared/domain';
-import { planSpending, type PlanInput } from '../shared/plan';
+import {
+  planFieldErrors,
+  planSpending,
+  type PlanAmountField,
+  type PlanInput,
+} from '../shared/plan';
 import { downloadJSON } from './api';
 import './policy-lab.css';
 
@@ -24,6 +30,61 @@ const initialPlan: PlanInput = {
   requests: ['wallet_snapshot', 'transaction_explain', 'transaction_explain'],
 };
 
+/** The amount fields, with the label and hint each one carries. */
+const amountFields = [
+  ['allowance', 'Total allowance', 'The most this task can use.'],
+  ['perRequestCap', 'Per-request cap', 'The most any single tool can cost.'],
+  ['dailyAvailable', 'Daily capacity', 'The amount still available across your tasks.'],
+] as const;
+
+/**
+ * One amount, its hint, and its own message when the value cannot be read as
+ * USDC. The message belongs to this block: it is rendered under the input it
+ * describes, and named by `aria-describedby` so the field itself carries it.
+ */
+export function AmountField({
+  field,
+  label,
+  help,
+  value,
+  error,
+  onChange,
+}: {
+  field: PlanAmountField;
+  label: string;
+  help: string;
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+}) {
+  const id = `plan-${field}`;
+  return (
+    <div className="lab-field">
+      <label htmlFor={id}>
+        {label}
+        <span>USDC</span>
+      </label>
+      <input
+        id={id}
+        inputMode="decimal"
+        autoComplete="off"
+        maxLength={14}
+        value={value}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-help ${id}-error` : `${id}-help`}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      <small id={`${id}-help`}>{help}</small>
+      {error && (
+        <p className="lab-field-error" id={`${id}-error`} role="alert">
+          <CircleAlert size={13} aria-hidden="true" />
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function PolicyLab() {
   const [input, setInput] = useState<PlanInput>(initialPlan);
   const [saved, setSaved] = useState(false);
@@ -34,6 +95,10 @@ export default function PolicyLab() {
   } catch (cause) {
     error = cause instanceof Error ? cause.message : 'Check your limits.';
   }
+  // An amount problem belongs to its own field and is shown there. Anything left
+  // concerns the plan as a whole, and only that is reported in section 02.
+  const fieldErrors = planFieldErrors(input);
+  const planError = Object.keys(fieldErrors).length > 0 ? '' : error;
   function update(patch: Partial<PlanInput>) {
     setInput((current) => ({ ...current, ...patch }));
     setSaved(false);
@@ -68,33 +133,16 @@ export default function PolicyLab() {
           </div>
           <div className="lab-control-body">
             <p>Adjust any limit. Your plan updates immediately.</p>
-            {(
-              [
-                ['allowance', 'Total allowance', 'The most this task can use.'],
-                ['perRequestCap', 'Per-request cap', 'The most any single tool can cost.'],
-                [
-                  'dailyAvailable',
-                  'Daily capacity',
-                  'The amount still available across your tasks.',
-                ],
-              ] as const
-            ).map(([key, label, help]) => (
-              <div className="lab-field" key={key}>
-                <label htmlFor={`plan-${key}`}>
-                  {label}
-                  <span>USDC</span>
-                </label>
-                <input
-                  id={`plan-${key}`}
-                  inputMode="decimal"
-                  autoComplete="off"
-                  maxLength={14}
-                  value={input[key]}
-                  aria-describedby={`plan-${key}-help`}
-                  onChange={(event) => update({ [key]: event.target.value })}
-                />
-                <small id={`plan-${key}-help`}>{help}</small>
-              </div>
+            {amountFields.map(([key, label, help]) => (
+              <AmountField
+                key={key}
+                field={key}
+                label={label}
+                help={help}
+                value={input[key]}
+                error={fieldErrors[key]}
+                onChange={(value) => update({ [key]: value })}
+              />
             ))}
             <fieldset className="lab-permissions">
               <legend>Permitted tools</legend>
@@ -158,9 +206,15 @@ export default function PolicyLab() {
             </div>
             <div className="lab-balance-bottom">
               <span>
-                Capacity left
+                Allowance left
                 <strong data-testid="plan-remaining">
                   {plan ? formatMoney(plan.remaining) : '—'}
+                </strong>
+              </span>
+              <span>
+                Daily capacity left
+                <strong data-testid="plan-daily-remaining">
+                  {plan ? formatMoney(plan.dailyRemaining) : '—'}
                 </strong>
               </span>
               <span>
@@ -178,11 +232,11 @@ export default function PolicyLab() {
               <span className="lab-request-count">{input.requests.length} / 8</span>
             </div>
             <p className="lab-requests-intro">
-              Requests are checked in order. A blocked request uses no capacity.
+              Requests are checked in order. A blocked request uses none of your allowance.
             </p>
-            {error && (
+            {planError && (
               <p className="notice error" role="alert">
-                {error}
+                {planError}
               </p>
             )}
             <ol className="lab-request-list">
