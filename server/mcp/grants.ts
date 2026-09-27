@@ -47,7 +47,7 @@ function hashToken(token: string) {
   return createHash('sha256').update(token, 'utf8').digest('hex');
 }
 
-function assertGrantSession(
+export function assertGrantSession(
   db: Database.Database,
   sessionId: string,
   owner: string,

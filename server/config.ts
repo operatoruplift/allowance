@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   CATALOG,
   PAYMENT_CHAINS,
+  isBase58Bytes,
   parseMoney,
   type DataNetwork,
   type PaymentNetwork,
@@ -37,6 +38,11 @@ export interface Config {
   maxLlmOutputTokens: number;
   maxRuntimeMs: number;
   mcpEnabled: boolean;
+  directEnabled: boolean;
+  adminPublicKey: string;
+  directPriorityFeeMicroLamports: number;
+  directMaxFeeLamports: number;
+  directMaxAccountCreationLamports: number;
 }
 function integer(value: string | undefined, fallback: number, min: number, max: number) {
   const n = value === undefined || value === '' ? fallback : Number(value);
@@ -81,6 +87,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
         `${name} must be an HTTPS URL without embedded user credentials or fragments.`
       );
   }
+  const directEnabled = env.DIRECT_PAYMENTS_ENABLED === 'true';
+  if (directEnabled && (!env.PAYMENT_NETWORK || !env.PAYMENT_RPC_URL))
+    throw new Error('Direct payments require explicit PAYMENT_NETWORK and PAYMENT_RPC_URL.');
+  if (directEnabled && paymentNetwork === 'mainnet' && env.MAINNET_PAYMENTS_ACKNOWLEDGED !== 'true')
+    throw new Error(
+      'Mainnet uses real USDC. Set MAINNET_PAYMENTS_ACKNOWLEDGED=true after reviewing the operator spending limits.'
+    );
+  const adminPublicKey = env.ADMIN_PUBLIC_KEY?.trim() || '';
+  if (adminPublicKey && !isBase58Bytes(adminPublicKey, 32))
+    throw new Error('ADMIN_PUBLIC_KEY must be a Solana address.');
   const dataNetwork = env.DATA_NETWORK || paymentNetwork;
   if (dataNetwork !== 'devnet' && dataNetwork !== 'mainnet')
     throw new Error('Unknown data network.');
@@ -120,6 +136,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     maxLlmOutputTokens: integer(env.LLM_MAX_OUTPUT_TOKENS, 1200, 256, 2000),
     maxRuntimeMs: 180_000,
     mcpEnabled: env.MCP_ENABLED === 'true',
+    directEnabled,
+    adminPublicKey,
+    directPriorityFeeMicroLamports: integer(env.DIRECT_PRIORITY_FEE_MICROLAMPORTS, 0, 0, 1_000_000),
+    directMaxFeeLamports: integer(env.DIRECT_MAX_FEE_LAMPORTS, 15_000, 5_000, 1_000_000),
+    directMaxAccountCreationLamports: integer(
+      env.DIRECT_MAX_ACCOUNT_CREATION_LAMPORTS,
+      3_000_000,
+      0,
+      10_000_000
+    ),
   };
 }
 export function authenticationConfigured(config: Config): boolean {

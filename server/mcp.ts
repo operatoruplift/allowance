@@ -3,7 +3,15 @@ import path from 'node:path';
 import { McpServer } from '@modelcontextprotocol/server';
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { z } from 'zod';
-import { signatureSchema, type RunDTO, type ToolName } from '../shared/domain.js';
+import { formatMoney, signatureSchema, type RunDTO, type ToolName } from '../shared/domain.js';
+import {
+  directPaymentRequestSchema,
+  recipientApprovalSchema,
+  type DirectPaymentDTO,
+  type MandateDTO,
+} from '../shared/mandate.js';
+import { authorizeMandateGrant, revokeMandateGrant, type MandateGrantScope } from './direct/grants.js';
+import { ApprovalError, verifyRecipientApproval } from './direct/approval.js';
 import { loadConfig } from './config.js';
 import { createRuntime } from './runtime.js';
 import { PolicyError } from './policy/decision.js';
@@ -26,6 +34,9 @@ const transactionExplainInput = z
   .object({ runId: runIdSchema, requestId: requestIdSchema, signature: signatureSchema })
   .strict();
 const runInput = z.object({ runId: runIdSchema }).strict();
+const mandateInput = z.object({ mandateId: runIdSchema }).strict();
+const guardedPaymentInput = directPaymentRequestSchema.extend({ mandateId: runIdSchema }).strict();
+const recipientInput = recipientApprovalSchema.extend({ mandateId: runIdSchema }).strict();
 
 type AllowanceRuntime = Awaited<ReturnType<typeof createRuntime>>;
 
@@ -45,15 +56,55 @@ function result(value: unknown) {
   };
 }
 
-function errorResult(error: unknown) {
+function errorResult(error: unknown, extra: Record<string, unknown> = {}) {
   const code = error instanceof McpToolError ? error.code : 'INTERNAL_ERROR';
   const message =
     error instanceof McpToolError ? error.message : 'The tool could not complete safely.';
-  const value = { code, message };
+  const value = { code, message, ...extra };
   return {
     isError: true as const,
     structuredContent: value,
     content: [{ type: 'text' as const, text: `${code}: ${message}` }],
+  };
+}
+
+/** The stamp an agent reads on a direct-payment receipt. */
+function verdict(payment: DirectPaymentDTO) {
+  switch (payment.status) {
+    case 'settled':
+      return 'SETTLED';
+    case 'denied':
+      return 'BLOCKED';
+    case 'failed':
+    case 'expired':
+      return 'NOT_SETTLED';
+    case 'submitted':
+    case 'reserved':
+      return 'SUBMITTED';
+    case 'settlement-unknown':
+      return 'UNKNOWN';
+    default:
+      return 'RELEASED';
+  }
+}
+function mandateSummary(mandate: MandateDTO) {
+  return {
+    mandateId: mandate.id,
+    label: mandate.label,
+    status: mandate.status,
+    paymentNetwork: mandate.paymentNetwork,
+    payer: mandate.policy.payer,
+    perRequestCap: formatMoney(mandate.policy.perRequestCap),
+    ceiling: formatMoney(mandate.ceiling),
+    settled: formatMoney(mandate.settled),
+    held: formatMoney(mandate.held),
+    remaining: formatMoney(mandate.remaining),
+    expiresAt: mandate.policy.expiresAt,
+    recipients: mandate.recipients.map((recipient) => ({
+      address: recipient.address,
+      label: recipient.label,
+      addedBy: recipient.addedBy,
+    })),
   };
 }
 
@@ -310,6 +361,140 @@ export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: 
     }
   );
 
+  // Mandate tools: direct USDC transfers to recipients an operator listed in advance.
+  function authorizeMandate(mandateId: string, scope: MandateGrantScope) {
+    try {
+      authorizeMandateGrant(runtime.db, grantToken, mandateId, scope);
+      return runtime.mandates.get(mandateId, 'operator');
+    } catch (error) {
+      if (error instanceof McpToolError) throw error;
+      throw grantError(error);
+    }
+  }
+
+  server.registerTool(
+    'get_mandate',
+    {
+      title: 'Mandate status',
+      description:
+        'Read the frozen limits, allowlisted recipients and remaining budget of an authorized mandate.',
+      inputSchema: mandateInput,
+    },
+    async ({ mandateId }) => {
+      try {
+        return result(mandateSummary(authorizeMandate(mandateId, 'get_mandate')));
+      } catch (error) {
+        return errorResult(error);
+      }
+    }
+  );
+
+  server.registerTool(
+    'execute_guarded_payment',
+    {
+      title: 'Guarded USDC payment',
+      description:
+        'Pay an allowlisted recipient an exact USDC amount under the mandate. The policy is checked first; a blocked request returns a durable BLOCKED receipt and nothing is signed.',
+      inputSchema: guardedPaymentInput,
+    },
+    async ({ mandateId, requestId, recipient, amount, memo }) => {
+      try {
+        authorizeMandate(mandateId, 'execute_guarded_payment');
+        const payment = await runtime.direct.pay(
+          mandateId,
+          { requestId, recipient, amount, ...(memo ? { memo } : {}) },
+          'external-agent'
+        );
+        const mandate = runtime.mandates.get(mandateId, 'operator');
+        const summary = {
+          mandateId,
+          verdict: verdict(payment),
+          payment,
+          remaining: formatMoney(mandate.remaining),
+          ...(payment.explorerUrl ? { explorerUrl: payment.explorerUrl } : {}),
+        };
+        if (payment.status === 'denied')
+          return errorResult(
+            new McpToolError('POLICY_DENIED', payment.reason ?? 'The mandate denied this payment.'),
+            { ...summary, reasonCode: payment.reasonCode }
+          );
+        return result(summary);
+      } catch (error) {
+        if (error instanceof PaymentError)
+          return errorResult(paymentError(error), {
+            verdict: 'NOT_SIGNED',
+            ...(error.intentId ? { payment: runtime.mandates.getPayment(error.intentId) } : {}),
+          });
+        if (error instanceof PolicyError)
+          return errorResult(new McpToolError('POLICY_DENIED', error.message), { verdict: 'BLOCKED' });
+        return errorResult(error);
+      }
+    }
+  );
+
+  server.registerTool(
+    'list_direct_payments',
+    {
+      title: 'Direct payment receipts',
+      description: 'List the durable receipts of every payment attempted under the mandate.',
+      inputSchema: mandateInput,
+    },
+    async ({ mandateId }) => {
+      try {
+        const mandate = authorizeMandate(mandateId, 'list_direct_payments');
+        return result({
+          mandateId,
+          payments: mandate.payments.map((payment) => ({ ...payment, verdict: verdict(payment) })),
+          events: mandate.events,
+        });
+      } catch (error) {
+        return errorResult(error);
+      }
+    }
+  );
+
+  server.registerTool(
+    'add_recipient_to_allowlist',
+    {
+      title: 'Add recipient (administrator signature required)',
+      description:
+        'Add a recipient to the mandate allowlist. Requires the administrator’s Ed25519 signature over the exact approval message; the nonce is single-use.',
+      inputSchema: recipientInput,
+    },
+    async ({ mandateId, ...approval }) => {
+      try {
+        authorizeMandate(mandateId, 'add_recipient_to_allowlist');
+        await verifyRecipientApproval(mandateId, approval, runtime.config.adminPublicKey);
+        return result(mandateSummary(runtime.mandates.addRecipient(mandateId, approval, 'operator')));
+      } catch (error) {
+        if (error instanceof ApprovalError)
+          return errorResult(new McpToolError('APPROVAL_REJECTED', error.message), { reasonCode: error.code });
+        if (error instanceof PolicyError)
+          return errorResult(new McpToolError('POLICY_DENIED', error.message));
+        return errorResult(error);
+      }
+    }
+  );
+
+  server.registerTool(
+    'stop_mandate',
+    {
+      title: 'Stop mandate',
+      description: 'Stop the mandate, release unsigned reservations and revoke its grant.',
+      inputSchema: mandateInput,
+    },
+    async ({ mandateId }) => {
+      try {
+        authorizeMandate(mandateId, 'stop_mandate');
+        const mandate = runtime.mandates.stop(mandateId, 'operator');
+        revokeMandateGrant(runtime.db, mandateId, 'operator');
+        return result({ mandateId, status: mandate.status, grantRevoked: true });
+      } catch (error) {
+        return errorResult(error);
+      }
+    }
+  );
+
   return server;
 }
 
@@ -320,7 +505,7 @@ export async function main() {
   const grantToken = process.env.MCP_GRANT_TOKEN || '';
   if (!grantToken)
     throw new Error(
-      'MCP_GRANT_TOKEN is required; create an external run through the operator API first.'
+      'MCP_GRANT_TOKEN is required; create an external run or a mandate through the operator API first.'
     );
   const runtime = await createRuntime(config, { recover: false, exclusive: false, shared: true });
   const server = createAllowanceMcpServer(runtime, grantToken);
