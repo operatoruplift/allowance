@@ -1,7 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { loadPayerSigner } from './keypair.js';
 import type { Express } from 'express';
 import {
-  createKeyPairSignerFromBytes,
   getBase58Decoder,
   type TransactionPartialSigner,
 } from '@solana/kit';
@@ -117,20 +116,7 @@ export async function createPaymentService(
   let signerError: string | undefined;
   if (config.enabled && !signer && (config.keyFile || config.secretKey)) {
     try {
-      const raw = config.secretKey || (await readFile(config.keyFile!, 'utf8'));
-      const key: unknown = JSON.parse(raw);
-      if (
-        !Array.isArray(key) ||
-        key.length !== 64 ||
-        key.some((v) => !Number.isInteger(v) || v < 0 || v > 255)
-      )
-        throw new Error('Invalid keypair.');
-      const bytes = Uint8Array.from(key as number[]);
-      try {
-        signer = await createKeyPairSignerFromBytes(bytes);
-      } finally {
-        bytes.fill(0);
-      }
+      signer = await loadPayerSigner({ keyFile: config.keyFile, secretKey: config.secretKey });
     } catch {
       signerError =
         'Dedicated keypair must be a valid 64-byte JSON array in the configured backend secret source.';

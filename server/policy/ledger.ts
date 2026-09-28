@@ -115,12 +115,14 @@ export class Ledger implements PaymentLedger {
       ).length,
     };
   }
+  /** Both rails spend the same payer on the same day: x402 intents and direct mandate payments. */
   dailyUsed() {
     const day = this.time().slice(0, 10);
-    const rows = this.db.prepare('SELECT amount,status,day FROM intents').all() as Pick<
-      IntentRow,
-      'amount' | 'status' | 'day'
-    >[];
+    const rows = this.db
+      .prepare(
+        'SELECT amount,status,day FROM intents UNION ALL SELECT amount,status,day FROM direct_payments'
+      )
+      .all() as Pick<IntentRow, 'amount' | 'status' | 'day'>[];
     return rows.reduce(
       (sum, row) =>
         sum +
@@ -130,12 +132,13 @@ export class Ledger implements PaymentLedger {
       0
     );
   }
+  /** A signed or submitted payment on either rail holds the payer until evidence resolves it. */
   payerFrozen(exclude?: string) {
     const rows = this.db
       .prepare(
-        "SELECT id,status,signed_identity FROM intents WHERE status IN ('reserved','submitted','settlement-unknown')"
+        "SELECT id,status,signed_identity FROM intents WHERE status IN ('reserved','submitted','settlement-unknown') UNION ALL SELECT id,status,signed_identity FROM direct_payments WHERE status IN ('reserved','submitted','settlement-unknown')"
       )
-      .all() as IntentRow[];
+      .all() as Pick<IntentRow, 'id' | 'status' | 'signed_identity'>[];
     return rows.some((r) => r.id !== exclude && (r.status !== 'reserved' || !!r.signed_identity));
   }
   event(

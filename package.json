@@ -25,7 +25,9 @@
     "smoke:mainnet": "tsx scripts/smoke-mainnet.ts",
     "mcp": "tsx server/mcp.ts",
     "test:browser": "playwright test",
-    "test:hosted": "playwright test --config playwright.hosted.config.ts"
+    "test:hosted": "playwright test --config playwright.hosted.config.ts",
+    "smoke:direct-devnet": "tsx scripts/smoke-direct-devnet.ts",
+    "approve:recipient": "tsx scripts/sign-recipient-approval.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.0.0",

@@ -2,8 +2,8 @@ import { createRuntime } from './runtime.js';
 import { createApp } from './app.js';
 import { serveClient } from './frontend.js';
 const runtime = await createRuntime();
-const { config, db, ledger, payments, runner, data } = runtime;
-const app = createApp(config, db, ledger, payments, runner, () => data.probe());
+const { config, db, ledger, payments, runner, data, mandates, direct } = runtime;
+const app = createApp(config, db, ledger, payments, runner, () => data.probe(), { mandates, direct });
 let closeFrontend: (() => Promise<void>) | undefined;
 if (config.production) {
   serveClient(app, 'dist/client');
@@ -29,10 +29,10 @@ let reconciling = false;
 const reconciliation = setInterval(() => {
   if (reconciling) return;
   reconciling = true;
-  void payments
-    .reconcile()
-    .catch(() => {
-      process.stderr.write('Payment reconciliation unavailable; unresolved funds remain held.\n');
+  void Promise.allSettled([payments.reconcile(), direct.reconcile()])
+    .then((results) => {
+      if (results.some((result) => result.status === 'rejected'))
+        process.stderr.write('Payment reconciliation unavailable; unresolved funds remain held.\n');
     })
     .finally(() => {
       reconciling = false;

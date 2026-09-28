@@ -188,6 +188,11 @@ describe('Allowance local MCP bridge', () => {
       'get_run_status',
       'get_receipt',
       'stop_run',
+      'get_mandate',
+      'execute_guarded_payment',
+      'list_direct_payments',
+      'add_recipient_to_allowlist',
+      'stop_mandate',
     ]);
     const walletTool = listed.tools.find((tool) => tool.name === 'wallet_snapshot');
     expect(walletTool?.inputSchema).toMatchObject({

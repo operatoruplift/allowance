@@ -1,6 +1,6 @@
 # Focused trust-boundary review
 
-Reviewed for the 20 September 2026 completion release. This is a source/test review, not a formal independent security audit or a guarantee against a compromised host.
+Reviewed for the 20 September 2026 completion release and extended on 28 September 2026 for the direct-payment (mandate) rail. This is a source/test review, not a formal independent security audit or a guarantee against a compromised host.
 
 The operator authorizes a fixed task and policy. The model, purchased content, merchant response, facilitator and RPC each remain separate trust boundaries. The signer and journal live on the same controlled server. A host administrator or stolen payer key can bypass application controls: there is no onchain budget escrow.
 
@@ -17,6 +17,8 @@ The operator authorizes a fixed task and policy. The model, purchased content, m
 | Stolen session / cross-origin mutation | Argon2id, session rotation/expiry, HttpOnly host-only Secure cookies on HTTPS, strict SameSite, CSRF/origin checks, throttling | Auth tests, isolated private browser journey |
 | Sensitive public export / build leak | Owner-scoped no-store APIs; omit signed payload/grant/credential bytes; static code/build/route isolation | Export/browser tests; release publication scan |
 | Unbounded provider/model activity | Fixed upstream origins, redirects refused, bounded responses/timeouts/calls/tokens, no SDK model retries | Data, agent and payment adapter tests |
+| Agent pays an unlisted recipient, above the cap, past the ceiling or on a held payer (mandate rail) | Pure `decideDirectPayment` under `BEGIN IMMEDIATE`; allowlist frozen at authorization; later recipients only by administrator Ed25519 signature over exact text with a single-use nonce; shared daily ceiling and payer hold across both rails | Mandate policy, ledger, MCP and API tests |
+| Direct transfer signed but its submission or landing is uncertain | Fee check and simulation before any signature; durable signing claim; signed bytes persisted; blockhash-bounded expiry proof; idempotent re-broadcast of identical bytes; settlement proven from message hash and exact token deltas | Direct service tests against the chain double |
 | Browser fixture mistaken for payment proof | Rehearsal labels, no generated transaction signatures or Explorer proof links, static `connect-src 'none'` | Hosted production journey and JSON export checks |
 
 A database-only lease cannot fence another independently created database using the same payer, and restoring an old copy can omit later spending. Operate exactly one funded payer authority and retain complete backups/evidence. Never reuse its key with another journal. A signing crash without durable payload can remain unknown indefinitely; the UI must retain the hold, not offer an unsupported reset/refund. Original blockhash validity checks do not establish non-payment on their own.

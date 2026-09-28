@@ -243,4 +243,5 @@ export interface AppConfigDTO {
   defaultWallet: string;
   defaultTask: string;
   llm: { model: string | null; maxCalls: number; maxOutputTokens: number; note: string };
+  direct?: import('./mandate.js').DirectConfigDTO;
 }

@@ -5,6 +5,8 @@ import { Ledger } from './policy/ledger.js';
 import { SolanaDataClient } from './data/solana.js';
 import { createPaymentService } from './payments/index.js';
 import { AgentRunner, openaiModel } from './agent/runner.js';
+import { MandateLedger } from './direct/ledger.js';
+import { createDirectPaymentService } from './direct/service.js';
 export async function createRuntime(
   config: Config = loadConfig(),
   options: { recover?: boolean; exclusive?: boolean; shared?: boolean } = {}
@@ -25,7 +27,22 @@ export async function createRuntime(
               throw new Error('Read-only runtime cannot authorize new spending.');
             })
     );
-    if (options.recover !== false) ledger.recoverStartup();
+    const mandates = new MandateLedger(
+      db,
+      config,
+      ledger,
+      Date.now,
+      lease?.assert ||
+        (options.shared
+          ? createSharedServiceGuard(db)
+          : () => {
+              throw new Error('Read-only runtime cannot authorize new spending.');
+            })
+    );
+    if (options.recover !== false) {
+      ledger.recoverStartup();
+      mandates.recoverStartup();
+    }
     heartbeat = lease
       ? setInterval(() => {
           try {
@@ -65,6 +82,7 @@ export async function createRuntime(
       ledger,
       data
     );
+    const direct = await createDirectPaymentService(config, { ledger, mandates });
     const runner =
       config.openaiApiKey && config.openaiModel
         ? new AgentRunner(ledger, config, payments, openaiModel(config))
@@ -93,6 +111,8 @@ export async function createRuntime(
       ledger,
       data,
       payments,
+      mandates,
+      direct,
       runner,
       beginShutdown,
       close() {

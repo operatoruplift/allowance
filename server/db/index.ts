@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 export function openDatabase(filename: string): Database.Database {
   if (filename !== ':memory:')
     fs.mkdirSync(path.dirname(filename), { recursive: true, mode: 0o700 });
@@ -74,5 +74,48 @@ export function migrate(db: Database.Database) {
         restored_at TEXT NOT NULL, approved_at TEXT, approval_json TEXT
       ) STRICT;`);
       db.prepare('INSERT INTO schema_migrations VALUES(3,?)').run(new Date().toISOString());
+    }).immediate();
+  if ((latest.version || 0) < 4)
+    db.transaction(() => {
+      // Mandates: the second frozen authority. Direct payments share the payer, the
+      // day and the hold semantics with x402 intents, so both rails are read together.
+      db.exec(`
+        CREATE TABLE mandates (
+          id TEXT PRIMARY KEY, owner TEXT NOT NULL, label TEXT NOT NULL,
+          status TEXT NOT NULL CHECK(status IN ('active','stopped','expired')),
+          policy TEXT NOT NULL, created_at TEXT NOT NULL, stopped_at TEXT
+        ) STRICT;
+        CREATE TABLE mandate_recipients (
+          mandate_id TEXT NOT NULL REFERENCES mandates(id), address TEXT NOT NULL, label TEXT NOT NULL,
+          added_at TEXT NOT NULL, added_by TEXT NOT NULL CHECK(added_by IN ('operator','admin-signature')),
+          approval TEXT, PRIMARY KEY(mandate_id, address)
+        ) STRICT;
+        CREATE TABLE direct_payments (
+          id TEXT PRIMARY KEY, mandate_id TEXT NOT NULL REFERENCES mandates(id), request_hash TEXT NOT NULL,
+          recipient TEXT NOT NULL, amount INTEGER NOT NULL CHECK(amount>=0 AND amount<=1000000000000), memo TEXT,
+          status TEXT NOT NULL, reason_code TEXT, reason TEXT, created_at TEXT NOT NULL, day TEXT NOT NULL,
+          source TEXT NOT NULL, signed_identity TEXT, signature TEXT, chain_verified INTEGER NOT NULL DEFAULT 0,
+          evidence TEXT
+        ) STRICT;
+        CREATE INDEX direct_payments_mandate ON direct_payments(mandate_id);
+        CREATE INDEX direct_payments_request_hash ON direct_payments(mandate_id, request_hash);
+        CREATE INDEX direct_payments_day ON direct_payments(day);
+        CREATE INDEX direct_payments_status ON direct_payments(status);
+        CREATE TABLE mandate_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, mandate_id TEXT NOT NULL REFERENCES mandates(id),
+          at TEXT NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL, detail TEXT NOT NULL, source TEXT NOT NULL
+        ) STRICT;
+        CREATE TABLE mandate_grants (
+          id TEXT PRIMARY KEY, token_hash TEXT NOT NULL UNIQUE, mandate_id TEXT NOT NULL REFERENCES mandates(id),
+          owner TEXT NOT NULL, session_id TEXT NOT NULL, scopes TEXT NOT NULL, expires_at INTEGER NOT NULL,
+          created_at TEXT NOT NULL, revoked_at INTEGER, last_used_at INTEGER
+        ) STRICT;
+        CREATE INDEX mandate_grants_mandate ON mandate_grants(mandate_id);
+        CREATE INDEX mandate_grants_session ON mandate_grants(session_id);
+        CREATE TABLE approval_nonces (
+          nonce TEXT PRIMARY KEY, mandate_id TEXT NOT NULL, signer TEXT NOT NULL, used_at TEXT NOT NULL
+        ) STRICT;
+      `);
+      db.prepare('INSERT INTO schema_migrations VALUES(4,?)').run(new Date().toISOString());
     }).immediate();
 }

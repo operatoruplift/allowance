@@ -5,6 +5,7 @@ import type { Express, Request, Response, NextFunction } from 'express';
 import type Database from 'better-sqlite3';
 import { authenticationConfigured, type Config } from '../config.js';
 import { revokeSessionAgentGrants } from '../mcp/grants.js';
+import { revokeSessionMandateGrants } from '../direct/grants.js';
 declare module 'express-session' {
   interface SessionData {
     operator?: string;
@@ -180,6 +181,7 @@ export function installAuth(
   };
   app.post('/api/logout', requireOperator, (req, res, next) => {
     revokeSessionAgentGrants(db, req.sessionID);
+    revokeSessionMandateGrants(db, req.sessionID);
     onLogout();
     req.session.destroy((error) => {
       if (error) next(error);
