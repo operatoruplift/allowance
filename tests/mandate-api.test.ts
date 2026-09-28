@@ -53,7 +53,7 @@ async function setup(directEnabled = true) {
   await agent.post('/api/login').set('Origin', origin).set('x-csrf-token', session.body.csrfToken as string).send({ password: 'local-test-password' }).expect(200);
   // Login rotates the session, so mutations use the token issued afterwards.
   const csrf = (await agent.get('/api/session')).body.csrfToken as string;
-  const post = (path: string, body: unknown) => agent.post(path).set('Origin', origin).set('x-csrf-token', csrf).send(body);
+  const post = (path: string, body: object) => agent.post(path).set('Origin', origin).set('x-csrf-token', csrf).send(body);
   return { app, agent, post, chain, payer, vendor, db, mandates };
 }
 const mandateBody = (vendor: string) => ({

@@ -53,6 +53,11 @@ import {
   type ToolName,
 } from '../shared/domain';
 import {
+  createMandateSchema,
+  type DirectPaymentDTO,
+  type MandateDTO,
+} from '../shared/mandate';
+import {
   createDemo,
   demoProbe,
   fixtureStep,
@@ -1587,6 +1592,436 @@ function Login() {
     </main>
   );
 }
+function abbreviate(address: string) {
+  return address.length > 12 ? `${address.slice(0, 4)}…${address.slice(-4)}` : address;
+}
+function DirectStamp({ status }: { status: DirectPaymentDTO['status'] }) {
+  const [label, tone] =
+    status === 'settled'
+      ? ['SETTLED', 'green']
+      : status === 'denied'
+        ? ['BLOCKED', 'red']
+        : status === 'failed' || status === 'expired'
+          ? ['NOT SETTLED', 'red']
+          : status === 'settlement-unknown'
+            ? ['UNKNOWN', 'amber']
+            : status === 'released'
+              ? ['RELEASED', 'amber']
+              : ['SUBMITTED', 'amber'];
+  return <span className={`stamp stamp-${tone}`}>{label}</span>;
+}
+type RecipientDraft = { address: string; label: string };
+type PayDraft = { recipient: string; amount: string; memo: string };
+/**
+ * Guarded direct payments. The operator freezes a mandate here and receives the
+ * one-time grant an MCP client needs; every payment attempted under it, by the
+ * agent or from this card, is listed with its stamp and Explorer proof.
+ */
+function MandatesPanel({
+  config,
+  csrfToken,
+  onChange,
+}: {
+  config: AppConfigDTO;
+  csrfToken: string;
+  onChange: () => Promise<void>;
+}) {
+  const direct = config.direct;
+  const [mandates, setMandates] = useState<MandateDTO[]>([]);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState('');
+  const [label, setLabel] = useState('Approved vendors');
+  const [cap, setCap] = useState('0.010000');
+  const [ceiling, setCeiling] = useState('0.050000');
+  const [minutes, setMinutes] = useState('60');
+  const [drafts, setDrafts] = useState<RecipientDraft[]>([{ address: '', label: '' }]);
+  const [grant, setGrant] = useState<{ mandateId: string; token: string; expiresAt: string } | null>(
+    null
+  );
+  const [pay, setPay] = useState<Record<string, PayDraft>>({});
+  const load = useCallback(async () => {
+    try {
+      setMandates((await api<{ mandates: MandateDTO[] }>('/api/mandates')).mandates);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load mandates.');
+    }
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+  if (!direct) return null;
+  const notReady = direct.items.filter((item) => !item.ready);
+  async function authorize(event: FormEvent) {
+    event.preventDefault();
+    if (!direct?.ready || busy) return;
+    const input = createMandateSchema.safeParse({
+      label,
+      perRequestCap: cap,
+      ceiling,
+      expiresInMinutes: Number(minutes),
+      recipients: drafts.filter((draft) => draft.address.trim()).map((draft) => ({
+        address: draft.address.trim(),
+        label: draft.label.trim() || 'Recipient',
+      })),
+    });
+    if (!input.success) {
+      setError(input.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(' '));
+      return;
+    }
+    setBusy('authorize');
+    setError('');
+    try {
+      const response = await api<{ mandate: MandateDTO; grant: { token: string; expiresAt: string } }>(
+        '/api/mandates',
+        { method: 'POST', body: JSON.stringify(input.data) },
+        csrfToken
+      );
+      setGrant({ mandateId: response.mandate.id, token: response.grant.token, expiresAt: response.grant.expiresAt });
+      await load();
+      await onChange();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not authorize the mandate.');
+    } finally {
+      setBusy('');
+    }
+  }
+  function draftFor(mandate: MandateDTO): PayDraft {
+    return pay[mandate.id] ?? { recipient: mandate.recipients[0]?.address ?? '', amount: '0.010000', memo: '' };
+  }
+  async function send(mandate: MandateDTO) {
+    if (busy) return;
+    const draft = draftFor(mandate);
+    setBusy(mandate.id);
+    setError('');
+    try {
+      await api(
+        `/api/mandates/${encodeURIComponent(mandate.id)}/payments`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            requestId: `ui_${crypto.randomUUID()}`,
+            recipient: draft.recipient,
+            amount: draft.amount,
+            ...(draft.memo.trim() ? { memo: draft.memo.trim() } : {}),
+          }),
+        },
+        csrfToken
+      );
+    } catch (e) {
+      // A blocked request is a durable receipt; the list below shows its stamp and reason.
+      setError(e instanceof Error ? e.message : 'The payment could not be made.');
+    } finally {
+      setBusy('');
+      await load();
+      await onChange();
+    }
+  }
+  async function act(mandate: MandateDTO, action: 'stop' | 'reconcile') {
+    if (busy) return;
+    setBusy(mandate.id);
+    setError('');
+    try {
+      await api(`/api/mandates/${encodeURIComponent(mandate.id)}/${action}`, { method: 'POST' }, csrfToken);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'The request could not complete.');
+    } finally {
+      setBusy('');
+      await load();
+      await onChange();
+    }
+  }
+  return (
+    <section className="card mandates-card" aria-labelledby="mandates-title">
+      <div className="card-heading">
+        <span className="section-index">02</span>
+        <h2 id="mandates-title">Guarded payments</h2>
+        <span className="pill subtle-pill">{direct.network}</span>
+      </div>
+      <p className="small muted">
+        Freeze who can be paid and how much. An agent pays exact USDC only to these recipients;
+        every request is checked first, and every outcome is a receipt below.
+      </p>
+      {error && <ErrorBox>{error}</ErrorBox>}
+      <div className={`notice ${direct.ready ? 'success-notice' : 'setup-notice'}`}>
+        <ShieldCheck size={19} />
+        <div>
+          <b>
+            {!direct.enabled
+              ? 'Direct payments are switched off.'
+              : direct.ready
+                ? `Payer ${abbreviate(direct.payer ?? '')} can move ${direct.network} USDC.`
+                : 'Direct payments need a fresh readiness check.'}
+          </b>
+          <span>
+            {!direct.enabled
+              ? 'Set DIRECT_PAYMENTS_ENABLED=true with the same payer and network, then check readiness.'
+              : direct.ready
+                ? `${formatMoney(direct.balance.usdc ?? '0')} USDC available · ${formatMoney(direct.dailyRemaining)} USDC left under today’s ceiling.`
+                : notReady.map((item) => `${item.name}: ${item.detail}`).join(' ')}
+          </span>
+        </div>
+      </div>
+      {direct.enabled && (
+        <form className="form-content mandate-form" onSubmit={authorize}>
+          <div className="two-fields">
+            <div>
+              <label className="field-label" htmlFor="mandate-label">
+                Mandate name
+              </label>
+              <input
+                id="mandate-label"
+                value={label}
+                maxLength={80}
+                required
+                onChange={(e) => setLabel(e.target.value)}
+                disabled={busy === 'authorize'}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="mandate-minutes">
+                Expires after
+              </label>
+              <select
+                id="mandate-minutes"
+                value={minutes}
+                onChange={(e) => setMinutes(e.target.value)}
+                disabled={busy === 'authorize'}
+              >
+                <option value="15">15 minutes</option>
+                <option value="60">1 hour</option>
+                <option value="240">4 hours</option>
+                <option value="1440">24 hours</option>
+              </select>
+            </div>
+          </div>
+          <div className="two-fields">
+            <div>
+              <label className="field-label" htmlFor="mandate-cap">
+                Per-request cap <span>USDC</span>
+              </label>
+              <input
+                id="mandate-cap"
+                inputMode="decimal"
+                required
+                value={cap}
+                onChange={(e) => setCap(e.target.value)}
+                disabled={busy === 'authorize'}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="mandate-ceiling">
+                Mandate ceiling <span>USDC</span>
+              </label>
+              <input
+                id="mandate-ceiling"
+                inputMode="decimal"
+                required
+                value={ceiling}
+                onChange={(e) => setCeiling(e.target.value)}
+                disabled={busy === 'authorize'}
+              />
+            </div>
+          </div>
+          <div className="field-label">
+            Allowed recipients<span>Frozen with the mandate</span>
+          </div>
+          <div className="recipient-rows">
+            {drafts.map((draft, index) => (
+              <div className="recipient-row" key={index}>
+                <input
+                  aria-label={`Recipient ${index + 1} address`}
+                  placeholder="Solana address"
+                  maxLength={44}
+                  value={draft.address}
+                  onChange={(e) =>
+                    setDrafts((old) => old.map((row, i) => (i === index ? { ...row, address: e.target.value } : row)))
+                  }
+                  disabled={busy === 'authorize'}
+                />
+                <input
+                  aria-label={`Recipient ${index + 1} label`}
+                  placeholder="Label"
+                  maxLength={60}
+                  value={draft.label}
+                  onChange={(e) =>
+                    setDrafts((old) => old.map((row, i) => (i === index ? { ...row, label: e.target.value } : row)))
+                  }
+                  disabled={busy === 'authorize'}
+                />
+                <button
+                  type="button"
+                  className="button button-small button-outline"
+                  aria-label={`Remove recipient ${index + 1}`}
+                  onClick={() => setDrafts((old) => (old.length > 1 ? old.filter((_, i) => i !== index) : old))}
+                  disabled={busy === 'authorize' || drafts.length === 1}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+            {drafts.length < 20 && (
+              <button
+                type="button"
+                className="inline-button"
+                onClick={() => setDrafts((old) => [...old, { address: '', label: '' }])}
+                disabled={busy === 'authorize'}
+              >
+                Add another recipient
+              </button>
+            )}
+          </div>
+          <button className="button button-primary full-width" type="submit" disabled={!direct.ready || busy === 'authorize'}>
+            {busy === 'authorize' ? <LoaderCircle size={17} className="spin" /> : <KeyRound size={17} />}
+            {busy === 'authorize' ? 'Authorizing mandate…' : direct.ready ? 'Authorize mandate & issue agent grant' : 'Check readiness to authorize'}
+            <ArrowRight size={17} />
+          </button>
+          {grant && (
+            <div className="notice success-notice external-grant" role="status">
+              <KeyRound size={18} />
+              <div>
+                <b>Mandate authorized.</b>
+                <span>
+                  Set this token as <code>MCP_GRANT_TOKEN</code> in your MCP client’s private environment. It is shown
+                  once and expires at {new Date(grant.expiresAt).toLocaleString()}.
+                </span>
+                <button
+                  className="grant-token"
+                  type="button"
+                  aria-label="Copy mandate grant token"
+                  onClick={() => void navigator.clipboard?.writeText(grant.token)}
+                >
+                  <code>{grant.token}</code>
+                </button>
+              </div>
+            </div>
+          )}
+        </form>
+      )}
+      <div className="mandate-list">
+        {mandates.length === 0 ? (
+          <div className="empty-state compact-empty">
+            <ReceiptText size={24} />
+            <h3>No mandates yet.</h3>
+            <p>Authorized mandates and every payment attempted under them appear here.</p>
+          </div>
+        ) : (
+          mandates.map((mandate) => {
+            const draft = draftFor(mandate);
+            return (
+              <article className="mandate-item" key={mandate.id} data-mandate={mandate.id}>
+                <div className="mandate-head">
+                  <div>
+                    <b>{mandate.label}</b>
+                    <small>
+                      {mandate.status} · cap {formatMoney(mandate.policy.perRequestCap)} · expires{' '}
+                      {new Date(mandate.policy.expiresAt).toLocaleString()}
+                    </small>
+                  </div>
+                  <div className="mandate-actions">
+                    <button className="button button-small button-outline" type="button" onClick={() => void act(mandate, 'reconcile')} disabled={busy === mandate.id}>
+                      Reconcile
+                    </button>
+                    {mandate.status === 'active' && (
+                      <button className="button button-small button-outline" type="button" onClick={() => void act(mandate, 'stop')} disabled={busy === mandate.id}>
+                        Stop mandate
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <BudgetMeter
+                  compact
+                  run={{
+                    authorized: mandate.ceiling,
+                    settled: mandate.settled,
+                    held: mandate.held,
+                    remaining: mandate.remaining,
+                    mode: 'live',
+                    paymentNetwork: mandate.paymentNetwork,
+                  }}
+                />
+                <div className="recipient-chips">
+                  {mandate.recipients.map((recipient) => (
+                    <span className="chip" key={recipient.address} title={recipient.address}>
+                      {recipient.label} · {abbreviate(recipient.address)}
+                      {recipient.addedBy === 'admin-signature' ? ' · admin-approved' : ''}
+                    </span>
+                  ))}
+                </div>
+                {mandate.status === 'active' && direct.enabled && (
+                  <form
+                    className="pay-form"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      void send(mandate);
+                    }}
+                  >
+                    <select
+                      aria-label="Recipient"
+                      value={draft.recipient}
+                      onChange={(e) => setPay((old) => ({ ...old, [mandate.id]: { ...draft, recipient: e.target.value } }))}
+                      disabled={busy === mandate.id}
+                    >
+                      {mandate.recipients.map((recipient) => (
+                        <option value={recipient.address} key={recipient.address}>
+                          {recipient.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      aria-label="Amount in USDC"
+                      inputMode="decimal"
+                      value={draft.amount}
+                      onChange={(e) => setPay((old) => ({ ...old, [mandate.id]: { ...draft, amount: e.target.value } }))}
+                      disabled={busy === mandate.id}
+                    />
+                    <input
+                      aria-label="Memo"
+                      placeholder="Memo (optional)"
+                      maxLength={64}
+                      value={draft.memo}
+                      onChange={(e) => setPay((old) => ({ ...old, [mandate.id]: { ...draft, memo: e.target.value } }))}
+                      disabled={busy === mandate.id}
+                    />
+                    <button className="button button-small button-primary" type="submit" disabled={busy === mandate.id || !draft.recipient}>
+                      {busy === mandate.id ? <LoaderCircle size={14} className="spin" /> : <ArrowRight size={14} />}
+                      Pay now
+                    </button>
+                  </form>
+                )}
+                {mandate.payments.length > 0 && (
+                  <ul className="payment-list">
+                    {[...mandate.payments].reverse().map((payment) => (
+                      <li className="payment-row" key={payment.id} data-payment-status={payment.status}>
+                        <DirectStamp status={payment.status} />
+                        <div>
+                          <b>
+                            {formatMoney(payment.amount)} USDC to {payment.recipientLabel ?? abbreviate(payment.recipient)}
+                          </b>
+                          <small>
+                            {new Date(payment.createdAt).toLocaleString()} · {payment.source}
+                            {payment.reason ? ` · ${payment.reason}` : ''}
+                          </small>
+                        </div>
+                        {payment.explorerUrl ? (
+                          <a className="text-link" href={payment.explorerUrl} target="_blank" rel="noreferrer noopener">
+                            Explorer <ArrowUpRight size={14} />
+                          </a>
+                        ) : (
+                          <span className="small muted">no signature</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </article>
+            );
+          })
+        )}
+      </div>
+    </section>
+  );
+}
+
 function OperatorApp() {
   const { session, error: sessionError, refresh } = useSession();
   const [config, setConfig] = useState<AppConfigDTO | null>(null);
@@ -2016,6 +2451,7 @@ function OperatorApp() {
               </div>
             </div>
           </div>
+          <MandatesPanel config={config} csrfToken={session.csrfToken} onChange={load} />
           <section className="recent-runs">
             <div className="details-heading">
               <h2>Recent runs</h2>
