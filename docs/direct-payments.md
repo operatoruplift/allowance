@@ -71,7 +71,7 @@ Build first with `npm run build`; keep the backend running, because the bridge s
 | Tool | Behavior |
 | --- | --- |
 | `get_mandate` | Frozen limits, recipients and remaining budget. |
-| `execute_guarded_payment` | `mandateId`, stable `requestId`, `recipient`, decimal `amount`, optional `memo`. Returns a verdict of `SETTLED`, `SUBMITTED`, `UNKNOWN` or `NOT_SETTLED` with the receipt and Explorer link, or an `isError` result with verdict `BLOCKED` and the `reasonCode`. |
+| `execute_guarded_payment` | `mandateId`, stable `requestId`, `recipient`, decimal `amount`, optional `memo`. Returns a verdict of `RESERVED`, `SETTLED`, `SUBMITTED`, `UNKNOWN` or `NOT_SETTLED` with the receipt and Explorer link, or an `isError` result with verdict `BLOCKED` and the `reasonCode`. |
 | `list_direct_payments` | Every receipt and event under the mandate. |
 | `add_recipient_to_allowlist` | Adds one recipient with a verified administrator signature and single-use nonce. |
 | `stop_mandate` | Stops the mandate and revokes the grant. |

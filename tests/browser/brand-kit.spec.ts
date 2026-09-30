@@ -1,3 +1,4 @@
+import { evidencePath } from './evidence';
 import { expect, test } from '@playwright/test';
 import fs from 'node:fs/promises';
 import manifest from '../../public/brand/manifest.json' with { type: 'json' };
@@ -32,7 +33,7 @@ test('brand library filters assets, previews accessibly, and downloads the origi
   await expect(page.getByRole('heading', { name: 'A little more possibility.' })).toBeVisible();
   await expect(page.locator('.bk-asset-card')).toHaveCount(manifest.assets.length);
   await page.screenshot({
-    path: 'evidence/brand-kit-2026-09-23-desktop.png',
+    path: evidencePath('desktop.png'),
     animations: 'disabled',
   });
 
@@ -111,7 +112,7 @@ test('brand kit and full-size save flow fit narrow phones without clipping', asy
     await page.goto('/brand');
     await expect(page.getByRole('heading', { name: 'Saving to your phone?' })).toBeVisible();
     await page.screenshot({
-      path: `evidence/brand-kit-2026-09-23-mobile-${width}.png`,
+      path: evidencePath(`mobile-${width}.png`),
       animations: 'disabled',
     });
     expect(
@@ -122,7 +123,7 @@ test('brand kit and full-size save flow fit narrow phones without clipping', asy
     const portraitBounds = await portrait.boundingBox();
     expect(portraitBounds!.height).toBeGreaterThan(portraitBounds!.width * 1.6);
     await page.screenshot({
-      path: `evidence/brand-kit-2026-09-23-wallpapers-${width}.png`,
+      path: evidencePath(`wallpapers-${width}.png`),
       animations: 'disabled',
     });
     await page

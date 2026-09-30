@@ -1,6 +1,8 @@
-# Vercel public rehearsal
+# Vercel public deployment
 
-Current verified release: **20 September 2026**, application revision `16111ef`, production deployment `dpl_6h3jPRcFXrJaf4gmntirFSqAyt67`. The [release report](release-2026-09-20.md) and [production evidence](../evidence/release-2026-09-20-production.json) record four passing hosted browser tests, thirteen matching asset hashes and static route/security checks. The records below are historical deployments.
+Production follows the repository’s `main` branch through the Vercel Git integration. Check the [release checks](https://github.com/operatoruplift/allowance/actions) and the Vercel deployment for the exact revision being published. The current public surface includes the landing page, policy lab, separate walkthrough, developer guide, brand library and installable PWA; it contains no persistent payment backend. All dated reports below describe historical deployments rather than the latest production revision.
+
+On **20 September 2026**, application revision `16111ef` was verified as production deployment `dpl_6h3jPRcFXrJaf4gmntirFSqAyt67`. That [release report](release-2026-09-20.md) and [production evidence](../evidence/release-2026-09-20-production.json) record four passing hosted browser tests, thirteen matching asset hashes and static route/security checks.
 
 The public rehearsal was deployed on September 12, 2026 at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). This deployment hosts the landing page, deterministic rehearsal, developer guide, and an explanation of live backend requirements. It contains **no Express functions, SQLite database, development signer, OpenAI runtime, or paid merchant endpoints**. A hosted rehearsal receipt is not chain evidence. The deployment ID, source revision, public HTTP checks and matching asset hashes are saved in `evidence/vercel-deployment.json`.
 
@@ -32,9 +34,9 @@ npx --yes vercel@59.16.0 deploy --prebuilt --prod --yes
 
 Choose the intended Vercel account/team when linking; add `--scope TEAM` when necessary. The link and CLI-generated environment files remain ignored. Deploy with `--prebuilt` to upload only the prepared output. The repository's `vercel.json` also defines the rehearsal build explicitly so source builds cannot select the Express backend automatically.
 
-API and merchant routes return 404; mutation methods return 405 where no earlier route applies. Supported page routes receive the SPA fallback with a 200. Every other address receives the same shell under a 404 status, so an unknown link lands on the site's own 404 page — header, navigation and a home link — instead of the platform error template, and the status still says the page is not there. The generated Content Security Policy permits same-origin scripts and blocks fetch/XHR connections. JSON export and print remain local browser operations.
+API and merchant routes return 404; mutation methods return 405 where no earlier route applies. Supported page routes receive the SPA fallback with a 200. Every other address receives the same shell under a 404 status, so an unknown link lands on the site's own 404 page — header, navigation and a home link — instead of the platform error template, and the status still says the page is not there. The document Content Security Policy permits same-origin scripts and blocks fetch/XHR connections. The service worker has a separate same-origin connection policy so it can cache public application assets; payment and API paths remain excluded. JSON export and print remain local browser operations.
 
-For current source/test/deployment status, see the [September 20 release report](release-2026-09-20.md). Persistent backend deployment uses the separate [runtime runbook](runtime-recovery.md); no payment credentials belong in this Vercel project.
+The [September 20 release report](release-2026-09-20.md) is a historical verification record; use the checks and deployment revision above for current status. Persistent backend deployment uses the separate [runtime runbook](runtime-recovery.md); no payment credentials belong in this Vercel project.
 
 ## Verify the public site
 
@@ -48,4 +50,4 @@ The hosted browser tests check direct navigation to private routes without authe
 
 The release restores the actual two-part A across the header, browser icons and brand kit; simplifies the working example; and aligns simulated exports with their mainnet label. Persistent source now supports guarded mainnet configuration as described in [the release report](release-2026-09-19.md). This does not activate live payments on Vercel: the deployment remains static, with no backend credentials and `connect-src 'none'`. The persistent service still requires its own volume, HTTPS origin and operator setup.
 
-Production release `14f0611` was verified on September 19 as deployment `dpl_5BMpQUAYZe3BRdzMQA1BDZP8Xa39` (READY). Four public hosted journeys and eleven asset hashes passed. See [current production evidence](../evidence/production-deployment-2026-09-19.json) and [the release report](release-2026-09-19.md). Later documentation/evidence commits do not alter the verified application or generated static assets.
+Production release `14f0611` was verified on September 19 as deployment `dpl_5BMpQUAYZe3BRdzMQA1BDZP8Xa39` (READY). Four public hosted journeys and eleven asset hashes passed. See [September 19 production evidence](../evidence/production-deployment-2026-09-19.json) and [the release report](release-2026-09-19.md). Later documentation/evidence commits do not alter the verified application or generated static assets.

@@ -1,3 +1,4 @@
+import { evidencePath } from './evidence';
 import { expect, test } from '@playwright/test';
 
 test('local films autoplay in view, suspend offscreen, and keep their original posters', async ({
@@ -82,7 +83,7 @@ test('media failures and data saving keep the readable interface and supplied po
   await expect(cloud).toHaveAttribute('data-film-state', 'unavailable');
   await expect(cloud.locator('.decorative-film-poster')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Give your agent a budget.' })).toBeVisible();
-  await page.screenshot({ path: 'evidence/release-2026-09-20-media-failure.png', fullPage: true });
+  await page.screenshot({ path: evidencePath('media-failure.png'), fullPage: true });
   await page.getByRole('link', { name: 'Try the example', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Run the rehearsal', exact: true })).toBeVisible();
 

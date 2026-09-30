@@ -3,7 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 const hostedURL = process.env.HOSTED_REHEARSAL_URL;
 export default defineConfig({
   testDir: 'tests/browser',
-  testMatch: ['hosted-rehearsal.spec.ts', 'brand-kit.spec.ts', 'landing-motion.spec.ts'],
+  testMatch: [
+    'hosted-rehearsal.spec.ts',
+    'brand-kit.spec.ts',
+    'landing-motion.spec.ts',
+    'policy-lab.spec.ts',
+    'pwa.spec.ts',
+    'navigation.spec.ts',
+  ],
   timeout: 60000,
   expect: { timeout: 15000 },
   reporter: 'list',

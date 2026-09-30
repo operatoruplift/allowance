@@ -164,6 +164,13 @@ export async function restoreDatabase(directory: string, destination: string) {
           "UPDATE runs SET status='interrupted',error='Journal restored. Old agent authorization will not resume.' WHERE status IN ('running','queued')"
         )
         .run();
+      // Preserve signed payment identities and holds, but never resume a mandate
+      // from a snapshot that may omit later spending or a later revocation.
+      db!
+        .prepare(
+          "UPDATE mandates SET status='stopped',stopped_at=COALESCE(stopped_at,?) WHERE status='active'"
+        )
+        .run(restoredAt);
     }).immediate();
     db.pragma('wal_checkpoint(TRUNCATE)');
     db.close();
@@ -221,7 +228,7 @@ export function approveRestoredJournal(filename: string, input: unknown, now = D
           );
         const unresolved = db
           .prepare(
-            "SELECT 1 FROM intents WHERE status IN ('reserved','submitted','settlement-unknown') OR (status IN ('settled','delivered','settled-but-result-unavailable') AND chain_verified=0) LIMIT 1"
+            "SELECT 1 FROM intents WHERE status IN ('reserved','submitted','settlement-unknown') OR (status IN ('settled','delivered','settled-but-result-unavailable') AND chain_verified=0) UNION ALL SELECT 1 FROM direct_payments WHERE status IN ('reserved','submitted','settlement-unknown') OR (status='settled' AND chain_verified=0) LIMIT 1"
           )
           .get();
         if (unresolved)
@@ -244,9 +251,14 @@ export function approveRestoredJournal(filename: string, input: unknown, now = D
           );
         const approvedAt = new Date(now).toISOString();
         db.prepare('UPDATE agent_grants SET revoked_at=COALESCE(revoked_at,?)').run(now);
+        db.prepare('UPDATE mandate_grants SET revoked_at=COALESCE(revoked_at,?)').run(now);
         db.prepare(
           "UPDATE runs SET status='interrupted',error='Recovery approved; authorize a new run to spend.' WHERE status IN ('queued','running')"
         ).run();
+        // Also fences journals restored by an older version that left mandates active.
+        db.prepare(
+          "UPDATE mandates SET status='stopped',stopped_at=COALESCE(stopped_at,?) WHERE status='active'"
+        ).run(approvedAt);
         db.prepare(
           'UPDATE restore_recoveries SET approved_at=?,approval_json=? WHERE approved_at IS NULL'
         ).run(approvedAt, JSON.stringify(approval));

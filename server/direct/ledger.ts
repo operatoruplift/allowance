@@ -29,6 +29,7 @@ import { PolicyError } from '../policy/decision.js';
 import type { Ledger } from '../policy/ledger.js';
 import type { DirectSettlementEvidence } from './transfer.js';
 import { assertMandateAuthorization } from './grants.js';
+import { assertRestoreApproved } from '../db/recovery.js';
 
 interface MandateRow {
   id: string;
@@ -425,7 +426,7 @@ export class MandateLedger {
     return { created: outcome.created, payment: this.getPayment(outcome.id)! };
   }
   /** Re-runs every check that could have changed while chain reads were in flight. */
-  checkBeforeSign(id: string): void {
+  checkBeforeSign(id: string, payer: string): void {
     this.assertOwnership();
     const payment = this.paymentRow(id);
     const row = this.row(payment.mandate_id);
@@ -435,6 +436,8 @@ export class MandateLedger {
     const chain = PAYMENT_CHAINS[this.config.paymentNetwork];
     if (policy.network !== chain.network || policy.mint !== chain.mint)
       throw new PolicyError('Runtime payment configuration differs from the frozen mandate.');
+    if (payer !== policy.payer)
+      throw new PolicyError('Signing payer differs from the frozen mandate.');
     if (
       payment.status !== 'reserved' ||
       (payment.signed_identity && (JSON.parse(payment.signed_identity) as SignedIdentity).phase !== 'signing')
@@ -455,7 +458,7 @@ export class MandateLedger {
   markSigning(id: string, claim: SigningClaim) {
     this.db
       .transaction(() => {
-        this.checkBeforeSign(id);
+        this.checkBeforeSign(id, claim.payer);
         const result = this.db
           .prepare(
             "UPDATE direct_payments SET signed_identity=? WHERE id=? AND status='reserved' AND signed_identity IS NULL"
@@ -486,6 +489,17 @@ export class MandateLedger {
           .run(JSON.stringify({ ...identity, ...signed, phase: 'signed' } satisfies SignedIdentity), signed.signature, id);
       })
       .immediate();
+  }
+  /** Replaying original signed bytes still requires an authoritative, unlocked runtime. */
+  checkBeforeSubmit(id: string) {
+    this.assertOwnership();
+    assertRestoreApproved(this.db);
+    const payment = this.paymentRow(id);
+    const identity = payment.signed_identity
+      ? (JSON.parse(payment.signed_identity) as SignedIdentity)
+      : undefined;
+    if (!identity || identity.phase !== 'signed' || !identity.signature || !identity.wire || !heldStates.includes(payment.status))
+      throw new PolicyError('No unresolved signed payment is available for submission.');
   }
   markSubmitted(id: string) {
     this.db

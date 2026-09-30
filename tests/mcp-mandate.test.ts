@@ -113,6 +113,16 @@ describe('mandate tools on the MCP bridge', () => {
     const receipts = await client.callTool({ name: 'list_direct_payments', arguments: { mandateId: mandate.id } });
     expect(receipts.structuredContent).toMatchObject({ payments: [{ status: 'denied', verdict: 'BLOCKED', reasonCode: 'recipient-not-allowlisted' }] });
   });
+  it('reports a reserved request as RESERVED until it has actually been submitted', async () => {
+    const { client, chain, mandates, mandate, vendor } = await setup();
+    const request = { requestId: 'reserved_request_0001', recipient: vendor.address, amount: '0.010000' };
+    mandates.reserve(mandate.id, request, 'external-agent');
+    const retry = await client.callTool(payment(mandate.id, request));
+    expect(retry.structuredContent).toMatchObject({ verdict: 'RESERVED', payment: { status: 'reserved' } });
+    const receipts = await client.callTool({ name: 'list_direct_payments', arguments: { mandateId: mandate.id } });
+    expect(receipts.structuredContent).toMatchObject({ payments: [{ status: 'reserved', verdict: 'RESERVED' }] });
+    expect(chain.calls).toHaveLength(0);
+  });
   it('settles an allowlisted payment, links the explorer proof and counts it against the ceiling', async () => {
     const { client, chain, mandate, vendor } = await setup();
     const settled = await client.callTool(payment(mandate.id, { recipient: vendor.address, memo: 'order 7' }));

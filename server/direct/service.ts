@@ -6,7 +6,6 @@ import { PaymentError } from '../payments/guard.js';
 import { PaymentRpc } from '../payments/rpc.js';
 import { loadPayerSigner } from '../payments/keypair.js';
 import type { Ledger } from '../policy/ledger.js';
-import { PolicyError } from '../policy/decision.js';
 import type { MandateLedger, SignedIdentity } from './ledger.js';
 import {
   ACCOUNT_CREATION_LAMPORTS,
@@ -47,8 +46,9 @@ const MIN_PAYER_LAMPORTS = 5_000_000n;
 const simulationSchema = {
   parse(value: unknown) {
     const result = (value as { value?: { err?: unknown; logs?: unknown } } | null)?.value;
-    if (!result || typeof result !== 'object') throw new PaymentError('simulation', 'Simulation returned no result.');
-    return { err: result.err ?? null };
+    if (!result || typeof result !== 'object' || !Object.hasOwn(result, 'err'))
+      throw new PaymentError('simulation', 'Simulation returned no explicit outcome.');
+    return { err: result.err };
   },
 };
 
@@ -152,8 +152,16 @@ export async function createDirectPaymentService(
     return { ready: items.every((item) => item.ready), items, payer, network: config.paymentNetwork, balance };
   }
 
+  function paymentOnConfiguredNetwork(id: string): DirectPaymentDTO {
+    const payment = mandates.getPayment(id);
+    if (!payment || payment.paymentNetwork !== config.paymentNetwork || payment.mint !== chain.mint)
+      throw new PaymentError('network', 'Recovery requires the payment’s original network and USDC mint.', id);
+    return payment;
+  }
+
   /** Reads back chain state for one signed payment and settles, fails or expires it; returns true when resolved. */
   async function resolve(id: string, identity: SignedIdentity): Promise<boolean> {
+    const payment = paymentOnConfiguredNetwork(id);
     if (!identity.signature) return false;
     const status = await signatureStatus(rpc, identity.signature, true);
     if (status.state === 'confirmed' || status.state === 'failed') {
@@ -163,9 +171,9 @@ export async function createDirectPaymentService(
         source: identity.source,
         destination: identity.destination,
         payer: identity.payer,
-        recipient: mandates.getPayment(id)!.recipient,
+        recipient: payment.recipient,
         mint: chain.mint,
-        amount: BigInt(mandates.getPayment(id)!.amount),
+        amount: BigInt(payment.amount),
         createdRecipientAccount: identity.createRecipientAccount,
         maxFeeLamports: config.directMaxFeeLamports,
         now: now(),
@@ -200,6 +208,7 @@ export async function createDirectPaymentService(
   }
 
   async function submit(id: string, wire: string, signature: string) {
+    mandates.checkBeforeSubmit(id);
     const sent = await rpc.call('sendTransaction', [
       wire,
       { encoding: 'base64', preflightCommitment: 'confirmed', maxRetries: 3 },
@@ -237,19 +246,20 @@ export async function createDirectPaymentService(
       mandates.releaseUnsigned(id, 'The payer SOL balance cannot cover fees.');
       throw new PaymentError('insufficient-sol', 'The payer SOL balance cannot cover fees.', id);
     }
-    const composed = await composeTransfer({
-      paymentId: id,
-      signer,
-      recipient: payment.recipient,
-      mint: chain.mint,
-      amount,
-      memo: payment.memo,
-      createRecipientAccount: !pre.recipientAccountExists,
-      blockhash: pre.blockhash,
-      lastValidBlockHeight: pre.lastValidBlockHeight,
-      priorityFeeMicroLamports: config.directPriorityFeeMicroLamports,
-    });
+    let composed: Awaited<ReturnType<typeof composeTransfer>>;
     try {
+      composed = await composeTransfer({
+        paymentId: id,
+        signer,
+        recipient: payment.recipient,
+        mint: chain.mint,
+        amount,
+        memo: payment.memo,
+        createRecipientAccount: !pre.recipientAccountExists,
+        blockhash: pre.blockhash,
+        lastValidBlockHeight: pre.lastValidBlockHeight,
+        priorityFeeMicroLamports: config.directPriorityFeeMicroLamports,
+      });
       const [fee, simulation] = await Promise.all([
         rpc.call('getFeeForMessage', [composed.messageBase64, { commitment: 'confirmed' }]),
         rpc.call('simulateTransaction', [
@@ -258,7 +268,7 @@ export async function createDirectPaymentService(
         ]),
       ]);
       const charged = (fee as { value?: number | null } | null)?.value ?? null;
-      if (charged === null || !Number.isSafeInteger(charged) || charged > config.directMaxFeeLamports)
+      if (charged === null || !Number.isSafeInteger(charged) || charged < 0 || charged > config.directMaxFeeLamports)
         throw new PaymentError('fee-limit', 'Transaction SOL fee is unavailable or exceeds the approved bound.', id);
       if (simulationSchema.parse(simulation).err !== null)
         throw new PaymentError('simulation', 'The transfer failed simulation; nothing was signed.', id);
@@ -277,7 +287,9 @@ export async function createDirectPaymentService(
         createRecipientAccount: !pre.recipientAccountExists,
       });
     } catch (error) {
-      if (error instanceof PolicyError) mandates.releaseUnsigned(id, error.message);
+      // Grant revocation and service-lease failures also happen before signing.
+      // The ledger retains a hold if a signing claim was already persisted.
+      mandates.releaseUnsigned(id, 'Signing authorization failed before signer invocation.');
       throw error;
     }
     const signed = await signTransfer(composed.message);
@@ -318,18 +330,38 @@ export async function createDirectPaymentService(
   }
 
   async function reconcile() {
-    if (!signer) return;
-    for (const pending of mandates.unresolved()) {
+    const unresolved = mandates.unresolved();
+    if (unresolved.length === 0) return;
+    if (rpc.network !== config.paymentNetwork)
+      throw new PaymentError('network', 'Recovery RPC differs from the configured payment network.');
+    // Never use a different chain's null status or block height to release a hold.
+    await rpc.assertNetwork();
+    for (const pending of unresolved) {
       try {
+        paymentOnConfiguredNetwork(pending.id);
         const { identity } = pending;
-        if (identity.phase === 'signed' && identity.wire && identity.signature && pending.status !== 'submitted') {
+        let transmissionAllowed = enabled;
+        try {
+          mandates.checkBeforeSubmit(pending.id);
+        } catch {
+          // A restored, read-only or stale runtime may still observe original outcomes.
+          transmissionAllowed = false;
+        }
+        if (transmissionAllowed && identity.phase === 'signed' && identity.wire && identity.signature && pending.status !== 'submitted') {
           // Signed, but the network never acknowledged it. While the blockhash is still
           // valid, re-broadcasting the identical bytes is idempotent: same signature,
           // same outcome, and a landing is caught by the status read below.
           const seen = await signatureStatus(rpc, identity.signature, true);
           if (seen.state === 'unknown') {
             const valid = (await rpc.call('isBlockhashValid', [identity.blockhash, { commitment: 'confirmed' }])) as { value?: boolean } | null;
-            if (valid?.value === true) await submit(pending.id, identity.wire, identity.signature);
+            if (valid?.value === true) {
+              try {
+                // The lease or restore state can change during the preceding RPC reads.
+                await submit(pending.id, identity.wire, identity.signature);
+              } catch {
+                // Failed or fenced transmission must not prevent read-only resolution.
+              }
+            }
           }
         }
         await resolve(pending.id, identity);
