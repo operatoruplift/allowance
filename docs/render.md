@@ -38,12 +38,14 @@ Render prompts for `sync: false` values only on initial Blueprint creation. Subs
 Use **Check readiness** in the authenticated console, or run the compiled command in the live service shell:
 
 ```sh
-npm run preflight
-# Equivalent in the production image:
-node dist/server/preflight.js
+npm run preflight                      # Existing built-in x402/data/model check
+npm run preflight -- --rail direct      # Direct transfers only
+npm run preflight -- --rail all         # Require both rails
+# Equivalent direct check in the production image:
+node dist/server/preflight.js --rail direct
 ```
 
-The command needs only production dependencies. In a fresh local source checkout, run `npm run build` first; `npx tsx scripts/preflight.ts` remains an optional development entry. Preflight returns nonzero when capabilities are incomplete. It performs provider/RPC reads, never signs, submits a payment, or calls the model, and does not acquire or release the running service's spending lease. Opening the configured journal may initialize compatible database schema, so use the configured durable path rather than an arbitrary temporary database.
+The command needs only production dependencies. In a fresh local source checkout, run `npm run build` first; `npx tsx scripts/preflight.ts` remains an optional development entry. Preflight returns nonzero when the selected capabilities are incomplete; the default remains x402 for existing scripts. The direct check omits unrelated merchant, facilitator, data-tool and model requirements. Preflight validates the selected signer source and performs provider/RPC reads, but never signs, submits a payment, or calls the model. It opens the existing journal read-only, does not initialize or migrate schema, and never acquires or releases the running service's spending lease. Start the service once before preflight and use its configured durable path. A missing or outdated journal fails closed without creating or modifying it. Readiness is a point-in-time check, not evidence of settlement.
 
 For the deployed application, authorize a bounded run through the authenticated console after fresh readiness succeeds. The standalone `smoke:mainnet` command requires a local merchant origin and is not a hosted-service command. Retain actual signatures, independent verification, original receipt identities, and exact totals from any authorized paid run; refresh and restart before confirming persistence.
 

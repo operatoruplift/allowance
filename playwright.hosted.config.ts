@@ -10,6 +10,7 @@ export default defineConfig({
     'policy-lab.spec.ts',
     'pwa.spec.ts',
     'navigation.spec.ts',
+    'product-tour.spec.ts',
   ],
   timeout: 60000,
   expect: { timeout: 15000 },

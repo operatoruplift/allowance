@@ -9,7 +9,7 @@ test('landing, keyboard CTA, private route and developer guide', async ({ page }
     fullPage: true,
     animations: 'disabled',
   });
-  const cta = page.getByRole('link', { name: /Try the example/i }).first();
+  const cta = page.getByRole('link', { name: /Open walkthrough/i }).first();
   await cta.focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/demo/);
@@ -36,7 +36,7 @@ test('full fixture, separate probe and JSON export have exact accounting and no 
       liveRequests.push(req.url());
   });
   await page.goto('/demo');
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible({
     timeout: 15000,
   });
@@ -98,20 +98,20 @@ test('mobile and reduced-motion layout, empty history, service failure and reset
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true
   );
-  await page.getByLabel('Choose an example').selectOption('empty');
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByLabel('Choose a scenario').selectOption('empty');
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible({
     timeout: 15000,
   });
   await expect(page.getByText(/represents a wallet with no SOL balance/)).toBeVisible();
-  await page.getByLabel('Choose an example').selectOption('failure');
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('Fixture service failure', {
+  await page.getByLabel('Choose a scenario').selectOption('failure');
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Offline service failure', {
     timeout: 15000,
   });
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Run the rehearsal', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Run walkthrough', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible({
     timeout: 15000,
   });
@@ -138,8 +138,8 @@ test('deterministic recovery keeps an ambiguous hold until the original intent i
   page,
 }) => {
   await page.goto('/demo');
-  await page.getByLabel('Choose an example').selectOption('ambiguous');
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByLabel('Choose a scenario').selectOption('ambiguous');
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByText(/settlement evidence is unknown/)).toBeVisible({ timeout: 15000 });
   await expect(page.getByRole('button', { name: 'Review offline hold' })).toBeVisible();
   await page.getByRole('button', { name: 'Review offline hold' }).click();
@@ -164,14 +164,14 @@ test('stopping an example releases its unsigned hold and rerunning begins with a
   await page.clock.install();
   await page.goto('/demo');
   await page.clock.pauseAt(new Date(Date.now() + 1000));
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await page.clock.runFor(100);
   await expect(page.getByText('Task received', { exact: true })).toBeVisible();
   await page.clock.runFor(700);
   await expect(page.getByText('Wallet snapshot reserved', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Stop run', exact: true }).click();
   await page.clock.runFor(5000);
-  await expect(page.getByText('Rehearsal stopped', { exact: true })).toBeVisible();
+  await expect(page.getByText('Walkthrough stopped', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /^Receipt/ }).click();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export JSON' }).click();
@@ -180,10 +180,10 @@ test('stopping an example releases its unsigned hold and rerunning begins with a
   expect(receipt).toMatchObject({ status: 'stopped', settled: '0', held: '0', remaining: '40000' });
   expect(receipt.purchases).toHaveLength(1);
   expect(receipt.purchases[0]).toMatchObject({ status: 'released', chainVerified: false });
-  await page.getByRole('button', { name: 'Run rehearsal again', exact: true }).click();
+  await page.getByRole('button', { name: 'Run again', exact: true }).click();
   await page.clock.resume();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
   await expect(page.locator('.purchase-entry')).toHaveCount(2);
-  await expect(page.getByText('Rehearsal stopped', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Walkthrough stopped', { exact: true })).toHaveCount(0);
   await expect(page.locator('a[href*="explorer.solana.com"]')).toHaveCount(0);
 });

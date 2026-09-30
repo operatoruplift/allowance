@@ -25,7 +25,8 @@ export function runAnnouncement(
 ): string {
   // Both the fixture cursor and the run's own status have to be finished before
   // this describes an ending, so a state in flight is never called an outcome.
-  if (running || run.status === 'running') return 'Running the example.';
+  if (running || run.status === 'running')
+    return run.mode === 'rehearsal' ? 'Running the walkthrough.' : 'Agent is working.';
   if (run.status === 'queued') return '';
   const entries = run.events.length;
   return [

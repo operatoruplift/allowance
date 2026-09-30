@@ -33,7 +33,7 @@ describe('run outcome sentence', () => {
 describe('run announcement', () => {
   it('says nothing before the first run and states the work while it advances', () => {
     expect(runAnnouncement(createDemo(), false)).toBe('');
-    expect(runAnnouncement(createDemo(), true)).toBe('Running the example.');
+    expect(runAnnouncement(createDemo(), true)).toBe('Running the walkthrough.');
   });
 
   it('carries the outcome, the settled figures and the activity count when it ends', () => {
@@ -75,7 +75,7 @@ describe('run announcement', () => {
   it('never calls a run in flight an outcome, whichever signal is behind', () => {
     const started = fixtureStep(createDemo(), 0, 'standard');
     expect(started.status).toBe('running');
-    expect(runAnnouncement(started, false)).toBe('Running the example.');
-    expect(runAnnouncement({ ...started, status: 'completed' }, true)).toBe('Running the example.');
+    expect(runAnnouncement(started, false)).toBe('Running the walkthrough.');
+    expect(runAnnouncement({ ...started, status: 'completed' }, true)).toBe('Running the walkthrough.');
   });
 });

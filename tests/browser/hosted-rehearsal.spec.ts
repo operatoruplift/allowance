@@ -74,8 +74,8 @@ test('hosted rehearsal exports fixture accounting without a signature or network
     fullPage: true,
     animations: 'disabled',
   });
-  await page.getByRole('link', { name: 'Try the example', exact: true }).click();
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByRole('link', { name: 'Open walkthrough', exact: true }).click();
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
   await page.getByRole('button', { name: 'Test the boundary' }).click();
   await expect(
@@ -120,4 +120,63 @@ test('hosted rehearsal exports fixture accounting without a signature or network
     format: 'A4',
     printBackground: true,
   });
+});
+
+test('hosted workspace navigation offers distinct usable sections on desktop and phone', async ({
+  page,
+}) => {
+  const serviceRequests: string[] = [];
+  page.on('request', (request) => {
+    if (
+      new URL(request.url()).pathname.startsWith('/api/') ||
+      ['fetch', 'xhr'].includes(request.resourceType())
+    )
+      serviceRequests.push(request.url());
+  });
+  await page.goto('/app?view=overview');
+  const navigation = page.getByRole('navigation', { name: 'Workspace navigation' });
+  await expect(page.getByRole('heading', { name: 'Your agent’s workspace.' })).toBeVisible();
+  for (const [section, heading] of [
+    ['Runs', 'Every task has a paper trail.'],
+    ['Payments', 'A boundary for every payment.'],
+    ['Setup', 'Connect your workspace.'],
+  ]) {
+    await navigation.getByRole('link', { name: section, exact: true }).click();
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+    await expect(navigation.getByRole('link', { name: section, exact: true })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+  }
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'What remains to connect' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'A boundary for every payment.' })).toBeVisible();
+  await navigation.getByRole('link', { name: 'Overview', exact: true }).click();
+  await page.screenshot({
+    path: evidencePath('hosted-workspace-desktop.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(navigation).toBeVisible();
+  await page
+    .getByRole('navigation', { name: 'Workspace tools' })
+    .getByRole('link', { name: 'Policy lab', exact: true })
+    .click();
+  await expect(page.getByRole('heading', { name: /Find the right/ })).toBeVisible();
+  await navigation.getByRole('link', { name: 'Overview', exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  );
+  await page.screenshot({
+    path: evidencePath('hosted-workspace-mobile.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
+  await page.setViewportSize({ width: 320, height: 640 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  );
+  expect(serviceRequests).toEqual([]);
 });

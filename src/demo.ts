@@ -21,7 +21,7 @@ export function createDemo(): RunDTO {
       dailyCeiling: '1000000',
       allowedTools: ['wallet_snapshot', 'transaction_explain'],
       origin: 'fixture://first-party',
-      recipient: 'No recipient — rehearsal',
+      recipient: 'No recipient — offline plan',
       network: PAYMENT_CHAINS.mainnet.network,
       mint: PAYMENT_CHAINS.mainnet.mint,
       expiresAt: '2026-09-12T00:15:00.000Z',
@@ -43,7 +43,7 @@ export function createDemo(): RunDTO {
       outputTokens: 0,
       maxCalls: 0,
       maxOutputTokens: 0,
-      note: 'No model is called in rehearsal. The decisions and data are deterministic fixtures.',
+      note: 'No model is called in this walkthrough. The decisions and data are preloaded.',
     },
   };
 }
@@ -65,7 +65,7 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
     run.status = 'running';
     event(
       'Task received',
-      'The fixture agent checks the permitted tools and 0.040000 USDC allowance.'
+      'The offline plan checks the permitted tools and 0.040000 USDC allowance.'
     );
   }
   if (step === 1) {
@@ -74,22 +74,22 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
     run.remaining = '30000';
     event(
       'Wallet snapshot reserved',
-      'Fixture transition: 0.010000 is held while the simulated request is in progress.'
+      'Offline transition: 0.010000 is held in the record while the request is in progress.'
     );
   }
   if (step === 2) {
     if (scenario === 'failure') {
       run.purchases[0].status = 'released';
       run.purchases[0].serviceOutcome = 'unavailable';
-      run.purchases[0].reason = 'Simulated provider unavailable before signing.';
+      run.purchases[0].reason = 'Offline case: provider unavailable before signing.';
       run.held = '0';
       run.remaining = '40000';
       run.status = 'failed';
       run.error =
-        'Fixture service failure: the provider was unavailable before signing. The reservation was released; nothing was charged.';
+        'Offline service failure: the provider was unavailable before signing. The reservation was released; nothing was charged.';
       event(
         'Service unavailable',
-        'Fixture: failure occurred before any signature. Reservation released.',
+        'Offline case: failure before signing. The reservation is released in the record.',
         'system'
       );
       return run;
@@ -99,15 +99,15 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
       run.purchases[0].serviceOutcome = 'pending';
       run.purchases[0].deliveryState = 'pending';
       run.purchases[0].reason =
-        'Simulated timeout after signing. The original intent remains held until reconciliation.';
+        'Offline timeout case: the original intent remains held in the record until reconciliation.';
       run.held = '10000';
       run.remaining = '30000';
       run.status = 'interrupted';
       run.error =
-        'Fixture timeout after signing: settlement evidence is unknown. Reconcile the original intent; no second signature is created.';
+        'Offline timeout case: settlement evidence is unknown. Review the original intent; no transaction was submitted.';
       event(
         'Settlement unknown · held',
-        'Fixture: the response timed out after signing. The original 0.010000 remains held for recovery.',
+        'Offline case: an unresolved response keeps the original 0.010000 held in the record for recovery.',
         'system'
       );
       return run;
@@ -118,21 +118,21 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
       fixture: true,
       solBalance: scenario === 'empty' ? '0' : '1.250000000',
       recentTransactions:
-        scenario === 'empty' ? [] : ['Fixture transaction 01', 'Fixture transaction 02'],
-      provenance: 'Deterministic fixture; no RPC source.',
+        scenario === 'empty' ? [] : ['Preloaded transaction 01', 'Preloaded transaction 02'],
+      provenance: 'Preloaded data; no RPC source.',
     };
     run.settled = '10000';
     run.held = '0';
     event(
       'Wallet snapshot delivered',
       scenario === 'empty'
-        ? 'Fixture data: zero SOL and no transaction history. An empty wallet is a valid response.'
-        : 'Fixture data: 1.25 SOL and two recent transaction entries.'
+        ? 'Preloaded data: zero SOL and no transaction history. An empty wallet is a valid response.'
+        : 'Preloaded data: 1.25 SOL and two recent transaction entries.'
     );
     if (scenario === 'empty') {
       run.status = 'completed';
       run.report =
-        'This deterministic fixture represents a wallet with no SOL balance and no recent transaction history. The wallet snapshot returned a valid empty result [wallet_snapshot].\n\nSkipped: transaction explanation, because there is no transaction to inspect. Rehearsal accounting: 0.010000 USDC simulated settled; 0.030000 remaining. No real payment, RPC request, or model call occurred.';
+        'This offline record represents a wallet with no SOL balance and no recent transaction history. The wallet snapshot returned a valid empty result [wallet_snapshot].\n\nSkipped: transaction explanation, because there is no transaction to inspect. Offline accounting: 0.010000 USDC recorded as settled; 0.030000 remaining. No real payment, RPC request, or model call occurred.';
     }
   }
   if (step === 3) {
@@ -141,7 +141,7 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
     run.remaining = '10000';
     event(
       'Transaction explanation reserved',
-      'Fixture transition: 0.020000 is held inside the per-request cap.'
+      'Offline transition: 0.020000 is held in the record inside the per-request cap.'
     );
   }
   if (step === 4) {
@@ -149,28 +149,28 @@ export function fixtureStep(previous: RunDTO, step: number, scenario: DemoScenar
     run.purchases[1].serviceOutcome = 'delivered';
     run.purchases[1].result = {
       fixture: true,
-      transaction: 'Fixture transaction 01',
+      transaction: 'Preloaded transaction 01',
       success: true,
       feeSol: '0.000005000',
       recognizedInstructions: ['System Program: SOL transfer'],
       transferSol: '0.025000000',
-      provenance: 'Deterministic fixture; no chain signature.',
+      provenance: 'Preloaded data; no chain signature.',
     };
     run.settled = '30000';
     run.held = '0';
     event(
       'Transaction explanation delivered',
-      'Fixture data: a successful 0.025 SOL transfer with a 0.000005 SOL fee.'
+      'Preloaded data: a successful 0.025 SOL transfer with a 0.000005 SOL fee.'
     );
   }
   if (step === 5) {
     run.status = 'completed';
     event(
       'Brief completed',
-      'The fixture agent skips another 0.020000 tool call because only 0.010000 remains. No denied call is invented in the agent trace.'
+      'The offline plan skips another 0.020000 tool call because only 0.010000 remains. No denied call is invented in the agent trace.'
     );
     run.report =
-      'The example wallet holds 1.25 SOL and has two recent transaction entries [wallet_snapshot].\n\nIts latest transaction is a successful System Program transfer of 0.025 SOL, with a 0.000005 SOL transaction fee [transaction_explain]. The fixture supplies no identity or intent behind the transfer.\n\nSkipped: the second transaction explanation costs 0.020000 USDC, above the 0.010000 remaining allowance.\n\nAll facts and payment transitions above are deterministic fixtures. No RPC, model, signing, or paid request occurred.';
+      'The preloaded wallet data shows 1.25 SOL and has two recent transaction entries [wallet_snapshot].\n\nIts latest transaction is a successful System Program transfer of 0.025 SOL, with a 0.000005 SOL transaction fee [transaction_explain]. The preloaded data supplies no identity or intent behind the transfer.\n\nSkipped: the second transaction explanation costs 0.020000 USDC, above the 0.010000 remaining allowance.\n\nAll facts and payment transitions above come from preloaded records. No RPC, model, signing, or paid request occurred.';
   }
   return run;
 }
@@ -210,7 +210,8 @@ export function demoProbe(previous: RunDTO): RunDTO {
       at: AT,
       kind: 'probe',
       title: 'Policy probe would fit',
-      detail: 'Same pure policy decision as the backend. No fixture or real purchase was made.',
+      detail:
+        'Same pure policy decision as the backend. No purchase record or payment was created.',
       source: 'policy-probe',
     });
     return run;
@@ -246,24 +247,24 @@ export function reconcileDemo(previous: RunDTO): RunDTO {
   purchase.serviceOutcome = 'unavailable';
   purchase.deliveryState = 'unavailable';
   purchase.reason =
-    'Fixture reconciliation recovered the original settlement report. No second signature was created and no paid result was delivered.';
+    'Offline reconciliation recovered the original settlement report. No second signature was created and no paid result was delivered.';
   run.settled = '10000';
   run.held = '0';
   run.remaining = '30000';
   run.status = 'interrupted';
   run.error =
-    'Fixture recovery completed with settlement reported but delivery unavailable. The original hold was reconciled without a second signature.';
+    'Offline recovery completed with settlement reported but delivery unavailable. The original hold was reconciled without a second signature.';
   run.events.push({
     id: run.events.length + 1,
     at: AT,
     kind: 'recovery',
     title: 'Original hold reconciled',
     detail:
-      'Fixture recovery checked the original intent and cleared the hold without creating a second signature. Delivery remains unavailable.',
+      'Offline recovery checked the original intent and cleared the hold without creating a second signature. Delivery remains unavailable.',
     source: 'system',
   });
   run.report =
-    'The wallet snapshot entered a deterministic settlement-unknown state after a simulated timeout. Reconciliation recovered the original settlement report and cleared 0.010000 USDC from held to settled without retrying the payment.\n\nThe paid result was unavailable, so no wallet facts are inferred. This is a deterministic recovery fixture with no RPC, signing, or paid request.';
+    'The wallet snapshot entered a deterministic settlement-unknown state after a recorded timeout. Reconciliation recovered the original settlement report and cleared 0.010000 USDC from held to settled without retrying the payment.\n\nThe paid result was unavailable, so no wallet facts are inferred. This is an offline recovery record with no RPC, signing, or paid request.';
   return run;
 }
 
@@ -274,7 +275,7 @@ export function stopDemo(previous: RunDTO): RunDTO {
   for (const purchase of run.purchases) {
     if (purchase.status !== 'reserved') continue;
     purchase.status = 'released';
-    purchase.reason = 'Fixture stopped before signing. No payment was made.';
+    purchase.reason = 'Offline plan stopped before signing. No payment was made.';
     purchase.serviceOutcome = 'unavailable';
   }
   run.held = String(
@@ -289,9 +290,9 @@ export function stopDemo(previous: RunDTO): RunDTO {
     id: run.events.length + 1,
     at: AT,
     kind: 'stopped',
-    title: 'Rehearsal stopped',
+    title: 'Walkthrough stopped',
     detail:
-      'No new example requests will start. Unsigned reservations are released; completed work stays in the receipt.',
+      'No new walkthrough requests will start. Unsigned reservations are released; completed work stays in the receipt.',
     source: 'system',
   });
   return run;

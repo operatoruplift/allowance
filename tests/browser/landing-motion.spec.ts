@@ -75,9 +75,9 @@ test('landing scroll stays native, advances the story, and leads to a working ex
     });
   }
 
-  await page.getByRole('link', { name: 'Try the example', exact: true }).click();
+  await page.getByRole('link', { name: 'Open walkthrough', exact: true }).click();
   await expect(page).toHaveURL(/\/demo$/);
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
 });
 
@@ -130,7 +130,7 @@ test('reduced-motion phone and tablet layouts keep the story and actions readabl
     await page.goto('/');
     await expect(landing(page)).toHaveAttribute('data-landing-motion', 'reduced');
     await expect(page.getByRole('heading', { name: 'Give your agent a budget.' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Try the example', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Open walkthrough', exact: true })).toBeVisible();
     await expectUnobscuredReveals(page);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
@@ -154,9 +154,9 @@ test('reduced-motion phone and tablet layouts keep the story and actions readabl
       path: evidencePath(`story-${width}.png`),
       animations: 'disabled',
     });
-    await page.getByRole('link', { name: 'Try the example', exact: true }).click();
+    await page.getByRole('link', { name: 'Open walkthrough', exact: true }).click();
     await expect(
-      page.getByRole('button', { name: 'Run the rehearsal', exact: true })
+      page.getByRole('button', { name: 'Run walkthrough', exact: true })
     ).toBeVisible();
   }
 });

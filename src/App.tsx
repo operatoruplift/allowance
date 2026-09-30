@@ -74,6 +74,8 @@ import { useMotion } from './motion';
 import { useLandingMotion } from './useLandingMotion';
 import LandingStory from './LandingStory';
 import PolicyLab from './PolicyLab';
+import WorkspaceShell, { getWorkspaceView } from './WorkspaceNav';
+import ProductTour from './ProductTour';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -192,17 +194,19 @@ function NetworkPills({
   mode,
   data,
   payment,
+  ready,
 }: {
   mode: 'rehearsal' | 'live';
   data?: string;
   payment?: PaymentNetwork;
+  ready?: boolean;
 }) {
   const paymentLabel = mode === 'rehearsal' ? 'no funds moved' : (payment ?? 'checking');
   return (
     <div className="network-pills">
       <span className="pill">
-        <span className={mode === 'live' ? 'status-dot' : 'status-dot quiet'} />
-        {mode === 'live' ? 'Live execution' : 'Offline plan'}
+        <span className={mode === 'live' && ready !== false ? 'status-dot' : 'status-dot quiet'} />
+        {mode === 'live' ? (ready === false ? 'Setup needed' : 'Live execution') : 'Offline plan'}
       </span>
       <span>Payments: {paymentLabel}</span>
       <span className="pill-divider">/</span>
@@ -253,6 +257,7 @@ function useSession() {
   const [error, setError] = useState('');
   const refresh = useCallback(() => {
     setError('');
+    setSession(null);
     return api<Session>('/api/session')
       .then(setSession)
       .catch((e: unknown) => setError(e instanceof Error ? e.message : 'Could not load session.'));
@@ -468,7 +473,7 @@ function Landing() {
                 Explore the policy lab <ArrowUpRight size={18} />
               </Link>
               <Link to="/demo" className="text-link">
-                Try the example <ArrowRight size={16} />
+                Open walkthrough <ArrowRight size={16} />
               </Link>
               <Link to="/developers" className="text-link">
                 See how it works <ArrowRight size={16} />
@@ -655,7 +660,7 @@ const demoScenarios: Record<DemoScenario, { title: string; detail: string }> = {
   standard: {
     title: 'Useful work, inside the limit',
     detail:
-      'Two example tools cost 0.030000 USDC. Then test why another 0.020000 request is blocked.',
+      'The planned tools cost 0.030000 USDC. Then test why another 0.020000 request is blocked.',
   },
   empty: {
     title: 'An empty wallet is a valid answer',
@@ -670,7 +675,7 @@ const demoScenarios: Record<DemoScenario, { title: string; detail: string }> = {
   ambiguous: {
     title: 'Recover before trying again',
     detail:
-      'A simulated timeout holds 0.010000. Reconcile the original request to see what settled without paying twice.',
+      'An offline timeout case holds 0.010000 in its record. Review the original request to see how recovery avoids a duplicate payment.',
   },
 };
 
@@ -701,39 +706,47 @@ function Demo() {
   return (
     <main className="console-page demo-page page-width">
       <PageHeading
-        eyebrow="The working example"
+        eyebrow="The agent walkthrough"
         title="A little budget. Useful work."
         action={
           <NetworkPills mode={run.mode} data={run.dataNetwork} payment={run.paymentNetwork} />
         }
       >
-        Authorize a boundary. Rehearse useful purchases, a separate denial, and an honest recovery.
+        Explore a budget, useful tool requests, a separate denial, and a clear recovery path.
       </PageHeading>
       <div className="notice rehearsal-notice">
         <Sparkles size={18} />
         <div>
-          <b>You’re in rehearsal.</b> These are deterministic fixtures. No signing, model calls, RPC
-          calls, or paid requests.
+          <b>No funds moved.</b> Preloaded data; no signing, model calls, RPC requests or payments.
           <span>
             {rehearsalOnly
-              ? 'Refreshing resets this example. Actual agent runs require the separate persistent backend.'
-              : 'Refreshing resets this local example. Live runs are saved on the server.'}
+              ? 'Refreshing resets this walkthrough. Actual agent runs require the separate persistent backend.'
+              : 'Refreshing resets this local walkthrough. Live runs are saved on the server.'}
           </span>
         </div>
       </div>
+      <div className="workspace-quick-links">
+        <a href="#product-tour">
+          Watch the product tour <ArrowDown size={14} />
+        </a>
+        <a href="#interactive-walkthrough">
+          Try the controls <ArrowDown size={14} />
+        </a>
+      </div>
+      <ProductTour />
       <p className="visually-hidden" role="status">
         {runAnnouncement(run, running)}
       </p>
-      <div className="workspace-grid">
+      <div className="workspace-grid" id="interactive-walkthrough">
         <section className="card composer demo-composer">
           <div className="card-heading">
             <span className="section-index">01</span>
             <h2>Try an outcome</h2>
-            <span className="pill subtle-pill">Read-only example</span>
+            <span className="pill subtle-pill">Offline plan</span>
           </div>
           <div className="form-content">
             <div className="demo-scenario">
-              <label htmlFor="scenario">Choose an example</label>
+              <label htmlFor="scenario">Choose a scenario</label>
               <select
                 id="scenario"
                 aria-describedby="scenario-help"
@@ -752,7 +765,7 @@ function Demo() {
               <div className="scenario-explanation" id="scenario-help" aria-live="polite">
                 <b>{demoScenarios[scenario].title}</b>
                 <p>{demoScenarios[scenario].detail}</p>
-                <small>All amounts and outcomes are simulated. No funds are spent.</small>
+                <small>Preloaded amounts and outcomes. No funds are spent.</small>
               </div>
             </div>
             <button
@@ -768,11 +781,11 @@ function Demo() {
               {running ? (
                 <>
                   <LoaderCircle size={17} className="spin" />
-                  Running the example…
+                  Running the walkthrough…
                 </>
               ) : (
                 <>
-                  {run.status === 'queued' ? 'Run the rehearsal' : 'Run rehearsal again'}
+                  {run.status === 'queued' ? 'Run walkthrough' : 'Run again'}
                   <ArrowRight size={17} />
                 </>
               )}
@@ -783,11 +796,11 @@ function Demo() {
             </div>
             <details className="demo-assignment">
               <summary>
-                View the sample task and spending policy <ChevronDown size={16} />
+                View the task and spending policy <ChevronDown size={16} />
               </summary>
               <div className="demo-assignment-content">
                 <label className="field-label" htmlFor="demo-wallet">
-                  Solana wallet<span>Fixture address</span>
+                  Solana wallet<span>Preloaded address</span>
                 </label>
                 <div className="input-with-icon">
                   <Wallet size={17} />
@@ -812,7 +825,7 @@ function Demo() {
                   </div>
                 </div>
                 <div className="field-label">
-                  Permitted services<span>First-party sample merchants</span>
+                  Permitted services<span>First-party tools</span>
                 </div>
                 <ToolList />
               </div>
@@ -829,7 +842,7 @@ function Demo() {
               </span>
               <span>
                 <LockKeyhole size={14} />
-                Policy <b>Fixture only</b>
+                Policy <b>Offline plan</b>
               </span>
             </div>
           </section>
@@ -838,23 +851,23 @@ function Demo() {
             <Info size={16} />
             <p>
               In live mode, USDC tool charges, SOL fees and rent, and OpenAI usage are separate
-              costs. This rehearsal incurs none.
+              costs. This walkthrough incurs none.
             </p>
           </div>
         </div>
       </div>
-      <section className="demo-guide" aria-label="How to use the working example">
+      <section className="demo-guide" aria-label="How to use the walkthrough">
         <div className="demo-guide-heading">
           <div className="eyebrow">A quick guided tour</div>
           <p>
-            Choose an example and press run. Watch a small budget turn into useful information and a
+            Choose a scenario and press run. Watch a small budget turn into useful information and a
             clear receipt.
           </p>
         </div>
         <ol className="demo-guide-steps">
           <li>
             <span>01</span>
-            <b>Choose an example</b>
+            <b>Choose a scenario</b>
             <small>Useful work, an empty wallet, a failure, or recovery.</small>
           </li>
           <li>
@@ -878,7 +891,7 @@ function Demo() {
         run={run}
         probe={() => setRun((old) => demoProbe(old))}
         reconcile={() => setRun((old) => reconcileDemo(old))}
-        exportReceipt={() => downloadJSON(run, 'allowance-rehearsal-receipt.json')}
+        exportReceipt={() => downloadJSON(run, 'allowance-walkthrough-receipt.json')}
         probePending={false}
       />
       <div className="under-console">
@@ -1404,7 +1417,7 @@ export function RunDetails({
         <Logo />
         <h2>Allowance receipt</h2>
         <p>
-          Run {run.id} · Execution: {run.mode} · Payments:{' '}
+          {run.mode === 'rehearsal' ? 'Walkthrough' : `Run ${run.id}`} · Execution: {run.mode === 'rehearsal' ? 'offline plan' : run.mode} · Payments:{' '}
           {run.mode === 'rehearsal' ? 'no funds moved' : run.paymentNetwork} · Data:{' '}
           {run.mode === 'rehearsal' ? 'offline plan' : run.dataNetwork}
         </p>
@@ -1416,60 +1429,166 @@ export function RunDetails({
   );
 }
 function HostedConsole() {
+  const { search } = useLocation();
+  const view = getWorkspaceView(search);
   return (
-    <main className="login-page page-width">
-      <section className="login-story">
-        <div className="eyebrow">Operator access / Mainnet</div>
-        <h1>
-          Useful autonomy.
-          <br />
-          Under your control.
-        </h1>
-        <p>
-          Give your agent a durable spending policy.
-          <br />
-          Keep the authorization and every receipt together.
-        </p>
-        <div className="login-illustration" aria-hidden="true">
-          <div className="limit-ceiling" />
-          <span className="limit-upright left" />
-          <span className="limit-upright right" />
-          <span className="limit-dot">
-            <Wallet size={30} />
+    <main className="console-page page-width workspace-hosted">
+      <PageHeading
+        eyebrow="Your Allowance workspace"
+        title={
+          view === 'runs'
+            ? 'Every task has a paper trail.'
+            : view === 'payments'
+              ? 'A boundary for every payment.'
+              : view === 'setup'
+                ? 'Connect your workspace.'
+                : 'Your agent’s workspace.'
+        }
+      >
+        {view === 'overview'
+          ? 'Plan the work. Set the limits. Keep every decision in view.'
+          : view === 'runs'
+            ? 'Your agent’s activity, tool results, and durable payment receipts belong here.'
+            : view === 'payments'
+              ? 'Choose who can receive USDC and how much an agent may spend.'
+              : 'A persistent backend brings your policies, agents, and receipts together.'}
+      </PageHeading>
+      <div className="notice setup-notice">
+        <ShieldCheck size={20} />
+        <div>
+          <h2 style={{ fontSize: 14, margin: 0 }}>Mainnet setup required.</h2>
+          <span>
+            The operator backend is not connected to this deployment. No funds can move from this
+            site.
           </span>
-          <span className="limit-caption">ROOM TO WORK. A LIMIT TO RESPECT.</span>
         </div>
-        <span className="small muted">No account · No wallet connection · No spending</span>
-      </section>
-      <section className="card login-card">
-        <div className="login-key">
-          <Layers3 size={25} />
-        </div>
-        <h2>Mainnet setup required.</h2>
-        <p>
-          The operator backend is not connected to this deployment. Sign-in, agent execution, and
-          payments become available once the persistent server and its credentials are configured.
-          No funds can move from this site.
-        </p>
-        <div className="notice">
-          <Info size={19} />
-          <div>
-            <b>What remains to connect</b>
-            <p>
-              A persistent host, operator access, a funded payer, a separate merchant, and a
-              reviewed payment provider. Built-in agent runs also require a model provider.
-            </p>
+        {view !== 'setup' && (
+          <Link className="text-link" to="/app?view=setup">
+            View setup <ArrowRight size={15} />
+          </Link>
+        )}
+      </div>
+      {view === 'overview' && (
+        <>
+          <div className="workspace-connection-grid">
+            <section className="card workspace-connection-card">
+              <Wallet size={27} />
+              <h2>One clear budget.</h2>
+              <p>
+                Plan exact tool costs against a total allowance, per-request cap, and daily
+                capacity.
+              </p>
+              <Link className="text-link" to="/lab">
+                Explore the policy lab <ArrowRight size={15} />
+              </Link>
+            </section>
+            <section className="card workspace-connection-card">
+              <Layers3 size={27} />
+              <h2>Follow the work.</h2>
+              <p>Walk through a task, a policy decision, and the information each receipt keeps.</p>
+              <Link className="text-link" to="/demo">
+                Open agent walkthrough <ArrowRight size={15} />
+              </Link>
+            </section>
+            <section className="card workspace-connection-card">
+              <ShieldCheck size={27} />
+              <h2>You set the limits.</h2>
+              <p>
+                Connect an operator backend when you are ready to authorize and manage actual
+                payments.
+              </p>
+              <Link className="text-link" to="/app?view=setup">
+                Connect your workspace <ArrowRight size={15} />
+              </Link>
+            </section>
           </div>
-        </div>
-        <div className="login-bottom">
-          <Link className="button button-primary full-width" to="/lab">
-            Explore the policy lab <ArrowRight size={16} />
+          <section className="card workspace-hosted-details">
+            <div className="eyebrow">Built around your control</div>
+            <h2>A useful agent needs a clear allowance.</h2>
+            <p>
+              Use the policy lab to see which requests fit. Explore the walkthrough to understand
+              approvals, held funds, and receipts. Your connected workspace adds durable records and
+              authorized execution.
+            </p>
+          </section>
+        </>
+      )}
+      {view === 'runs' && (
+        <section className="card workspace-hosted-details">
+          <div className="empty-state">
+            <ReceiptText size={32} />
+            <h2>Connect to see your runs.</h2>
+            <p>
+              Run history is private. Sign-in and saved receipts become available when the operator
+              backend is connected.
+            </p>
+            <Link className="button button-primary" to="/demo">
+              Explore an agent walkthrough <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+      )}
+      {view === 'payments' && (
+        <section className="card workspace-hosted-details">
+          <div className="eyebrow">Guarded USDC payments</div>
+          <h2>Authorize once. Keep control.</h2>
+          <p>
+            A mandate fixes approved recipients, the per-request cap, a total ceiling, and an
+            expiry. The server checks and reserves each payment before signing, then keeps its
+            settlement evidence.
+          </p>
+          <ol>
+            <li>Connect and fund a dedicated payment wallet.</li>
+            <li>Authorize recipients and exact spending limits.</li>
+            <li>Review each request, its outcome, and onchain evidence.</li>
+          </ol>
+          <div className="workspace-hosted-actions">
+            <Link className="button button-primary" to="/app?view=setup">
+              View payment setup <ArrowRight size={16} />
+            </Link>
+            <Link className="button button-outline" to="/lab">
+              Explore the policy lab
+            </Link>
+          </div>
+        </section>
+      )}
+      {view === 'setup' && (
+        <section className="card workspace-hosted-details">
+          <div className="eyebrow">Connection checklist</div>
+          <h2>What remains to connect</h2>
+          <p>
+            Sign-in, agent execution, and payments become available once the persistent server and
+            its credentials are configured.
+          </p>
+          <ol>
+            <li>
+              <b>Persistent operator backend.</b> A server with durable storage and protected
+              operator access.
+            </li>
+            <li>
+              <b>Payment wallet and providers.</b> A funded payer, separate merchant, and reviewed
+              payment provider on the configured network.
+            </li>
+            <li>
+              <b>Agent provider.</b> A model provider for built-in agent runs.
+            </li>
+            <li>
+              <b>Readiness and funding checks.</b> Verify the complete configuration before
+              authorizing a payment.
+            </li>
+          </ol>
+        </section>
+      )}
+      <div className="workspace-hosted-actions">
+        <Link className="text-link" to="/developers">
+          Read the backend setup guide <ArrowUpRight size={15} />
+        </Link>
+        {view !== 'overview' && (
+          <Link className="text-link" to="/lab">
+            Explore the policy lab <ArrowRight size={15} />
           </Link>
-          <Link className="text-link" to="/developers">
-            Read the backend setup guide <ArrowUpRight size={15} />
-          </Link>
-        </div>
-      </section>
+        )}
+      </div>
     </main>
   );
 }
@@ -1619,6 +1738,49 @@ type PayDraft = { recipient: string; amount: string; memo: string };
  * one-time grant an MCP client needs; every payment attempted under it, by the
  * agent or from this card, is listed with its stamp and Explorer proof.
  */
+export function GrantCopy({ token, label }: { token: string; label: string }) {
+  const [message, setMessage] = useState('');
+  const [failed, setFailed] = useState(false);
+  const [copying, setCopying] = useState(false);
+  useEffect(() => {
+    setMessage('');
+    setFailed(false);
+  }, [token]);
+  async function copy() {
+    if (copying) return;
+    setCopying(true);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(token);
+      setFailed(false);
+      setMessage('Token copied. Keep it in your agent’s private environment.');
+    } catch {
+      setFailed(true);
+      setMessage('Copy was blocked. Select the token text and copy it manually.');
+    } finally {
+      setCopying(false);
+    }
+  }
+  return (
+    <div className="grant-copy">
+      <button
+        className="grant-token"
+        type="button"
+        aria-label={label}
+        onClick={() => void copy()}
+        aria-busy={copying}
+        aria-disabled={copying}
+      >
+        <Copy size={14} aria-hidden="true" />
+        <code>{token}</code>
+      </button>
+      <p className="grant-copy-message" role="status" data-error={failed}>
+        {message}
+      </p>
+    </div>
+  );
+}
+
 function MandatesPanel({
   config,
   csrfToken,
@@ -1886,14 +2048,7 @@ function MandatesPanel({
                   Set this token as <code>MCP_GRANT_TOKEN</code> in your MCP client’s private environment. It is shown
                   once and expires at {new Date(grant.expiresAt).toLocaleString()}.
                 </span>
-                <button
-                  className="grant-token"
-                  type="button"
-                  aria-label="Copy mandate grant token"
-                  onClick={() => void navigator.clipboard?.writeText(grant.token)}
-                >
-                  <code>{grant.token}</code>
-                </button>
+                <GrantCopy token={grant.token} label="Copy mandate grant token" />
               </div>
             </div>
           )}
@@ -2029,6 +2184,10 @@ function OperatorApp() {
   const [config, setConfig] = useState<AppConfigDTO | null>(null);
   const [checking, setChecking] = useState(false);
   const [runs, setRuns] = useState<RunDTO[]>([]);
+  const { search } = useLocation();
+  const view = getWorkspaceView(search);
+  const [runSearch, setRunSearch] = useState('');
+  const [runFilter, setRunFilter] = useState('all');
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
   const [wallet, setWallet] = useState('');
@@ -2044,6 +2203,21 @@ function OperatorApp() {
     expiresAt: string;
   } | null>(null);
   const navigate = useNavigate();
+  const expireSession = useCallback(() => {
+    setError('');
+    setConfig(null);
+    setRuns([]);
+    setExternalGrant(null);
+    setWallet('');
+    setTask(DEFAULT_TASK);
+    setAllowance('0.040000');
+    setCap('0.020000');
+    setExpiry('15');
+    setSelected(['wallet_snapshot', 'transaction_explain']);
+    setRunSearch('');
+    setRunFilter('all');
+    void refresh();
+  }, [refresh]);
   const load = useCallback(async () => {
     setError('');
     try {
@@ -2055,17 +2229,29 @@ function OperatorApp() {
       setWallet((old) => old || nextConfig.defaultWallet);
       setRuns(nextRuns.runs);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
-        setConfig(null);
-        setRuns([]);
-        void refresh();
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+        expireSession();
       }
       setError(e instanceof Error ? e.message : 'Could not load configuration.');
     }
-  }, [refresh]);
+  }, [expireSession]);
   useEffect(() => {
     if (session?.authenticated) void load();
   }, [session?.authenticated, load]);
+  const filteredRuns = runs.filter((run) => {
+    const matchesText = `${run.task} ${run.wallet} ${run.id}`
+      .toLowerCase()
+      .includes(runSearch.trim().toLowerCase());
+    const matchesStatus =
+      runFilter === 'all' ||
+      (runFilter === 'active'
+        ? !terminalStatuses.has(run.status)
+        : runFilter === 'attention'
+          ? Number(run.held) > 0 || ['failed', 'interrupted', 'expired'].includes(run.status)
+          : run.status === runFilter);
+    return matchesText && matchesStatus;
+  });
+  const visibleRuns = view === 'overview' ? runs.slice(0, 3) : filteredRuns;
   if (sessionError)
     return (
       <main className="page-width console-page">
@@ -2102,6 +2288,10 @@ function OperatorApp() {
       );
       navigate(`/runs/${run.id}`);
     } catch (e) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+        expireSession();
+        return;
+      }
       setError(e instanceof Error ? e.message : 'Could not start run.');
     } finally {
       setPending(false);
@@ -2119,6 +2309,10 @@ function OperatorApp() {
       );
       setConfig(result);
     } catch (e) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+        expireSession();
+        return;
+      }
       setError(e instanceof Error ? e.message : 'Readiness check failed.');
     } finally {
       setChecking(false);
@@ -2156,6 +2350,10 @@ function OperatorApp() {
       });
       await load();
     } catch (e) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+        expireSession();
+        return;
+      }
       setError(e instanceof Error ? e.message : 'Could not authorize external agent.');
     } finally {
       setExternalPending(false);
@@ -2167,24 +2365,42 @@ function OperatorApp() {
       await api('/api/logout', { method: 'POST' }, session.csrfToken);
       navigate('/login');
     } catch (e) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
+        expireSession();
+        return;
+      }
       setError(e instanceof Error ? e.message : 'Could not sign out.');
     }
   }
   return (
     <main className="console-page page-width">
       <PageHeading
-        eyebrow="Operator console"
-        title="Give useful work a limit."
+        eyebrow="Operator workspace"
+        title={
+          view === 'runs'
+            ? 'Your work, accounted for.'
+            : view === 'payments'
+              ? 'Pay within your boundaries.'
+              : view === 'setup'
+                ? 'Ready for useful work.'
+                : 'Give useful work a limit.'
+        }
         action={
           <div className="operator-actions">
-            <NetworkPills mode="live" data={config?.dataNetwork} payment={config?.paymentNetwork} />
+            <NetworkPills mode="live" ready={config?.ready ?? false} data={config?.dataNetwork} payment={config?.paymentNetwork} />
             <button className="inline-button" onClick={() => void logout()}>
               Sign out
             </button>
           </div>
         }
       >
-        Authorize once. Review every decision along the way.
+        {view === 'runs'
+          ? 'Find a task, review its decisions, and keep its receipt.'
+          : view === 'payments'
+            ? 'Set who can be paid. Keep every request within an approved mandate.'
+            : view === 'setup'
+              ? 'Review your payment wallet, providers, and authorization before starting.'
+              : 'Set a task, approve a budget, and follow every decision.'}
       </PageHeading>
       {error && <ErrorBox>{error}</ErrorBox>}
       {!config ? (
@@ -2196,7 +2412,7 @@ function OperatorApp() {
         </>
       ) : (
         <>
-          <div className={`notice ${config.ready ? 'success-notice' : 'setup-notice'}`}>
+          <div className={`notice workspace-panel ${config.ready ? 'success-notice' : 'setup-notice'}`} hidden={view === 'payments'}>
             <ShieldCheck size={19} />
             <div>
               <b>
@@ -2207,206 +2423,274 @@ function OperatorApp() {
               <span>
                 {config.ready
                   ? 'Starting a run authorizes paid tool calls within the policy below. No per-request approval is required.'
-                  : 'The readiness checks below explain what is missing. The policy lab is always available.'}
+                  : 'Open Setup to review what is missing. You can plan a budget in the policy lab at any time.'}
               </span>
             </div>
-            {!config.ready && (
-              <Link to="/lab" className="text-link">
-                Open policy lab <ArrowUpRight size={15} />
+            {!config.ready && view !== 'setup' && (
+              <Link to="/app?view=setup" className="text-link">
+                Review setup <ArrowUpRight size={15} />
               </Link>
             )}
           </div>
-          <div className="workspace-grid">
-            <section className="card composer">
-              <div className="card-heading">
-                <span className="section-index">01</span>
-                <h2>New assignment</h2>
+          <div className="workspace-panel" hidden={view !== 'overview'}>
+            <div className="workspace-summary" aria-label="Workspace summary">
+              <div className="workspace-summary-card">
+                <span className="workspace-summary-label">
+                  <Wallet size={15} />
+                  Payment wallet · USDC
+                </span>
+                <strong className="workspace-summary-value">
+                  {config.balance.usdc === null
+                    ? config.payer ? 'Unavailable' : 'Not connected'
+                    : formatMoney(config.balance.usdc)}
+                </strong>
+                <small>{config.paymentNetwork} · balance at last readiness check</small>
               </div>
-              <form className="form-content" onSubmit={start}>
-                <label className="field-label" htmlFor="wallet">
-                  Solana wallet<span>Public address only</span>
-                </label>
-                <div className="input-with-icon">
-                  <Wallet size={17} />
-                  <input
-                    id="wallet"
-                    placeholder="Enter a Solana wallet address"
+              <div className="workspace-summary-card">
+                <span className="workspace-summary-label">
+                  <Gauge size={15} />
+                  Daily allowance left
+                </span>
+                <strong className="workspace-summary-value">
+                  {formatMoney(config.dailyRemaining)}
+                </strong>
+                <small>USDC · across all agent runs</small>
+              </div>
+              <div className="workspace-summary-card">
+                <span className="workspace-summary-label">
+                  <ReceiptText size={15} />
+                  Saved runs
+                </span>
+                <strong className="workspace-summary-value">{runs.length}</strong>
+                <small>
+                  {runs.filter((run) => !terminalStatuses.has(run.status)).length} active · durable
+                  records
+                </small>
+              </div>
+            </div>
+            <div className="workspace-grid">
+              <section className="card composer">
+                <div className="card-heading">
+                  <span className="section-index">01</span>
+                  <h2>New assignment</h2>
+                </div>
+                <form className="form-content" onSubmit={start}>
+                  <label className="field-label" htmlFor="wallet">
+                    Solana wallet<span>Public address only</span>
+                  </label>
+                  <div className="input-with-icon">
+                    <Wallet size={17} />
+                    <input
+                      id="wallet"
+                      placeholder="Enter a Solana wallet address"
+                      required
+                      maxLength={44}
+                      value={wallet}
+                      onChange={(e) => setWallet(e.target.value)}
+                      disabled={pending}
+                    />
+                  </div>
+                  <label className="field-label" htmlFor="task">
+                    What should the agent do?
+                  </label>
+                  <textarea
+                    id="task"
+                    value={task}
                     required
-                    maxLength={44}
-                    value={wallet}
-                    onChange={(e) => setWallet(e.target.value)}
+                    minLength={10}
+                    maxLength={1500}
+                    rows={4}
+                    onChange={(e) => setTask(e.target.value)}
                     disabled={pending}
                   />
-                </div>
-                <label className="field-label" htmlFor="task">
-                  What should the agent do?
-                </label>
-                <textarea
-                  id="task"
-                  value={task}
-                  required
-                  minLength={10}
-                  maxLength={1500}
-                  rows={4}
-                  onChange={(e) => setTask(e.target.value)}
-                  disabled={pending}
-                />
-                <div className="two-fields">
-                  <div>
-                    <label className="field-label" htmlFor="allowance">
-                      Total allowance <span>USDC</span>
-                    </label>
-                    <input
-                      id="allowance"
-                      inputMode="decimal"
-                      required
-                      value={allowance}
-                      onChange={(e) => setAllowance(e.target.value)}
-                      disabled={pending}
-                    />
-                  </div>
-                  <div>
-                    <label className="field-label" htmlFor="cap">
-                      Per-request cap <span>USDC</span>
-                    </label>
-                    <input
-                      id="cap"
-                      inputMode="decimal"
-                      required
-                      value={cap}
-                      onChange={(e) => setCap(e.target.value)}
-                      disabled={pending}
-                    />
-                  </div>
-                </div>
-                <div className="field-label">
-                  Permitted services<span>First-party merchants</span>
-                </div>
-                <ToolList
-                  tools={config.tools}
-                  selected={selected}
-                  onToggle={(tool) =>
-                    setSelected((old) =>
-                      old.includes(tool) ? old.filter((t) => t !== tool) : [...old, tool]
-                    )
-                  }
-                />
-                <label className="field-label" htmlFor="expiry">
-                  Authorization expires after
-                </label>
-                <select
-                  id="expiry"
-                  value={expiry}
-                  onChange={(e) => setExpiry(e.target.value)}
-                  disabled={pending}
-                >
-                  <option value="5">5 minutes</option>
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                </select>
-                <button
-                  className="button button-primary full-width"
-                  type="submit"
-                  disabled={!config.ready || pending || selected.length === 0}
-                >
-                  {pending ? (
-                    <LoaderCircle size={17} className="spin" />
-                  ) : (
-                    <ShieldCheck size={17} />
-                  )}
-                  {pending
-                    ? 'Authorizing run…'
-                    : config.ready
-                      ? 'Authorize & start run'
-                      : 'Complete setup to start'}
-                  <ArrowRight size={17} />
-                </button>
-                <button
-                  className="button button-outline full-width"
-                  type="button"
-                  onClick={() => void authorizeExternal()}
-                  disabled={
-                    !config.externalReady || pending || externalPending || selected.length === 0
-                  }
-                >
-                  {externalPending ? (
-                    <LoaderCircle size={17} className="spin" />
-                  ) : (
-                    <Terminal size={17} />
-                  )}
-                  {externalPending
-                    ? 'Creating MCP grant…'
-                    : config.externalReady
-                      ? 'Authorize external MCP agent'
-                      : 'Enable MCP after readiness'}
-                  <ArrowRight size={17} />
-                </button>
-                {externalGrant && (
-                  <div className="notice success-notice external-grant" role="status">
-                    <KeyRound size={18} />
+                  <div className="two-fields">
                     <div>
-                      <b>External run authorized.</b>
-                      <span>
-                        Launch <code>npm run --silent mcp</code> with <code>MCP_GRANT_TOKEN</code>{' '}
-                        set in your MCP client’s private environment. Keep the token out of shell
-                        history and model messages. It expires at{' '}
-                        {new Date(externalGrant.expiresAt).toLocaleString()}.
-                      </span>
-                      <button
-                        className="grant-token"
-                        type="button"
-                        aria-label="Copy external agent grant token"
-                        onClick={() => void navigator.clipboard?.writeText(externalGrant.token)}
-                      >
-                        <code>{externalGrant.token}</code>
-                      </button>
-                      <Link className="text-link" to={`/runs/${externalGrant.runId}`}>
-                        Open external run receipt <ArrowUpRight size={15} />
-                      </Link>
+                      <label className="field-label" htmlFor="allowance">
+                        Total allowance <span>USDC</span>
+                      </label>
+                      <input
+                        id="allowance"
+                        inputMode="decimal"
+                        required
+                        value={allowance}
+                        onChange={(e) => setAllowance(e.target.value)}
+                        disabled={pending}
+                      />
+                    </div>
+                    <div>
+                      <label className="field-label" htmlFor="cap">
+                        Per-request cap <span>USDC</span>
+                      </label>
+                      <input
+                        id="cap"
+                        inputMode="decimal"
+                        required
+                        value={cap}
+                        onChange={(e) => setCap(e.target.value)}
+                        disabled={pending}
+                      />
                     </div>
                   </div>
-                )}
-                <p className="form-footnote">
-                  This authorizes {config.paymentNetwork} USDC tool charges. SOL fees/rent and
-                  OpenAI usage are separate. Stop prevents new payments; submitted payments can
-                  still settle.
-                </p>
-              </form>
-            </section>
-            <div className="workspace-right">
-              <section className="card payer-card">
-                <div className="card-heading">
-                  <Wallet size={18} />
-                  <h2>Payment wallet</h2>
-                  <span className="pill subtle-pill">{config.paymentNetwork}</span>
-                </div>
-                <div className="payer-balances">
-                  <div>
-                    <span>Available USDC</span>
-                    <b>
-                      {config.balance.usdc === null
-                        ? 'Unavailable'
-                        : formatMoney(config.balance.usdc)}
-                    </b>
+                  <div className="field-label">
+                    Permitted services<span>First-party merchants</span>
                   </div>
-                  <div>
-                    <span>SOL reserve</span>
-                    <b>{config.balance.sol ?? 'Unavailable'}</b>
-                  </div>
-                </div>
-                <div className="payer-address">
-                  <span>Server-managed signer</span>
-                  <code>{config.payer ?? 'No payer configured'}</code>
-                </div>
-                <div className="daily-budget">
-                  <span>
-                    Daily remaining <b>{formatMoney(config.dailyRemaining)} USDC</b>
-                  </span>
-                  <span>
-                    Across all runs <b>Ceiling {formatMoney(config.dailyCeiling)}</b>
-                  </span>
-                </div>
+                  <ToolList
+                    tools={config.tools}
+                    selected={selected}
+                    onToggle={(tool) =>
+                      setSelected((old) =>
+                        old.includes(tool) ? old.filter((t) => t !== tool) : [...old, tool]
+                      )
+                    }
+                  />
+                  <label className="field-label" htmlFor="expiry">
+                    Authorization expires after
+                  </label>
+                  <select
+                    id="expiry"
+                    value={expiry}
+                    onChange={(e) => setExpiry(e.target.value)}
+                    disabled={pending}
+                  >
+                    <option value="5">5 minutes</option>
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                  </select>
+                  <button
+                    className="button button-primary full-width"
+                    type="submit"
+                    disabled={!config.ready || pending || selected.length === 0}
+                  >
+                    {pending ? (
+                      <LoaderCircle size={17} className="spin" />
+                    ) : (
+                      <ShieldCheck size={17} />
+                    )}
+                    {pending
+                      ? 'Authorizing run…'
+                      : config.ready
+                        ? 'Authorize & start run'
+                        : 'Complete setup to start'}
+                    <ArrowRight size={17} />
+                  </button>
+                  <button
+                    className="button button-outline full-width"
+                    type="button"
+                    onClick={() => void authorizeExternal()}
+                    disabled={
+                      !config.externalReady || pending || externalPending || selected.length === 0
+                    }
+                  >
+                    {externalPending ? (
+                      <LoaderCircle size={17} className="spin" />
+                    ) : (
+                      <Terminal size={17} />
+                    )}
+                    {externalPending
+                      ? 'Creating MCP grant…'
+                      : config.externalReady
+                        ? 'Authorize external MCP agent'
+                        : 'Enable MCP after readiness'}
+                    <ArrowRight size={17} />
+                  </button>
+                  {externalGrant && (
+                    <div className="notice success-notice external-grant" role="status">
+                      <KeyRound size={18} />
+                      <div>
+                        <b>External run authorized.</b>
+                        <span>
+                          Launch <code>npm run --silent mcp</code> with <code>MCP_GRANT_TOKEN</code>{' '}
+                          set in your MCP client’s private environment. Keep the token out of shell
+                          history and model messages. It expires at{' '}
+                          {new Date(externalGrant.expiresAt).toLocaleString()}.
+                        </span>
+                        <GrantCopy
+                          token={externalGrant.token}
+                          label="Copy external agent grant token"
+                        />
+                        <Link className="text-link" to={`/runs/${externalGrant.runId}`}>
+                          Open external run receipt <ArrowUpRight size={15} />
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                  <p className="form-footnote">
+                    This authorizes {config.paymentNetwork} USDC tool charges. SOL fees/rent and
+                    OpenAI usage are separate. Stop prevents new payments; submitted payments can
+                    still settle.
+                  </p>
+                </form>
               </section>
+              <div className="workspace-right">
+                <section className="card payer-card">
+                  <div className="card-heading">
+                    <Wallet size={18} />
+                    <h2>Payment wallet</h2>
+                    <span className="pill subtle-pill">{config.paymentNetwork}</span>
+                  </div>
+                  <div className="payer-balances">
+                    <div>
+                      <span>Available USDC</span>
+                      <b>
+                        {config.balance.usdc === null
+                          ? 'Unavailable'
+                          : formatMoney(config.balance.usdc)}
+                      </b>
+                    </div>
+                    <div>
+                      <span>SOL reserve</span>
+                      <b>{config.balance.sol ?? 'Unavailable'}</b>
+                    </div>
+                  </div>
+                  <div className="payer-address">
+                    <span>Server-managed signer</span>
+                    <code>{config.payer ?? 'No payer configured'}</code>
+                  </div>
+                  <div className="daily-budget">
+                    <span>
+                      Daily remaining <b>{formatMoney(config.dailyRemaining)} USDC</b>
+                    </span>
+                    <span>
+                      Across all runs <b>Ceiling {formatMoney(config.dailyCeiling)}</b>
+                    </span>
+                  </div>
+                </section>
+                <section className="card workspace-settings-copy">
+                  <h2>A clear path to useful work.</h2>
+                  <p>
+                    Choose a task and its limits here. Your run keeps the authorization, tool
+                    results, and payment evidence together.
+                  </p>
+                  <Link className="text-link" to="/app?view=runs">
+                    Review your runs <ArrowRight size={15} />
+                  </Link>
+                  <p style={{ marginTop: 18 }}>
+                    Connection checks and provider details live in Setup.
+                  </p>
+                  <Link className="text-link" to="/app?view=setup">
+                    Open setup <ArrowRight size={15} />
+                  </Link>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div className="workspace-panel" hidden={view !== 'payments'}>
+            <MandatesPanel config={config} csrfToken={session.csrfToken} onChange={load} />
+            {!config.direct && (
+              <section className="card workspace-hosted-details">
+                <h2>Direct payments need setup.</h2>
+                <p>
+                  This server has not provided a direct-payment configuration. Check its connection
+                  and payment settings before authorizing a mandate.
+                </p>
+                <Link className="text-link" to="/app?view=setup">
+                  Review setup <ArrowRight size={15} />
+                </Link>
+              </section>
+            )}
+          </div>
+          <div className="workspace-panel workspace-setup-grid" hidden={view !== 'setup'}>
+            <div>
               <section className="card readiness-card">
                 <div className="card-heading">
                   <Gauge size={18} />
@@ -2452,38 +2736,107 @@ function OperatorApp() {
                 </p>
               </div>
             </div>
+            <section className="card workspace-settings-copy">
+              <h2>Operator access</h2>
+              <p>
+                This workspace belongs to one operator. Signing keys stay on your server; the
+                browser only sends authorized requests.
+              </p>
+              <div className="payer-address">
+                <span>Payment wallet</span>
+                <code>{config.payer ?? 'No payer configured'}</code>
+              </div>
+              <p>Check readiness after updating credentials, funding, or provider configuration.</p>
+              <Link className="text-link" to="/developers">
+                Connection guide <ArrowUpRight size={15} />
+              </Link>
+              <button
+                className="button button-outline full-width"
+                style={{ marginTop: 22 }}
+                onClick={() => void logout()}
+              >
+                Sign out of this workspace
+              </button>
+            </section>
           </div>
-          <MandatesPanel config={config} csrfToken={session.csrfToken} onChange={load} />
-          <section className="recent-runs">
+          <section
+            className="recent-runs workspace-panel"
+            hidden={view !== 'overview' && view !== 'runs'}
+          >
             <div className="details-heading">
               <h2>Recent runs</h2>
-              <span className="small muted">Durable receipts · Recoverable after refresh</span>
+              {view === 'overview' ? (
+                <Link className="text-link" to="/app?view=runs">
+                  View all runs <ArrowRight size={15} />
+                </Link>
+              ) : (
+                <span className="small muted">Durable receipts · Recoverable after refresh</span>
+              )}
             </div>
             <div className="card">
-              {runs.length ? (
-                runs.map((run) => (
-                  <Link className="recent-run" key={run.id} to={`/runs/${run.id}`}>
-                    <span className="tool-icon">
-                      <FileText size={18} />
-                    </span>
-                    <div>
-                      <b>{run.task}</b>
-                      <small>
-                        {new Date(run.createdAt).toLocaleString()} · {run.status}
-                      </small>
-                    </div>
-                    <span>
-                      {formatMoney(run.settled)}
-                      <small>USDC settled</small>
-                    </span>
-                    <ChevronRight size={17} />
-                  </Link>
-                ))
-              ) : (
+              <div className="workspace-run-filters workspace-panel" hidden={view !== 'runs'}>
+                <label>
+                  Search runs
+                  <input
+                    type="search"
+                    value={runSearch}
+                    onChange={(event) => setRunSearch(event.target.value)}
+                    placeholder="Search task, wallet, or run ID"
+                  />
+                </label>
+                <label>
+                  Run status
+                  <select value={runFilter} onChange={(event) => setRunFilter(event.target.value)}>
+                    <option value="all">All statuses</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                    <option value="stopped">Stopped</option>
+                    <option value="attention">Needs attention</option>
+                  </select>
+                </label>
+              </div>
+              {visibleRuns.map((run) => (
+                <Link className="recent-run" key={run.id} to={`/runs/${run.id}`}>
+                  <span className="tool-icon">
+                    <FileText size={18} />
+                  </span>
+                  <div>
+                    <b>{run.task}</b>
+                    <small>
+                      {new Date(run.createdAt).toLocaleString()} · {run.status}
+                    </small>
+                  </div>
+                  <span>
+                    {formatMoney(run.settled)}
+                    <small>USDC settled</small>
+                  </span>
+                  <ChevronRight size={17} />
+                </Link>
+              ))}
+              {runs.length === 0 && (
                 <div className="empty-state compact-empty">
                   <ReceiptText size={24} />
                   <h3>Your first run starts here.</h3>
                   <p>Completed and interrupted runs will remain available in this workspace.</p>
+                  <Link className="text-link" to="/app?view=overview">
+                    Create an assignment <ArrowRight size={15} />
+                  </Link>
+                </div>
+              )}
+              {view === 'runs' && runs.length > 0 && filteredRuns.length === 0 && (
+                <div className="empty-state compact-empty">
+                  <ReceiptText size={24} />
+                  <h3>No runs match these filters.</h3>
+                  <p>Try another task name or choose a different status.</p>
+                  <button
+                    className="text-link"
+                    onClick={() => {
+                      setRunSearch('');
+                      setRunFilter('all');
+                    }}
+                  >
+                    Clear filters
+                  </button>
                 </div>
               )}
             </div>
@@ -2510,7 +2863,7 @@ function LiveRun() {
       }
     } catch (e) {
       if (alive.current) {
-        if (e instanceof ApiError && e.status === 401) {
+        if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
           setRun(null);
           void refresh();
         }
@@ -2557,7 +2910,7 @@ function LiveRun() {
       );
       await load();
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
         setRun(null);
         void refresh();
       }
@@ -2577,7 +2930,7 @@ function LiveRun() {
       );
       await load();
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
         setRun(null);
         void refresh();
       }
@@ -2591,7 +2944,7 @@ function LiveRun() {
       const receipt = await api<unknown>(`/api/runs/${encodeURIComponent(id ?? '')}/export`);
       downloadJSON(receipt, `allowance-${id}-receipt.json`);
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
+      if (e instanceof ApiError && (e.status === 401 || e.status === 403)) {
         setRun(null);
         void refresh();
       }
@@ -2966,7 +3319,7 @@ function NotFound() {
       <span className="eyebrow">404 / Outside this allowance</span>
       <h1>This page isn’t here.</h1>
       <p>
-        This address is not one of ours. The home page, the policy lab and the working example are
+        This address is not one of ours. The home page, the policy lab and the walkthrough are
         each one step away.
       </p>
       <div className="not-found-actions">
@@ -2977,14 +3330,14 @@ function NotFound() {
           Go to the home page
         </Link>
         <Link className="text-link" to="/demo">
-          Try the working example <ArrowRight size={15} />
+          Open walkthrough <ArrowRight size={15} />
         </Link>
       </div>
     </main>
   );
 }
 function ScrollReset() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   useEffect(() => {
     const anchor = document.getElementById(window.location.hash.slice(1));
     if (anchor) anchor.scrollIntoView({ behavior: 'instant' });
@@ -2999,62 +3352,75 @@ function ScrollReset() {
       '/developers': 'For developers',
       '/login': 'Operator login',
     };
+    const sectionTitles = {
+      overview: 'Overview',
+      runs: 'Runs',
+      payments: 'Payments',
+      setup: 'Setup',
+    };
     const title =
-      rehearsalOnly && (pagePath === '/app' || pagePath === '/login' || isRun)
-        ? 'Operator access'
-        : isRun
-          ? 'Run receipt'
-          : (titles[pagePath] ?? 'Page not found');
+      pagePath === '/app' && new URLSearchParams(search).has('view')
+        ? sectionTitles[getWorkspaceView(search)]
+        : rehearsalOnly && (pagePath === '/app' || pagePath === '/login' || isRun)
+          ? 'Operator access'
+          : isRun
+            ? 'Run receipt'
+            : (titles[pagePath] ?? 'Page not found');
     document.title =
       pagePath === '/' ? 'Allowance — Give your agent a budget.' : `${title} · Allowance`;
-  }, [pathname]);
+  }, [pathname, search]);
   return null;
 }
 export default function App() {
+  const { pathname } = useLocation();
+  const workspace =
+    /^\/(app|login|lab|demo)\/?$/.test(pathname) || /^\/runs\/[^/]+\/?$/.test(pathname);
   return (
     <>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
       <ScrollReset />
-      <Header />
-      <div id="main-content" tabIndex={-1}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/demo" element={<Demo />} />
-          <Route
-            path="/lab"
-            element={
-              <>
-                <PolicyLab />
-                <Footer />
-              </>
-            }
-          />
-          <Route path="/login" element={rehearsalOnly ? <HostedConsole /> : <Login />} />
-          <Route path="/app" element={rehearsalOnly ? <HostedConsole /> : <OperatorApp />} />
-          <Route path="/runs/:id" element={rehearsalOnly ? <HostedConsole /> : <LiveRun />} />
-          <Route path="/developers" element={<Developers />} />
-          <Route
-            path="/brand"
-            element={
-              <>
-                <BrandKit />
-                <Footer />
-              </>
-            }
-          />
-          <Route
-            path="*"
-            element={
-              <>
-                <NotFound />
-                <Footer />
-              </>
-            }
-          />
-        </Routes>
-      </div>
+      {!workspace && <Header />}
+      <WorkspaceShell enabled={workspace}>
+        <div id="main-content" tabIndex={-1}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/demo" element={<Demo />} />
+            <Route
+              path="/lab"
+              element={
+                <>
+                  <PolicyLab />
+                  <Footer />
+                </>
+              }
+            />
+            <Route path="/login" element={rehearsalOnly ? <HostedConsole /> : <Login />} />
+            <Route path="/app" element={rehearsalOnly ? <HostedConsole /> : <OperatorApp />} />
+            <Route path="/runs/:id" element={rehearsalOnly ? <HostedConsole /> : <LiveRun />} />
+            <Route path="/developers" element={<Developers />} />
+            <Route
+              path="/brand"
+              element={
+                <>
+                  <BrandKit />
+                  <Footer />
+                </>
+              }
+            />
+            <Route
+              path="*"
+              element={
+                <>
+                  <NotFound />
+                  <Footer />
+                </>
+              }
+            />
+          </Routes>
+        </div>
+      </WorkspaceShell>
     </>
   );
 }
