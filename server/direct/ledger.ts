@@ -425,7 +425,7 @@ export class MandateLedger {
     return { created: outcome.created, payment: this.getPayment(outcome.id)! };
   }
   /** Re-runs every check that could have changed while chain reads were in flight. */
-  checkBeforeSign(id: string): void {
+  checkBeforeSign(id: string, payer: string): void {
     this.assertOwnership();
     const payment = this.paymentRow(id);
     const row = this.row(payment.mandate_id);
@@ -435,6 +435,8 @@ export class MandateLedger {
     const chain = PAYMENT_CHAINS[this.config.paymentNetwork];
     if (policy.network !== chain.network || policy.mint !== chain.mint)
       throw new PolicyError('Runtime payment configuration differs from the frozen mandate.');
+    if (payer !== policy.payer)
+      throw new PolicyError('Signing payer differs from the frozen mandate.');
     if (
       payment.status !== 'reserved' ||
       (payment.signed_identity && (JSON.parse(payment.signed_identity) as SignedIdentity).phase !== 'signing')
@@ -455,7 +457,7 @@ export class MandateLedger {
   markSigning(id: string, claim: SigningClaim) {
     this.db
       .transaction(() => {
-        this.checkBeforeSign(id);
+        this.checkBeforeSign(id, claim.payer);
         const result = this.db
           .prepare(
             "UPDATE direct_payments SET signed_identity=? WHERE id=? AND status='reserved' AND signed_identity IS NULL"

@@ -1,10 +1,11 @@
+import { evidencePath } from './evidence';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs/promises';
 test('landing, keyboard CTA, private route and developer guide', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Give your agent a budget.' })).toBeVisible();
   await page.screenshot({
-    path: 'evidence/release-2026-09-20-landing-desktop.png',
+    path: evidencePath('landing-desktop.png'),
     fullPage: true,
     animations: 'disabled',
   });
@@ -77,13 +78,13 @@ test('full fixture, separate probe and JSON export have exact accounting and no 
   await expect(page.locator('a[href*="explorer.solana.com"]')).toHaveCount(0);
   await page.getByRole('heading', { name: 'A little budget. Useful work.' }).click();
   await page.screenshot({
-    path: 'evidence/release-2026-09-20-rehearsal-desktop-complete.png',
+    path: evidencePath('rehearsal-desktop-complete.png'),
     fullPage: true,
     animations: 'disabled',
   });
   await page.emulateMedia({ media: 'print' });
   await page.pdf({
-    path: 'evidence/release-2026-09-20-rehearsal-print.pdf',
+    path: evidencePath('rehearsal-print.pdf'),
     format: 'A4',
     printBackground: true,
   });
@@ -117,7 +118,7 @@ test('mobile and reduced-motion layout, empty history, service failure and reset
   await page.getByRole('button', { name: 'Test the boundary' }).click();
   await page.getByRole('heading', { name: 'A little budget. Useful work.' }).click();
   await page.screenshot({
-    path: 'evidence/release-2026-09-20-rehearsal-mobile-complete.png',
+    path: evidencePath('rehearsal-mobile-complete.png'),
     fullPage: true,
     animations: 'disabled',
   });

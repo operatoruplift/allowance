@@ -147,4 +147,4 @@ Payment channels and remote MCP are planned adapters, kept as design notes. The 
 
 ## Seeker, Android and PWA
 
-Allowance installs as a PWA and ships an Android WebView shell (`android/`) for the Solana Seeker and dApp Store, with Solana Mobile Wallet Adapter support where the app connects a wallet. Build, test and publishing steps: [docs/seeker-and-pwa.md](docs/seeker-and-pwa.md).
+Allowance installs as a PWA and ships an Android WebView shell (`android/`) for the Solana Seeker and dApp Store, with native wallet-intent plumbing for future wallet flows. The current product uses a server-managed payer; native exports and device behavior still need validation. Build, test and publishing steps: [docs/seeker-and-pwa.md](docs/seeker-and-pwa.md).

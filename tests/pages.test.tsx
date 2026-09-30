@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
-import App, { RunDetails } from '../src/App';
+import App, { DirectStamp, RunDetails } from '../src/App';
 import { createDemo, demoProbe, fixtureStep } from '../src/demo';
 
 // The pages are rendered to markup here rather than described in a comment:
@@ -99,5 +99,18 @@ describe('unmatched routes', () => {
     expect(html).toContain('aria-label="Main navigation"');
     expect(html).toContain('aria-label="Footer navigation"');
     expect(html).toContain('href="/"');
+  });
+});
+
+
+describe('direct payment status', () => {
+  it('does not claim an unsigned reservation was submitted', () => {
+    const html = renderToStaticMarkup(<DirectStamp status="reserved" />);
+    expect(html).toContain('RESERVED');
+    expect(html).not.toContain('SUBMITTED');
+    expect(html).not.toContain('SETTLED');
+  });
+  it('shows submission only after the payment was submitted', () => {
+    expect(renderToStaticMarkup(<DirectStamp status="submitted" />)).toContain('SUBMITTED');
   });
 });

@@ -1,3 +1,4 @@
+import { evidencePath } from './evidence';
 import { test, expect, type Page } from '@playwright/test';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -156,7 +157,7 @@ test('controlled real auth: saved run survives refresh, stops, exports, and stay
   });
   await page.getByRole('heading', { name: 'Every step, in the open.' }).click();
   await page.screenshot({
-    path: 'evidence/release-2026-09-20-controlled-browser-auth-no-payments.png',
+    path: evidencePath('controlled-browser-auth-no-payments.png'),
     fullPage: true,
     animations: 'disabled',
   });

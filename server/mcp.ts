@@ -79,8 +79,9 @@ function verdict(payment: DirectPaymentDTO) {
     case 'expired':
       return 'NOT_SETTLED';
     case 'submitted':
-    case 'reserved':
       return 'SUBMITTED';
+    case 'reserved':
+      return 'RESERVED';
     case 'settlement-unknown':
       return 'UNKNOWN';
     default:

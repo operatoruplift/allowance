@@ -1,7 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import fs from 'node:fs/promises';
+import { evidencePath } from './evidence';
 
-const evidenceDirectory = 'evidence/scroll-motion-2026-09-23';
 const landing = (page: Page) => page.locator('main.landing-page');
 const storyStep = (page: Page, step: number) =>
   page.locator(`#allowance-story [data-story-step="${step}"]`);
@@ -45,10 +44,6 @@ async function expectUnobscuredReveals(page: Page) {
     .toEqual([]);
 }
 
-test.beforeAll(async () => {
-  await fs.mkdir(evidenceDirectory, { recursive: true });
-});
-
 test('landing scroll stays native, advances the story, and leads to a working example', async ({
   page,
 }) => {
@@ -75,7 +70,7 @@ test('landing scroll stays native, advances the story, and leads to a working ex
     await centerStoryStep(page, step);
     await expect(storyStep(page, step).getByRole('heading')).toBeVisible();
     await page.screenshot({
-      path: `${evidenceDirectory}/desktop-story-${step + 1}.png`,
+      path: evidencePath(`desktop-story-${step + 1}.png`),
       animations: 'disabled',
     });
   }
@@ -106,7 +101,7 @@ test('reducing motion midway through the story reveals all content immediately',
   }
   await storyStep(page, 1).scrollIntoViewIfNeeded();
   await page.screenshot({
-    path: `${evidenceDirectory}/desktop-motion-reduced.png`,
+    path: evidencePath(`desktop-motion-reduced.png`),
     animations: 'disabled',
   });
 
@@ -141,7 +136,7 @@ test('reduced-motion phone and tablet layouts keep the story and actions readabl
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
     ).toBe(true);
     await page.screenshot({
-      path: `${evidenceDirectory}/landing-${width}.png`,
+      path: evidencePath(`landing-${width}.png`),
       animations: 'disabled',
     });
 
@@ -156,7 +151,7 @@ test('reduced-motion phone and tablet layouts keep the story and actions readabl
       expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
     }
     await page.screenshot({
-      path: `${evidenceDirectory}/story-${width}.png`,
+      path: evidencePath(`story-${width}.png`),
       animations: 'disabled',
     });
     await page.getByRole('link', { name: 'Try the example', exact: true }).click();

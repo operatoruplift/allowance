@@ -1,13 +1,13 @@
 # Seeker and PWA readiness
 
-This branch makes Allowance run as an installed app on Android, iOS and the Solana Seeker, and ships the Android shell the Solana Mobile hackathon and dApp Store need. Everything below was lint-, type- and build-checked; the on-device steps still need a phone.
+Allowance includes an installable PWA and an Android WebView shell for the Solana Seeker. Browser installation and offline behavior are covered by automated Chromium checks. Native APK, device, and store validation remain separate steps; no on-device result is claimed here.
 
 ## What changed
 
 - `public/site.webmanifest` now uses `display: standalone`, declares `id`, `scope`, a description, categories, shortcuts to the policy lab and console, and a new maskable icon (`public/allowance-icon-maskable-512.png`, rendered from `allowance-a.svg` on the brand background).
 - `index.html` sets `viewport-fit=cover` and Android/iOS web-app metadata; `src/styles.css` pads `body` with `env(safe-area-inset-*)`.
-- `public/sw.js` caches the app shell and hashed assets for offline launches and serves every route from the cached shell when the network is gone. `/api`, `/merchant`, `/tools` and all receipts are excluded. `src/main.tsx` registers it in production builds only.
-- `scripts/build-rehearsal.ts` fixes a live bug: `/demo` redirects to `/lab` in the app, but `/lab` was missing from the Vercel rewrite list, so a refresh or shared link to `/lab` returned a 404. The rehearsal CSP also moves from `connect-src 'none'` to `'self'` (the worker fetches the app's own assets) and declares `worker-src` and `manifest-src`.
+- `public/sw.js` precaches the public HTML shell, its hashed JavaScript/CSS, fonts, and A logo for the first offline launch. Online visits refresh mutable artwork and the shell. API, merchant and tool requests bypass the cache, as do videos, ZIP/PDF downloads, and range requests. Payment data and receipt API responses are never cached. `src/main.tsx` registers it in production builds only.
+- `shared/routes.ts` supplies the static and server route lists. Both `/demo` and `/lab` are independent pages and support direct loads. Document CSP keeps `connect-src 'none'` on the static deployment; only `/sw.js` receives `connect-src 'self'` for public asset caching. Worker and manifest sources stay same-origin.
 - `android/` is a Solana Mobile Web Shell project (`com.operatoruplift.allowance`) wrapping the rehearsal site.
 - No wallet connection was added: the agent's signer is server-managed by design, so there is no user-facing signing flow to route through Mobile Wallet Adapter.
 
@@ -18,7 +18,11 @@ This branch makes Allowance run as an installed app on Android, iOS and the Sola
 3. Wallet: Allowance has no user wallet flow. Verify the install, the offline shell (`/lab` works after a reload with airplane mode on) and that the console renders inside safe areas.
 4. Offline: turn on airplane mode and relaunch. Static assets and the shell load from cache; live data shows its normal unavailable state rather than a browser error.
 
-Mobile Wallet Adapter registers itself only on Android in a secure context (or inside the Web Shell). Desktop, iOS and in-wallet browsers keep their injected wallets; nothing changes for them.
+The native shell includes wallet-intent handling for a future wallet flow. The web product currently uses a server-managed payer and does not connect or request a signature from a visitor wallet.
+
+## Native download limitation
+
+The current Android shell has no download listener or blob-export bridge. Browser/PWA JSON exports and brand downloads are tested separately; do not assume they work inside the native WebView. Use the system browser for saving files until a native download implementation has been added and verified on a device. Native file saving is an outstanding Android integration task.
 
 ## Build the Android APK
 
@@ -61,6 +65,6 @@ Winners must list on the dApp Store to claim CLOCK IN prizes, and the listing is
 
 - [ ] Release APK built with the steps above and installed on a Seeker or Android device
 - [ ] Public GitHub repo (this one), with this branch merged
-- [ ] Demo video showing the install, the wallet handoff and the core flow on a phone
+- [ ] Demo video showing the install, policy lab, and actual supported flow on a phone
 - [ ] Pitch deck: problem, product, why mobile-first, traction, team
 - [ ] Optional SKR integration for the separate $10K SKR prize

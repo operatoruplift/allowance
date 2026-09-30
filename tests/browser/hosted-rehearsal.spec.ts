@@ -1,3 +1,4 @@
+import { evidencePath } from './evidence';
 import { expect, test } from '@playwright/test';
 import fs from 'node:fs/promises';
 
@@ -30,7 +31,7 @@ test('hosted private routes explain the backend boundary without accessing any A
   await page.goto(new URL('/app', baseURL).href);
   await page.getByRole('heading', { name: 'Mainnet setup required.' }).click();
   await page.screenshot({
-    path: 'evidence/hosted-rehearsal-console.png',
+    path: evidencePath('hosted-rehearsal-console.png'),
     fullPage: true,
     animations: 'disabled',
   });
@@ -42,7 +43,7 @@ test('hosted private routes explain the backend boundary without accessing any A
   );
   await page.getByRole('heading', { name: 'Mainnet setup required.' }).click();
   await page.screenshot({
-    path: 'evidence/hosted-console-mobile.png',
+    path: evidencePath('hosted-console-mobile.png'),
     fullPage: true,
     animations: 'disabled',
   });
@@ -69,7 +70,7 @@ test('hosted rehearsal exports fixture accounting without a signature or network
   await expect(page.getByText('Set a boundary. Plan the work. Keep control.')).toBeVisible();
   await page.getByRole('heading', { name: 'Give your agent a budget.' }).click();
   await page.screenshot({
-    path: 'evidence/hosted-landing-desktop.png',
+    path: evidencePath('hosted-landing-desktop.png'),
     fullPage: true,
     animations: 'disabled',
   });
@@ -101,7 +102,7 @@ test('hosted rehearsal exports fixture accounting without a signature or network
   expect(serviceRequests).toEqual([]);
   await page.getByRole('heading', { name: 'A little budget. Useful work.' }).click();
   await page.screenshot({
-    path: 'evidence/hosted-rehearsal-receipt.png',
+    path: evidencePath('hosted-rehearsal-receipt.png'),
     fullPage: true,
     animations: 'disabled',
   });
@@ -115,7 +116,7 @@ test('hosted rehearsal exports fixture accounting without a signature or network
     });
   expect(printedTimeline).toEqual({ animation: 'none', opacity: '1' });
   await page.pdf({
-    path: 'evidence/hosted-rehearsal-print.pdf',
+    path: evidencePath('hosted-rehearsal-print.pdf'),
     format: 'A4',
     printBackground: true,
   });

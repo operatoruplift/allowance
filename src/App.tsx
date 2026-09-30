@@ -1595,7 +1595,7 @@ function Login() {
 function abbreviate(address: string) {
   return address.length > 12 ? `${address.slice(0, 4)}…${address.slice(-4)}` : address;
 }
-function DirectStamp({ status }: { status: DirectPaymentDTO['status'] }) {
+export function DirectStamp({ status }: { status: DirectPaymentDTO['status'] }) {
   const [label, tone] =
     status === 'settled'
       ? ['SETTLED', 'green']
@@ -1607,7 +1607,9 @@ function DirectStamp({ status }: { status: DirectPaymentDTO['status'] }) {
             ? ['UNKNOWN', 'amber']
             : status === 'released'
               ? ['RELEASED', 'amber']
-              : ['SUBMITTED', 'amber'];
+              : status === 'reserved'
+                ? ['RESERVED', 'amber']
+                : ['SUBMITTED', 'amber'];
   return <span className={`stamp stamp-${tone}`}>{label}</span>;
 }
 type RecipientDraft = { address: string; label: string };
@@ -2987,13 +2989,24 @@ function ScrollReset() {
     const anchor = document.getElementById(window.location.hash.slice(1));
     if (anchor) anchor.scrollIntoView({ behavior: 'instant' });
     else window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const pagePath = pathname.replace(/\/+$/, '') || '/';
+    const isRun = /^\/runs\/[^/]+$/.test(pagePath);
+    const titles: Record<string, string> = {
+      '/brand': 'Brand kit',
+      '/lab': 'Policy lab',
+      '/demo': 'Agent walkthrough',
+      '/app': 'Operator console',
+      '/developers': 'For developers',
+      '/login': 'Operator login',
+    };
+    const title =
+      rehearsalOnly && (pagePath === '/app' || pagePath === '/login' || isRun)
+        ? 'Operator access'
+        : isRun
+          ? 'Run receipt'
+          : (titles[pagePath] ?? 'Page not found');
     document.title =
-      rehearsalOnly &&
-      (pathname === '/app' || pathname === '/login' || pathname.startsWith('/runs/'))
-        ? 'Operator access · Allowance'
-        : pathname === '/'
-          ? 'Allowance — Give your agent a budget.'
-          : `${pathname === '/brand' ? 'Brand kit' : pathname === '/lab' ? 'Policy lab' : pathname === '/app' ? 'Operator console' : pathname === '/developers' ? 'For developers' : pathname === '/login' ? 'Operator login' : 'Run receipt'} · Allowance`;
+      pagePath === '/' ? 'Allowance — Give your agent a budget.' : `${title} · Allowance`;
   }, [pathname]);
   return null;
 }
