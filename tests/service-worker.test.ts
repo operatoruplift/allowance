@@ -31,9 +31,11 @@ function asBasic(result: Response): Response {
 async function worker() {
   const key = (input: Input) => new URL(typeof input === 'string' ? input : input.url, origin).href;
   const stores = new Map<string, Map<string, Response>>();
+  const cacheHeaders = new Map<string, Map<string, Headers>>();
   const handlers = new Map<string, EventHandler>();
   const requests: string[] = [];
   let offline = false;
+  let cacheOpenGate: Promise<void> | undefined;
   const network = new Map<string, () => Response>([
     ['/', () => response(html, 'text/html')],
     [bundle, () => response('console.log("ready")', 'application/javascript')],
@@ -42,16 +44,40 @@ async function worker() {
   ]);
   function open(name: string) {
     if (!stores.has(name)) stores.set(name, new Map());
+    if (!cacheHeaders.has(name)) cacheHeaders.set(name, new Map());
     const store = stores.get(name)!;
+    const storedHeaders = cacheHeaders.get(name)!;
     return {
-      match: async (input: Input) => store.get(key(input))?.clone(),
+      match: async (input: Input, options?: { ignoreVary?: boolean }) => {
+        const value = store.get(key(input));
+        const incoming = typeof input === 'string' ? new Headers() : input.headers;
+        const saved = storedHeaders.get(key(input));
+        const vary =
+          value?.headers
+            .get('vary')
+            ?.split(',')
+            .map((name) => name.trim().toLowerCase()) ?? [];
+        if (
+          !options?.ignoreVary &&
+          vary.some((name) => name === '*' || incoming.get(name) !== (saved?.get(name) ?? null))
+        )
+          return undefined;
+        return value?.clone();
+      },
       put: async (input: Input, value: Response) => {
         store.set(key(input), value.clone());
+        storedHeaders.set(
+          key(input),
+          new Headers(typeof input === 'string' ? undefined : input.headers)
+        );
       },
     };
   }
   const caches = {
-    open: async (name: string) => open(name),
+    open: async (name: string) => {
+      await cacheOpenGate;
+      return open(name);
+    },
     keys: async () => [...stores.keys()],
     delete: async (name: string) => stores.delete(name),
     match: async (input: Input, { cacheName }: { cacheName: string }) =>
@@ -77,7 +103,11 @@ async function worker() {
       return network.get(url.pathname)?.() ?? response('asset');
     },
   });
-  async function event(name: string, request?: Request) {
+  async function event(
+    name: string,
+    request?: Request,
+    consumeBeforeBackground?: (response: Response) => Promise<void>
+  ) {
     const pending: Promise<unknown>[] = [];
     let result: Promise<Response> | undefined;
     handlers.get(name)!({
@@ -88,13 +118,19 @@ async function worker() {
       },
     });
     const answer = result ? await result : undefined;
+    if (answer && consumeBeforeBackground) await consumeBeforeBackground(answer);
     await Promise.all(pending);
     return answer;
   }
-  const request = (path: string, init: RequestInit = {}, navigate = false) => {
+  const request = (
+    path: string,
+    init: RequestInit = {},
+    navigate = false,
+    consumeBeforeBackground?: (response: Response) => Promise<void>
+  ) => {
     const value = new Request(new URL(path, origin), init);
     if (navigate) Object.defineProperty(value, 'mode', { value: 'navigate' });
-    return event('fetch', value);
+    return event('fetch', value, consumeBeforeBackground);
   };
   return {
     caches,
@@ -103,6 +139,16 @@ async function worker() {
     requests,
     event,
     request,
+    pauseCacheOpen: () => {
+      let release!: () => void;
+      cacheOpenGate = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return () => {
+        cacheOpenGate = undefined;
+        release();
+      };
+    },
     offline: () => {
       offline = true;
     },
@@ -116,6 +162,31 @@ describe('public service worker', () => {
     app.offline();
     expect(await (await app.request('/lab', {}, true))!.text()).toBe(html);
     for (const path of [bundle, style, font]) expect(await app.request(path)).toBeDefined();
+  });
+
+  it('serves public precached modules and fonts despite same-origin CORS header variation', async () => {
+    const app = await worker();
+    app.network.set(bundle, () => response('module', 'application/javascript', { vary: 'Origin' }));
+    app.network.set(font, () => response('font', 'font/woff2', { vary: 'Origin' }));
+    await app.event('install');
+    app.offline();
+    expect(await (await app.request(bundle, { headers: { origin } }))!.text()).toBe('module');
+    expect(await (await app.request(font, { headers: { origin } }))!.text()).toBe('font');
+    await expect(
+      app.request(bundle, { headers: { origin: 'https://foreign.test' } })
+    ).rejects.toThrow('offline');
+  });
+
+  it('does not ignore other Vary headers when matching a public cache entry', async () => {
+    const app = await worker();
+    app.network.set(bundle, () =>
+      response('module', 'application/javascript', { vary: 'Origin, Accept-Language' })
+    );
+    await app.event('install');
+    app.offline();
+    await expect(
+      app.request(bundle, { headers: { origin, 'accept-language': 'fr' } })
+    ).rejects.toThrow('offline');
   });
 
   it('retires a previous install and never reuses its stale artwork', async () => {
@@ -147,6 +218,23 @@ describe('public service worker', () => {
     app.offline();
     expect(await (await app.request('/lab', {}, true))!.text()).toBe(newHtml);
     expect(await (await app.request(newBundle))!.text()).toBe('new bundle');
+  });
+
+  it('refreshes offline HTML even when the browser consumes it before cache open finishes', async () => {
+    const app = await worker();
+    await app.event('install');
+    const nextBundle = '/assets/index-release2.js';
+    const nextHtml = html.replace(bundle, nextBundle);
+    app.network.set('/lab', () => response(nextHtml, 'text/html'));
+    app.network.set(nextBundle, () => response('release two', 'application/javascript'));
+    const release = app.pauseCacheOpen();
+    await app.request('/lab', {}, true, async (response) => {
+      expect(await response.text()).toBe(nextHtml);
+      release();
+    });
+    app.offline();
+    expect(await (await app.request('/lab', {}, true))!.text()).toBe(nextHtml);
+    expect(await (await app.request(nextBundle))!.text()).toBe('release two');
   });
 
   it('keeps the previous offline shell if a release dependency cannot be cached', async () => {

@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "tsx watch server/index.ts",
-    "build": "vite build && tsc -p tsconfig.server.json",
-    "build:rehearsal": "tsx scripts/build-rehearsal.ts",
+    "build": "NODE_ENV=production vite build && tsc -p tsconfig.server.json",
+    "build:rehearsal": "NODE_ENV=production tsx scripts/build-rehearsal.ts",
     "brand:generate": "tsx scripts/generate-brand-kit.ts",
     "start": "NODE_ENV=production node dist/server/index.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",

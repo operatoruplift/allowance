@@ -1,4 +1,24 @@
-# 90-second demo script
+# Product walkthrough scripts
+
+Last updated: **30 September 2026**.
+
+## Policy lab: a 60-second walkthrough
+
+Start with `/lab`, reached from **Explore the policy lab** on the landing page. This is a working capacity planner, not a payment run. Keep **No funds moved** visible and describe the amounts as planned tool costs. The page recalculates immediately; there is no run button.
+
+| Time | Screen/action | Narration |
+| --- | --- | --- |
+| 0:00–0:12 | Open `/lab`; show the three limits | “Give the task 0.040000 USDC, cap each request at 0.020000, and make 0.100000 available for the day.” |
+| 0:12–0:25 | Show the initial three requests and totals | “A wallet snapshot costs 0.010000. A transaction explanation costs 0.020000. Those two fit; the next explanation exceeds the remaining allowance. Planned costs are 0.030000, leaving 0.010000.” |
+| 0:25–0:37 | Change **Per-request cap** to `0.010000` | “The smaller cap blocks both explanations. Only the wallet snapshot fits, so planned costs fall to 0.010000. The requests are checked in order, and a blocked request consumes none of the allowance.” |
+| 0:37–0:47 | Press **Reset limits and requests**, then uncheck **Transaction explanation** | “Permission is a separate boundary. A tool can be blocked even when its price fits the budget.” |
+| 0:47–1:00 | Reset again, then press **Save policy plan** | “Save the plan to review its limits and decisions. No transaction was submitted. Running an agent requires an authenticated server policy and payment readiness.” |
+
+The downloaded `allowance-policy-plan.json` identifies itself as `kind: "policy-plan"` with `paymentSubmitted: false`; amounts are integer micro-USDC strings. It contains no settlement signature and cannot authorize spending. The planner covers catalog tools only, not direct-payment mandates. SOL fees and model usage are separate from its USDC figures.
+
+For a longer tour, lower **Daily capacity** to `0.020000`, add or remove requests, and enter an invalid amount to show the message next to its field. Reset before comparing results with the table. Record phone installation only on a device you actually tested; the Android shell does not yet provide a verified native file-download flow.
+
+## Separate `/demo` route: 90-second fixture walkthrough
 
 Use the **rehearsal script** until a genuine Allowance run has been recorded. Read-only RPC evidence and successful fixture tests are not settled purchase evidence. Put the recording date in the video and its description. Do not edit model decisions to fit this script.
 

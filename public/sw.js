@@ -36,6 +36,23 @@ const canStore = (response) =>
   response.type === 'basic' &&
   !/no-store/i.test(response.headers.get('cache-control') || '');
 
+// Browser module/font requests carry Origin while worker precache fetches do
+// not. Some static servers emit Vary: Origin for CORS headers despite serving
+// the same public file. Only that variation is safe to relax, and only for
+// this app's own origin. Never ignore language, authorization or other variants.
+async function matchPublicAsset(cache, request) {
+  const exact = await cache.match(request);
+  if (exact) return exact;
+  const origin = request.headers.get('origin');
+  if (origin && origin !== self.location.origin) return undefined;
+  const candidate = await cache.match(request, { ignoreVary: true });
+  const vary = candidate?.headers
+    .get('vary')
+    ?.split(',')
+    .map((name) => name.trim().toLowerCase());
+  return vary?.length && vary.every((name) => name === 'origin') ? candidate : undefined;
+}
+
 async function storeAsset(cache, request, response, shellDependency = false) {
   if (!canStore(response)) {
     if (shellDependency) throw new Error('Shell dependency cannot be cached');
@@ -139,10 +156,13 @@ self.addEventListener('fetch', (event) => {
         try {
           const response = await fetch(request);
           if (canStore(response) && isHtml(response)) {
+            // Clone before handing the network body to the browser. Cache open
+            // is asynchronous and the browser may consume the original meanwhile.
+            const shell = response.clone();
             event.waitUntil(
               caches
                 .open(CACHE)
-                .then((cache) => cacheShell(cache, response.clone()))
+                .then((cache) => cacheShell(cache, shell))
                 .catch(() => {})
             );
           }
@@ -165,7 +185,7 @@ self.addEventListener('fetch', (event) => {
     (async () => {
       const cache = await caches.open(CACHE);
       if (isImmutable(url)) {
-        const cached = await cache.match(request);
+        const cached = await matchPublicAsset(cache, request);
         if (cached) return cached;
       }
       try {
@@ -173,7 +193,7 @@ self.addEventListener('fetch', (event) => {
         event.waitUntil(storeAsset(cache, request, response, isImmutable(url)).catch(() => {}));
         return response;
       } catch (error) {
-        const cached = await cache.match(request);
+        const cached = await matchPublicAsset(cache, request);
         if (cached) return cached;
         throw error;
       }
