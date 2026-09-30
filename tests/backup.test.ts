@@ -15,6 +15,7 @@ import { acquireServiceLease, assertServiceLeaseActive } from '../server/db/leas
 import { createRuntime } from '../server/runtime.js';
 import { initializeMerchantStore } from '../server/merchant/http.js';
 import { createAgentGrant } from '../server/mcp/grants.js';
+import { createMandateGrant, authorizeMandateGrant } from '../server/direct/grants.js';
 import { CATALOG, PAYMENT_CHAINS } from '../shared/domain.js';
 import type { PurchaseProposal } from '../server/payments/contracts.js';
 
@@ -85,7 +86,146 @@ const fixturePayment = (amount: string) => ({
   payload: { transaction: 'controlled-backup-payload-not-a-real-payment' },
 });
 
+const mandatePayer = 'GjwcWFQYzemBtpUoN5fMAP2FZviTtMRWCmrppGuTthJS';
+const mandateInput = {
+  label: 'Restored mandate',
+  perRequestCap: '0.010000',
+  ceiling: '0.020000',
+  expiresInMinutes: 10,
+  recipients: [{ address: input.wallet, label: 'Vendor' }],
+};
+const directRequest = {
+  requestId: 'backup_direct_request_1',
+  recipient: input.wallet,
+  amount: '0.010000',
+};
+function recoveryApproval(restorationId: string) {
+  return {
+    restorationId,
+    operator: 'test operator',
+    reconciledThrough: new Date().toISOString(),
+    allPostBackupActivityAccountedFor: true,
+    originalPaymentIdentitiesPreserved: true,
+    soleAuthoritativeJournal: true,
+    notes:
+      'Controlled metadata only: original payment identities are preserved and no funds moved.',
+  };
+}
+
 describe('supported SQLite backups and conservative restore', () => {
+  it('stops restored mandates, releases unsigned reservations, and revokes old grants before unlocking', async () => {
+    const root = directory();
+    const runtime = await runtimeAt(path.join(root, 'source.sqlite'));
+    const mandate = runtime.mandates.create(mandateInput, mandatePayer);
+    runtime.db
+      .prepare('INSERT INTO sessions VALUES(?,?,?)')
+      .run(
+        'mandate-session',
+        Date.now() + 600000,
+        JSON.stringify({ operator: 'operator', issuedAt: Date.now() })
+      );
+    const { grant, token } = createMandateGrant(runtime.db, runtime.mandates, {
+      mandateId: mandate.id,
+      owner: 'operator',
+      sessionId: 'mandate-session',
+      expiresAt: mandate.policy.expiresAt,
+    });
+    runtime.mandates.reserve(mandate.id, directRequest, 'external-agent');
+    const backupDir = path.join(root, 'backup');
+    await backupDatabase(runtime.config.databasePath, backupDir);
+    const restoredFile = path.join(root, 'restored.sqlite');
+    const restore = await restoreDatabase(backupDir, restoredFile);
+    const recovered = await runtimeAt(restoredFile);
+    expect(recovered.mandates.get(mandate.id).status).toBe('stopped');
+    expect(recovered.mandates.getPayment(directRequest.requestId)?.status).toBe('released');
+    expect(recovered.mandates.get(mandate.id).held).toBe('0');
+    // Older software could have produced a locked journal with an active mandate.
+    recovered.db
+      .prepare("UPDATE mandates SET status='active',stopped_at=NULL WHERE id=?")
+      .run(mandate.id);
+    recovered.close();
+    expect(approveRestoredJournal(restoredFile, recoveryApproval(restore.id))).toMatchObject({
+      signingLocked: false,
+      requiresNewAuthorization: true,
+    });
+    const approved = await runtimeAt(restoredFile);
+    expect(
+      approved.db.prepare('SELECT revoked_at FROM mandate_grants WHERE id=?').get(grant.id)
+    ).toEqual({
+      revoked_at: expect.any(Number),
+    });
+    expect(() =>
+      authorizeMandateGrant(approved.db, token, mandate.id, 'execute_guarded_payment')
+    ).toThrow(/revoked/);
+    expect(
+      approved.mandates.reserve(
+        mandate.id,
+        { ...directRequest, requestId: 'new_operator_request_1' },
+        'operator'
+      ).payment.reasonCode
+    ).toBe('mandate-stopped');
+    expect(approved.mandates.create(mandateInput, mandatePayer).status).toBe('active');
+  });
+
+  it.each(['reserved', 'submitted', 'settlement-unknown', 'settled'] as const)(
+    'keeps a restored %s direct payment locked until original chain evidence resolves it',
+    async (status) => {
+      const root = directory();
+      const runtime = await runtimeAt(path.join(root, 'source.sqlite'));
+      const mandate = runtime.mandates.create(mandateInput, mandatePayer);
+      runtime.mandates.reserve(mandate.id, directRequest, 'operator');
+      runtime.mandates.markSigning(directRequest.requestId, {
+        payer: mandatePayer,
+        messageHash: 'backup-unsigned-message',
+        blockhash: 'backup-unsigned-blockhash',
+        lastValidBlockHeight: '100',
+        source: 'backup-source',
+        destination: 'backup-destination',
+        createRecipientAccount: false,
+      });
+      runtime.mandates.markSigned(directRequest.requestId, {
+        signature: 'backup-metadata-not-a-real-signature',
+        wire: 'backup-metadata-not-a-real-transaction',
+      });
+      runtime.db
+        .prepare('UPDATE direct_payments SET status=?,chain_verified=0 WHERE id=?')
+        .run(status, directRequest.requestId);
+      const original = runtime.db
+        .prepare('SELECT signed_identity,signature FROM direct_payments WHERE id=?')
+        .get(directRequest.requestId);
+      const backupDir = path.join(root, 'backup');
+      await backupDatabase(runtime.config.databasePath, backupDir);
+      const restoredFile = path.join(root, 'restored.sqlite');
+      const restore = await restoreDatabase(backupDir, restoredFile);
+      expect(() => approveRestoredJournal(restoredFile, recoveryApproval(restore.id))).toThrow(
+        /Original unresolved/
+      );
+      const observed = openDatabase(restoredFile);
+      try {
+        expect(pendingRestore(observed)?.id).toBe(restore.id);
+        expect(
+          observed
+            .prepare('SELECT signed_identity,signature FROM direct_payments WHERE id=?')
+            .get(directRequest.requestId)
+        ).toEqual(original);
+        expect(
+          observed
+            .prepare('SELECT status,amount FROM direct_payments WHERE id=?')
+            .get(directRequest.requestId)
+        ).toEqual({ status, amount: 10000 });
+        // Represent a separately verified original outcome without signing or contacting a chain.
+        observed
+          .prepare("UPDATE direct_payments SET status='settled',chain_verified=1 WHERE id=?")
+          .run(directRequest.requestId);
+      } finally {
+        observed.close();
+      }
+      expect(approveRestoredJournal(restoredFile, recoveryApproval(restore.id))).toMatchObject({
+        signingLocked: false,
+      });
+    }
+  );
+
   it('captures committed WAL, preserves financial identity/cache/session/grants and locks stale restored signing', async () => {
     const fetcher = vi.fn<typeof fetch>();
     vi.stubGlobal('fetch', fetcher);

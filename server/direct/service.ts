@@ -208,6 +208,7 @@ export async function createDirectPaymentService(
   }
 
   async function submit(id: string, wire: string, signature: string) {
+    mandates.checkBeforeSubmit(id);
     const sent = await rpc.call('sendTransaction', [
       wire,
       { encoding: 'base64', preflightCommitment: 'confirmed', maxRetries: 3 },
@@ -329,7 +330,6 @@ export async function createDirectPaymentService(
   }
 
   async function reconcile() {
-    if (!signer) return;
     const unresolved = mandates.unresolved();
     if (unresolved.length === 0) return;
     if (rpc.network !== config.paymentNetwork)
@@ -340,14 +340,28 @@ export async function createDirectPaymentService(
       try {
         paymentOnConfiguredNetwork(pending.id);
         const { identity } = pending;
-        if (identity.phase === 'signed' && identity.wire && identity.signature && pending.status !== 'submitted') {
+        let transmissionAllowed = enabled;
+        try {
+          mandates.checkBeforeSubmit(pending.id);
+        } catch {
+          // A restored, read-only or stale runtime may still observe original outcomes.
+          transmissionAllowed = false;
+        }
+        if (transmissionAllowed && identity.phase === 'signed' && identity.wire && identity.signature && pending.status !== 'submitted') {
           // Signed, but the network never acknowledged it. While the blockhash is still
           // valid, re-broadcasting the identical bytes is idempotent: same signature,
           // same outcome, and a landing is caught by the status read below.
           const seen = await signatureStatus(rpc, identity.signature, true);
           if (seen.state === 'unknown') {
             const valid = (await rpc.call('isBlockhashValid', [identity.blockhash, { commitment: 'confirmed' }])) as { value?: boolean } | null;
-            if (valid?.value === true) await submit(pending.id, identity.wire, identity.signature);
+            if (valid?.value === true) {
+              try {
+                // The lease or restore state can change during the preceding RPC reads.
+                await submit(pending.id, identity.wire, identity.signature);
+              } catch {
+                // Failed or fenced transmission must not prevent read-only resolution.
+              }
+            }
           }
         }
         await resolve(pending.id, identity);

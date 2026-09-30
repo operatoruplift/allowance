@@ -29,6 +29,7 @@ import { PolicyError } from '../policy/decision.js';
 import type { Ledger } from '../policy/ledger.js';
 import type { DirectSettlementEvidence } from './transfer.js';
 import { assertMandateAuthorization } from './grants.js';
+import { assertRestoreApproved } from '../db/recovery.js';
 
 interface MandateRow {
   id: string;
@@ -488,6 +489,17 @@ export class MandateLedger {
           .run(JSON.stringify({ ...identity, ...signed, phase: 'signed' } satisfies SignedIdentity), signed.signature, id);
       })
       .immediate();
+  }
+  /** Replaying original signed bytes still requires an authoritative, unlocked runtime. */
+  checkBeforeSubmit(id: string) {
+    this.assertOwnership();
+    assertRestoreApproved(this.db);
+    const payment = this.paymentRow(id);
+    const identity = payment.signed_identity
+      ? (JSON.parse(payment.signed_identity) as SignedIdentity)
+      : undefined;
+    if (!identity || identity.phase !== 'signed' || !identity.signature || !identity.wire || !heldStates.includes(payment.status))
+      throw new PolicyError('No unresolved signed payment is available for submission.');
   }
   markSubmitted(id: string) {
     this.db

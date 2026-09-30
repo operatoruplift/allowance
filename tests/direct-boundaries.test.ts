@@ -8,6 +8,7 @@ import { MandateLedger } from '../server/direct/ledger.js';
 import { createDirectPaymentService } from '../server/direct/service.js';
 import { createMandateGrant, revokeSessionMandateGrants } from '../server/direct/grants.js';
 import { Ledger } from '../server/policy/ledger.js';
+import { acquireServiceLease } from '../server/db/lease.js';
 import { FakeChain } from './fixtures/direct-chain.js';
 
 const dbs: ReturnType<typeof openDatabase>[] = [];
@@ -184,5 +185,96 @@ describe('direct payment authorization boundaries', () => {
     expect(ledger.dailyUsed()).toBe(0);
     expect(signTransactions).not.toHaveBeenCalled();
     expect(chain.methods('sendTransaction')).toHaveLength(0);
+  });
+
+  it.each(['restored journal', 'expired lease', 'replaced lease'] as const)(
+    'keeps signed holds and observes expiry without broadcasting from a %s',
+    async (boundary) => {
+      const { config, db, ledger, mandates, chain, signer, signTransactions, pendingPayment } =
+        await setup();
+      const id = pendingPayment();
+      mandates.markUnknown(id, 'Stored original awaiting recovery.');
+      const originalIdentity = db
+        .prepare('SELECT signed_identity FROM direct_payments WHERE id=?')
+        .get(id);
+      let clock = Date.now();
+      const lease = acquireServiceLease(db, () => clock);
+      const guarded = new MandateLedger(db, config, ledger, Date.now, lease.assert);
+      const direct = await createDirectPaymentService(
+        config,
+        { ledger, mandates: guarded },
+        { rpc: chain, signer }
+      );
+      if (boundary === 'restored journal') {
+        db.prepare(
+          'INSERT INTO restore_recoveries(id,backup_id,backup_completed_at,restored_at) VALUES(?,?,?,?)'
+        ).run(
+          'boundary-restore',
+          'boundary-backup',
+          new Date().toISOString(),
+          new Date().toISOString()
+        );
+      } else {
+        clock += 20001;
+        if (boundary === 'replaced lease') acquireServiceLease(db, () => clock);
+      }
+      chain.blockHeight = 1n;
+      await direct.reconcile();
+      expect(chain.methods('sendTransaction')).toHaveLength(0);
+      expect(chain.methods('getSignatureStatuses').length).toBeGreaterThan(0);
+      expect(mandates.getPayment(id)?.status).toBe('settlement-unknown');
+      expect(ledger.payerFrozen()).toBe(true);
+      expect(db.prepare('SELECT signed_identity FROM direct_payments WHERE id=?').get(id)).toEqual(
+        originalIdentity
+      );
+      chain.blockHeight = 20n;
+      await direct.reconcile();
+      expect(chain.methods('sendTransaction')).toHaveLength(0);
+      expect(mandates.getPayment(id)?.status).toBe('expired');
+      expect(ledger.payerFrozen()).toBe(false);
+      expect(signTransactions).not.toHaveBeenCalled();
+    }
+  );
+
+  it('rechecks ownership after recovery RPC calls and still observes if the lease expired', async () => {
+    const { config, db, ledger, mandates, chain, signer, pendingPayment } = await setup();
+    const id = pendingPayment();
+    mandates.markUnknown(id, 'Stored original awaiting recovery.');
+    let clock = Date.now();
+    const lease = acquireServiceLease(db, () => clock);
+    const guarded = new MandateLedger(db, config, ledger, Date.now, lease.assert);
+    const direct = await createDirectPaymentService(
+      config,
+      { ledger, mandates: guarded },
+      { rpc: chain, signer }
+    );
+    const original = chain.call.bind(chain);
+    chain.call = async (method, params) => {
+      if (method === 'isBlockhashValid') clock += 20001;
+      return original(method, params);
+    };
+    chain.blockHeight = 20n;
+    await direct.reconcile();
+    expect(chain.methods('isBlockhashValid')).toHaveLength(1);
+    expect(chain.methods('sendTransaction')).toHaveLength(0);
+    expect(mandates.getPayment(id)?.status).toBe('expired');
+    expect(ledger.payerFrozen()).toBe(false);
+  });
+
+  it('can observe original payment expiry while direct payments are disabled and no signer is loaded', async () => {
+    const { config, ledger, mandates, chain, pendingPayment } = await setup();
+    const id = pendingPayment();
+    mandates.markUnknown(id, 'Stored original awaiting recovery.');
+    chain.blockHeight = 20n;
+    const direct = await createDirectPaymentService(
+      { ...config, directEnabled: false },
+      { ledger, mandates },
+      { rpc: chain }
+    );
+    expect(direct.payer).toBeNull();
+    await direct.reconcile();
+    expect(chain.methods('sendTransaction')).toHaveLength(0);
+    expect(mandates.getPayment(id)?.status).toBe('expired');
+    expect(ledger.payerFrozen()).toBe(false);
   });
 });
