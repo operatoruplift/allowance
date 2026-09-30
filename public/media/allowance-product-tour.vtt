@@ -1,0 +1,87 @@
+WEBVTT
+
+1
+00:00:01.000 --> 00:00:02.850
+An agent can do useful work.
+
+2
+00:00:03.000 --> 00:00:04.250
+It still needs a limit.
+
+3
+00:00:04.640 --> 00:00:05.950
+This is Allowance.
+
+4
+00:00:06.220 --> 00:00:08.350
+Start with a task, choose the tools,
+
+5
+00:00:08.680 --> 00:00:10.800
+and set how much the agent can spend.
+
+6
+00:00:11.360 --> 00:00:13.480
+In the policy lab, four cents covers
+
+7
+00:00:13.480 --> 00:00:16.300
+a wallet snapshot and a transaction explanation.
+
+8
+00:00:16.860 --> 00:00:19.200
+A second explanation would take us over budget,
+
+9
+00:00:19.380 --> 00:00:20.250
+so it’s blocked.
+
+10
+00:00:21.000 --> 00:00:23.500
+Bring the per-request limit down to one cent,
+
+11
+00:00:23.500 --> 00:00:25.400
+and the plan changes right away.
+
+12
+00:00:25.900 --> 00:00:28.050
+You can also turn a tool off entirely.
+
+13
+00:00:28.760 --> 00:00:32.700
+The workspace keeps runs, payments,
+and setup in their own places.
+
+14
+00:00:33.220 --> 00:00:35.650
+Review an outcome, inspect the decision,
+
+15
+00:00:35.900 --> 00:00:37.050
+and save the record.
+
+16
+00:00:37.660 --> 00:00:39.400
+This tour moves no funds.
+
+17
+00:00:39.900 --> 00:00:42.450
+Live runs use the connected operator backend,
+
+18
+00:00:42.780 --> 00:00:45.950
+where payments must pass the policy checks
+before signing.
+
+19
+00:00:46.520 --> 00:00:48.700
+Useful tools. Clear limits.
+
+20
+00:00:49.340 --> 00:00:50.500
+Every decision recorded.
+
+21
+00:00:51.160 --> 00:00:52.040
+That’s Allowance.

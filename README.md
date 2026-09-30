@@ -12,7 +12,7 @@ The public rehearsal works immediately without accounts, signing, paid HTTP requ
 
 The public rehearsal is live at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The [Vercel deployment guide](docs/vercel.md) documents its separate static build. Operator access and live payments run on the persistent backend described below.
 
-[Source on GitHub](https://github.com/operatoruplift/allowance) · [Brand kit](https://allowanceonsolana.vercel.app/brand) · [Download all brand assets](https://allowanceonsolana.vercel.app/brand/allowance-brand-kit.zip)
+[Source on GitHub](https://github.com/operatoruplift/allowance) · [Product tour](https://allowanceonsolana.vercel.app/demo#product-tour) · [Brand kit](https://allowanceonsolana.vercel.app/brand) · [Download all brand assets](https://allowanceonsolana.vercel.app/brand/allowance-brand-kit.zip)
 
 ## Run
 
@@ -34,16 +34,18 @@ npm start
 
 Production startup is **`npm start`**; Express serves `dist/client` and runs the bounded background worker. The local HTTP origin is allowed only at the exact configured loopback origin. Hosted origins must use HTTPS, with Secure cookies. Set `APP_ORIGIN` to the real origin and configure only the actual trusted proxy hop count.
 
-| Route         | Use                                                                           |
-| ------------- | ----------------------------------------------------------------------------- |
-| `/`           | Landing and interactive receipt preview                                       |
-| `/demo`       | Isolated deterministic rehearsal, including empty, failure and ambiguous recovery fixtures |
-| `/lab`        | Policy lab: set an allowance, a per-request cap and a daily limit, then save the plan       |
-| `/login`      | Single-operator password login                                                |
-| `/app`        | Authenticated readiness checks and task/policy composer                       |
-| `/runs/:id`   | Private durable run, report, JSON export, print view and stop                 |
-| `/developers` | Tool descriptions and server-side client example                              |
-| `/brand`      | Downloadable profiles, wallpapers, headers, social artwork and logos          |
+| Route         | Use                                                                                   |
+| ------------- | ------------------------------------------------------------------------------------- |
+| `/`           | Landing and interactive receipt preview                                               |
+| `/demo`       | Narrated product tour, captions and downloads; separate interactive outcome fixtures  |
+| `/lab`        | Policy lab: set an allowance, a per-request cap and a daily limit, then save the plan |
+| `/login`      | Single-operator password login                                                        |
+| `/app`        | Overview, Runs, Payments and Setup workspace; authenticated task and payment controls |
+| `/runs/:id`   | Private durable run, report, JSON export, print view and stop                         |
+| `/developers` | Tool descriptions and server-side client example                                      |
+| `/brand`      | Downloadable profiles, wallpapers, headers, social artwork and logos                  |
+
+The workspace uses a desktop sidebar and phone navigation. Direct section links are `/app?view=overview`, `/app?view=runs`, `/app?view=payments`, and `/app?view=setup`. The static public deployment shows setup requirements; private activity and live controls require the persistent operator backend. The [53-second product tour](https://allowanceonsolana.vercel.app/demo#product-tour) records the public planning tools without moving funds.
 
 ## Operator and live setup
 
@@ -130,7 +132,7 @@ The red brand edition includes 26 compositions in full-size PNG and outlined SVG
 
 `src` contains the original React UI; `shared` contains validated contracts and money handling. `server/auth`, `agent`, `policy`, `payments`, `merchant`, `data`, and `db` form one Express service. [Architecture](docs/architecture.md) explains trust boundaries; [the reusable example](examples/paid-tool.ts) demonstrates calling the guarded buyer outside the sample agent.
 
-- [90-second demo script](docs/demo-script.md)
+- [Product tour and interactive walkthrough guide](docs/demo-script.md)
 - [Product descriptions](docs/product-description.md)
 - [Submission draft](docs/submission.md), written to be finalized with a funded run's receipts and the event's published rules
 - [Verification report](docs/verification.md)

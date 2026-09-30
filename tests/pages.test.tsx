@@ -41,14 +41,14 @@ describe('the rehearsal page header', () => {
   });
 
   it('keeps the rehearsal notice it sits beside', () => {
-    expect(page('/demo')).toContain('You’re in rehearsal.');
+    expect(page('/demo')).toContain('No funds moved.');
   });
 });
 
 describe('the rehearsal triggers', () => {
   it('states unavailability with aria, so pressing run cannot drop focus', () => {
     const html = page('/demo');
-    const trigger = /<button[^>]*>(?:(?!<\/button>).)*Run the rehearsal/s.exec(html)?.[0] ?? '';
+    const trigger = /<button[^>]*>(?:(?!<\/button>).)*Run walkthrough/s.exec(html)?.[0] ?? '';
     expect(trigger, 'the run trigger should be in the markup').not.toHaveLength(0);
     expect(trigger).toContain('aria-disabled="false"');
     expect(trigger).toContain('aria-busy="false"');

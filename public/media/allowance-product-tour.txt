@@ -1,0 +1,18 @@
+ALLOWANCE · A budget. A boundary. A clear record.
+Product tour · 30 September 2026
+
+An agent can do useful work. It still needs a limit.
+
+This is Allowance. Start with a task, choose the tools, and set how much the agent can spend.
+
+In the policy lab, four cents covers a wallet snapshot and a transaction explanation. A second explanation would take us over budget, so it’s blocked.
+
+Bring the per-request limit down to one cent, and the plan changes right away. You can also turn a tool off entirely.
+
+The workspace keeps runs, payments, and setup in their own places. Review an outcome, inspect the decision, and save the record.
+
+This tour moves no funds. Live runs use the connected operator backend, where payments must pass the policy checks before signing.
+
+Useful tools. Clear limits. Every decision recorded. That’s Allowance.
+
+This walkthrough records the public planning tools. No payment was submitted.

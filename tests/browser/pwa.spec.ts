@@ -30,10 +30,10 @@ test('the first installed shell can reopen the policy lab offline', async ({ pag
   await context.setOffline(true);
   await page.goto('/lab');
   await expect(page.getByRole('heading', { name: /Find the right/ })).toBeVisible();
-  await expect(page.locator('.site-header .brand img')).toHaveJSProperty('complete', true);
+  await expect(page.locator('.workspace-brand img')).toHaveJSProperty('complete', true);
   expect(
     await page
-      .locator('.site-header .brand img')
+      .locator('.workspace-brand img')
       .evaluate((image) => (image as HTMLImageElement).naturalWidth)
   ).toBeGreaterThan(0);
   await expect(page.getByTestId('planned-cost')).toHaveText('0.030000');

@@ -1,0 +1,83 @@
+{
+  "kind": "recorded-product-tour",
+  "recordedAt": "2026-09-30T10:48:50.976Z",
+  "paymentSubmitted": false,
+  "onchainEvidence": false,
+  "recording": {
+    "resolution": [1920, 1080],
+    "durationSeconds": 53.066341,
+    "contentDurationSeconds": 53.06846835099999,
+    "scenes": [
+      {
+        "id": "overview",
+        "startSeconds": 0,
+        "durationSeconds": 11.2
+      },
+      {
+        "id": "policy",
+        "startSeconds": 11.2,
+        "durationSeconds": 9.5
+      },
+      {
+        "id": "cap",
+        "startSeconds": 20.7,
+        "durationSeconds": 4.8
+      },
+      {
+        "id": "permissions",
+        "startSeconds": 25.5,
+        "durationSeconds": 3
+      },
+      {
+        "id": "workspace",
+        "startSeconds": 28.5,
+        "durationSeconds": 4.3
+      },
+      {
+        "id": "save",
+        "startSeconds": 32.8,
+        "durationSeconds": 4.7
+      },
+      {
+        "id": "setup",
+        "startSeconds": 37.5,
+        "durationSeconds": 8.6
+      },
+      {
+        "id": "closing",
+        "startSeconds": 46.1,
+        "durationSeconds": 6.94
+      }
+    ],
+    "blockedRequests": [],
+    "browserErrors": []
+  },
+  "narration": {
+    "provider": "Runway",
+    "model": "eleven_v3",
+    "voice": "Niki",
+    "generated": true,
+    "durationSeconds": 51.04,
+    "audioOffsetSeconds": 1,
+    "outroSeconds": 1,
+    "speechTimeStretched": false
+  },
+  "assets": {
+    "/media/allowance-product-tour.mp4": {
+      "bytes": 4054754,
+      "sha256": "a2e87c8944905888287812d3dce8a6154ae08b7fe33c4b56e56c85d4e35107f2"
+    },
+    "/media/allowance-product-tour-poster.jpg": {
+      "bytes": 113440,
+      "sha256": "bfd906b5a334eb5437f4b5843012c9e3eedcdef6a5d7a23c54f8fe40b7d8f714"
+    },
+    "/media/allowance-product-tour.vtt": {
+      "bytes": 1463,
+      "sha256": "99231a934a5c8b4b1de3056b9b6ec9995488f071ef4c48c88ccce7e9b931557f"
+    },
+    "/media/allowance-product-tour.txt": {
+      "bytes": 922,
+      "sha256": "6023e71325bffaf2397eeb98d3234fa28955ceeebcaa2f40db1f2ab6dbf9e91e"
+    }
+  }
+}

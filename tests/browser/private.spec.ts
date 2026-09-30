@@ -183,3 +183,178 @@ test('controlled real auth: saved run survives refresh, stops, exports, and stay
   await expect(page.getByText(task, { exact: true })).toHaveCount(0);
   expect(externalRequests).toEqual([]);
 });
+
+test('workspace navigation retains assignment drafts, filters saved runs, and supports browser history', async ({
+  page,
+}) => {
+  const workspace = new PrivateWorkspace(page);
+  await workspace.login();
+  const navigation = page.getByRole('navigation', { name: 'Workspace navigation' });
+  const draft = 'Review this wallet and summarize activity within my budget.';
+  await page.getByLabel('What should the agent do?').fill(draft);
+  await page.getByLabel('Total allowance').fill('0.050000');
+  await navigation.getByRole('link', { name: 'Runs', exact: true }).click();
+  await expect(page).toHaveURL(/\/app\?view=runs$/);
+  await expect(page.getByRole('heading', { name: 'Your work, accounted for.' })).toBeFocused();
+  await page.getByRole('searchbox', { name: 'Search runs' }).fill('absent-task');
+  await expect(page.getByText('No runs match these filters.')).toBeVisible();
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await expect(page.getByRole('link').filter({ hasText: task })).toBeVisible();
+  await page.getByLabel('Run status').selectOption('completed');
+  await expect(page.getByText('No runs match these filters.')).toBeVisible();
+  await page.getByRole('button', { name: 'Clear filters' }).click();
+  await navigation.getByRole('link', { name: 'Payments', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Pay within your boundaries.' })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByRole('searchbox', { name: 'Search runs' })).toBeVisible();
+  await navigation.getByRole('link', { name: 'Overview', exact: true }).click();
+  await expect(page.getByLabel('What should the agent do?')).toHaveValue(draft);
+  await expect(page.getByLabel('Total allowance')).toHaveValue('0.050000');
+  await navigation.getByRole('link', { name: 'Setup', exact: true }).click();
+  await page.reload();
+  await expect(navigation.getByRole('link', { name: 'Setup', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page'
+  );
+  await expect(page.getByRole('button', { name: 'Check readiness' })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(navigation).toBeVisible();
+  await navigation.getByRole('link', { name: 'Overview', exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  );
+  await page.screenshot({
+    path: evidencePath('operator-workspace-mobile.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
+});
+
+test('expired readiness authorization clears private workspace information', async ({
+  page,
+  context,
+}) => {
+  await new PrivateWorkspace(page).login();
+  await page
+    .getByRole('navigation', { name: 'Workspace navigation' })
+    .getByRole('link', { name: 'Setup', exact: true })
+    .click();
+  await context.clearCookies();
+  await page.getByRole('button', { name: 'Check readiness' }).click();
+  await expect(page).toHaveURL(`${origin}/login`);
+  await expect(page.getByText(task, { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Payment wallet', exact: true })).toHaveCount(0);
+});
+
+test('one-time grant copy reports blocked clipboard access and survives workspace navigation', async ({
+  page,
+}) => {
+  // Only the grant response and readiness flag are controlled here. No payment or model runtime exists.
+  const token = 'browser-test-only-grant-not-a-credential';
+  await page.route(`${origin}/api/config`, async (route) => {
+    const response = await route.fetch();
+    if (response.status() !== 200) return route.fulfill({ response });
+    await route.fulfill({ response, json: { ...(await response.json()), externalReady: true } });
+  });
+  await page.route(`${origin}/api/external-runs`, async (route) => {
+    await route.fulfill({
+      json: { run: { id: runId }, grant: { token, expiresAt: '2099-01-01T00:00:00.000Z' } },
+    });
+  });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async () => {
+          throw new Error('Clipboard denied for this test');
+        },
+      },
+    });
+  });
+  await new PrivateWorkspace(page).login();
+  await page.getByLabel('Solana wallet').fill('11111111111111111111111111111111');
+  await page.getByRole('button', { name: 'Authorize external MCP agent', exact: true }).click();
+  const copy = page.getByRole('button', { name: 'Copy external agent grant token' });
+  await expect(copy).toBeVisible();
+  await copy.click();
+  await expect(
+    page.getByText('Copy was blocked. Select the token text and copy it manually.')
+  ).toBeVisible();
+  const navigation = page.getByRole('navigation', { name: 'Workspace navigation' });
+  await navigation.getByRole('link', { name: 'Payments', exact: true }).click();
+  await navigation.getByRole('link', { name: 'Overview', exact: true }).click();
+  await expect(copy).toContainText(token);
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (text: string) => {
+          document.body.dataset.copiedGrant = text;
+        },
+      },
+    });
+  });
+  await copy.click();
+  await expect(
+    page.getByText('Token copied. Keep it in your agent’s private environment.')
+  ).toBeVisible();
+  await expect(page.locator('body')).toHaveAttribute('data-copied-grant', token);
+});
+
+test('authorization recovery discards private drafts even when session refresh fails and is retried', async ({
+  page,
+}) => {
+  await new PrivateWorkspace(page).login();
+  const navigation = page.getByRole('navigation', { name: 'Workspace navigation' });
+  const fields = [
+    page.getByLabel('Solana wallet'),
+    page.getByLabel('What should the agent do?'),
+    page.getByLabel('Total allowance'),
+    page.getByLabel('Per-request cap'),
+    page.getByLabel('Authorization expires after'),
+  ];
+  const initial = await Promise.all(fields.map((field) => field.inputValue()));
+  await fields[0].fill('So11111111111111111111111111111111111111112');
+  await fields[1].fill(
+    'A private task draft that must be discarded after authorization is rejected.'
+  );
+  await fields[2].fill('0.080000');
+  await fields[3].fill('0.030000');
+  await fields[4].selectOption('30');
+  await page
+    .getByRole('checkbox', { name: 'Permit Transaction explanation', exact: true })
+    .uncheck();
+  await navigation.getByRole('link', { name: 'Runs', exact: true }).click();
+  await page.getByRole('searchbox', { name: 'Search runs' }).fill('private-search');
+  await page.getByLabel('Run status').selectOption('attention');
+  await navigation.getByRole('link', { name: 'Setup', exact: true }).click();
+  await page.route(`${origin}/api/preflight`, (route) =>
+    route.fulfill({ status: 403, json: { error: 'Authorization must be refreshed.' } })
+  );
+  let rejectedRefresh = false;
+  await page.route(`${origin}/api/session`, async (route) => {
+    if (!rejectedRefresh) {
+      rejectedRefresh = true;
+      return route.fulfill({
+        status: 503,
+        json: { error: 'Session connection temporarily unavailable.' },
+      });
+    }
+    return route.continue();
+  });
+  await page.getByRole('button', { name: 'Check readiness' }).click();
+  await expect(page.getByRole('alert')).toContainText(
+    'Session connection temporarily unavailable.'
+  );
+  await expect(page.getByLabel('What should the agent do?')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Retry connection' }).click();
+  await expect(page.getByRole('heading', { name: 'Ready for useful work.' })).toBeVisible();
+  await navigation.getByRole('link', { name: 'Overview', exact: true }).click();
+  for (const [index, field] of fields.entries()) await expect(field).toHaveValue(initial[index]);
+  await expect(
+    page.getByRole('checkbox', { name: 'Permit Transaction explanation', exact: true })
+  ).toBeChecked();
+  await navigation.getByRole('link', { name: 'Runs', exact: true }).click();
+  await expect(page.getByRole('searchbox', { name: 'Search runs' })).toHaveValue('');
+  await expect(page.getByLabel('Run status')).toHaveValue('all');
+});

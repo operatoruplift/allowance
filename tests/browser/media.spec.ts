@@ -68,7 +68,7 @@ test('device and saved motion preferences show posters without stopping example 
   );
   await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
   await page.goto('/demo');
-  await page.getByRole('button', { name: 'Run the rehearsal', exact: true }).click();
+  await page.getByRole('button', { name: 'Run walkthrough', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Your wallet activity brief' })).toBeVisible();
   await expect(page.locator('.budget-meter')).toContainText('0.030000');
   await expect(page.locator('.budget-meter')).toContainText('0.010000');
@@ -84,8 +84,8 @@ test('media failures and data saving keep the readable interface and supplied po
   await expect(cloud.locator('.decorative-film-poster')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Give your agent a budget.' })).toBeVisible();
   await page.screenshot({ path: evidencePath('media-failure.png'), fullPage: true });
-  await page.getByRole('link', { name: 'Try the example', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Run the rehearsal', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Open walkthrough', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Run walkthrough', exact: true })).toBeVisible();
 
   await page.addInitScript(() =>
     Object.defineProperty(navigator, 'connection', {
