@@ -23,6 +23,8 @@ Keep `LIVE_PAYMENTS_ENABLED=false` and `DIRECT_PAYMENTS_ENABLED=false` during in
 
 Canonical network values are fixed in `shared/domain.ts`: mainnet `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`, native USDC `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`, six decimals. These match the [official x402 exact SVM specification](https://github.com/x402-foundation/x402/blob/main/specs/schemes/exact/scheme_exact_svm.md) and [Circle USDC contract addresses](https://developers.circle.com/stablecoins/usdc-contract-addresses), checked 19 September 2026. A supported response is compatibility evidence, not payment proof.
 
+See the [dated facilitator compatibility check](facilitator-readiness.md) for PayAI's public exact-payment allowance, current discovery evidence, and authentication limitations of this client.
+
 ## Mainnet direct-payment configuration
 
 Direct transfers use the same dedicated payer, payment network/RPC and shared daily ceiling, with their own mandate limits. Explicitly set `PAYMENT_NETWORK=mainnet`, `PAYMENT_RPC_URL`, `MAINNET_PAYMENTS_ACKNOWLEDGED=true` and, only after reviewing the intended capability, `DIRECT_PAYMENTS_ENABLED=true`. This rail does not require `LIVE_PAYMENTS_ENABLED`, a merchant recipient, facilitator or sponsor. The network default remains mainnet; the [direct-payment guide](direct-payments.md) deliberately uses explicit devnet settings for its funded verification procedure.

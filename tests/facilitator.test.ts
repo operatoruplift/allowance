@@ -43,6 +43,83 @@ it('uses the installed v2 request shape with fixed endpoints, no redirects, a ti
   });
 });
 
+it('accepts mixed provider discovery but exposes only strictly validated v2 capabilities', async () => {
+  // Shape from PayAI's public /supported response; no provider is contacted by this test.
+  const feePayer = 'CjNFTjvBhbJJd2B5ePPMHRLx1ELZpa8dwQgGL727eKww';
+  const mainnet = {
+    x402Version: 2,
+    scheme: 'exact',
+    network: PAYMENT_CHAINS.mainnet.network,
+    extra: { feePayer, recentBlockhash: '11111111111111111111111111111111' },
+  };
+  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+    Response.json({
+      kinds: [
+        { x402Version: 1, scheme: 'exact', network: 'base-sepolia' },
+        { x402Version: 1, scheme: 'exact', network: 'solana', extra: { feePayer } },
+        { x402Version: 1, scheme: 'exact', network: PAYMENT_CHAINS.mainnet.network },
+        mainnet,
+      ],
+      extensions: ['bazaar'],
+      signers: { 'solana:*': [feePayer] },
+    })
+  );
+  const client = createBoundedFacilitatorClient({
+    url: 'https://facilitator.example',
+    fetch: fetcher,
+  });
+  await expect(client.getSupported()).resolves.toEqual({
+    kinds: [mainnet],
+    extensions: ['bazaar'],
+    signers: { 'solana:*': [feePayer] },
+  });
+  expect(fetcher).toHaveBeenCalledExactlyOnceWith(
+    'https://facilitator.example/supported',
+    expect.objectContaining({ method: 'GET', redirect: 'error' })
+  );
+});
+
+it.each([
+  { x402Version: 2, scheme: 'exact', network: 'solana' },
+  { x402Version: 2, scheme: 'exact', network: 'solana:' },
+  { x402Version: 2, scheme: 'exact', network: PAYMENT_CHAINS.mainnet.network, extra: 'bad' },
+  { x402Version: 1, scheme: 'exact', network: 'https://unapproved.example' },
+  { x402Version: 3, scheme: 'exact', network: PAYMENT_CHAINS.mainnet.network },
+])(
+  'rejects malformed discovery kinds instead of filtering away invalid v2 terms (%o)',
+  async (kind) => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+      Response.json({
+        kinds: [{ x402Version: 1, scheme: 'exact', network: 'solana' }, kind],
+      })
+    );
+    const client = createBoundedFacilitatorClient({
+      url: 'https://facilitator.example',
+      fetch: fetcher,
+    });
+    await expect(client.getSupported()).rejects.toThrow(
+      'Facilitator supported failed or returned an invalid bounded response.'
+    );
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  }
+);
+
+it('does not promote a legacy-only facilitator to v2 support', async () => {
+  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
+    Response.json({
+      kinds: [
+        { x402Version: 1, scheme: 'exact', network: 'solana' },
+        { x402Version: 1, scheme: 'exact', network: PAYMENT_CHAINS.mainnet.network },
+      ],
+    })
+  );
+  const client = createBoundedFacilitatorClient({
+    url: 'https://facilitator.example',
+    fetch: fetcher,
+  });
+  await expect(client.getSupported()).resolves.toMatchObject({ kinds: [] });
+});
+
 it.each([
   new Response('private-provider-body', {
     status: 302,

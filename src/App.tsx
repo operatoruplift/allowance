@@ -76,6 +76,7 @@ import LandingStory from './LandingStory';
 import PolicyLab from './PolicyLab';
 import WorkspaceShell, { getWorkspaceView } from './WorkspaceNav';
 import ProductTour from './ProductTour';
+import LaunchFilm from './LaunchFilm';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -475,9 +476,9 @@ function Landing() {
               <Link to="/demo" className="text-link">
                 Open walkthrough <ArrowRight size={16} />
               </Link>
-              <Link to="/developers" className="text-link">
-                See how it works <ArrowRight size={16} />
-              </Link>
+              <a href="#launch-film" className="text-link">
+                Watch launch film <ArrowRight size={16} />
+              </a>
             </div>
             <div className="hero-reassurance">
               <span className="overlap-circles">
@@ -542,6 +543,7 @@ function Landing() {
           />
         </section>
         <LandingStory />
+        <LaunchFilm />
         <section className="principles page-width" aria-label="How Allowance works">
           <div className="section-label" data-reveal>
             <span>Enough freedom to be useful.</span>

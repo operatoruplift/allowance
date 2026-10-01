@@ -11,6 +11,7 @@ export default defineConfig({
     'pwa.spec.ts',
     'navigation.spec.ts',
     'product-tour.spec.ts',
+    'launch-film.spec.ts',
   ],
   timeout: 60000,
   expect: { timeout: 15000 },
