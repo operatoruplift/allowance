@@ -775,6 +775,29 @@ describe('mainnet exact payment boundaries with controlled adapters', () => {
       expect(s.settle).not.toHaveBeenCalled();
     }
   );
+  it('rejects a mainnet capability whose fee payer differs from the reviewed sponsor before signing', async () => {
+    const s = await setup({ network: 'mainnet' });
+    vi.spyOn(s.adapters.facilitator!, 'getSupported').mockResolvedValue({
+      kinds: [
+        {
+          x402Version: 2,
+          scheme: 'exact',
+          network: PAYMENT_CHAINS.mainnet.network,
+          extra: { feePayer: s.recipient },
+        },
+      ],
+      extensions: [],
+      signers: { 'solana:*': [s.recipient] },
+    });
+    expect((await s.service.readiness()).ready).toBe(false);
+    await expect(
+      s.service.runPaidTool(s.run.id, 'wrong_sponsor_001', 'wallet_snapshot', {
+        address: s.payer,
+      })
+    ).rejects.toThrow(/unavailable/);
+    expect(s.sign).not.toHaveBeenCalled();
+    expect(s.settle).not.toHaveBeenCalled();
+  });
   it('rejects RPC cluster changes after preflight, before the payer signature', async () => {
     const s = await setup({ network: 'mainnet' });
     expect((await s.service.readiness()).ready).toBe(true);

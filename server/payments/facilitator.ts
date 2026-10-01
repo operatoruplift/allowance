@@ -54,14 +54,24 @@ const verificationSchema = z.object({
 const supportedSchema = z.object({
   kinds: z
     .array(
-      z.object({
-        x402Version: z.number().int().min(1).max(2),
-        scheme: z.string().max(64),
-        network,
-        extra,
-      })
+      z.discriminatedUnion('x402Version', [
+        z.object({
+          x402Version: z.literal(1),
+          scheme: z.string().max(64),
+          network: z.union([network, z.string().regex(/^[a-z0-9][a-z0-9-]{0,127}$/)]),
+          extra,
+        }),
+        z.object({
+          x402Version: z.literal(2),
+          scheme: z.string().max(64),
+          network,
+          extra,
+        }),
+      ])
     )
-    .max(128),
+    .max(128)
+    // Providers advertise legacy names alongside CAIP-2 kinds; this client only uses v2.
+    .transform((kinds) => kinds.filter((kind) => kind.x402Version === 2)),
   extensions: z.array(z.string().max(128)).max(64).default([]),
   signers: z.record(z.string(), z.array(z.string().max(128)).max(64)).default({}),
 });
