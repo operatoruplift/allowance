@@ -12,6 +12,7 @@
     "build": "NODE_ENV=production vite build && tsc -p tsconfig.server.json",
     "build:rehearsal": "NODE_ENV=production tsx scripts/build-rehearsal.ts",
     "brand:generate": "tsx scripts/generate-brand-kit.ts",
+    "store:kit": "tsx scripts/generate-store-kit.ts",
     "start": "NODE_ENV=production node dist/server/index.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "lint": "eslint .",
