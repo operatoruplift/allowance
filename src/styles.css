@@ -4604,6 +4604,49 @@ select {
 .footer-links a:hover {
   color: var(--accent);
 }
+/* The legal row is on every page, so the privacy policy and terms are always
+   one tap from anywhere in the app, as the dApp Store asks. */
+.footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px 18px;
+  margin-top: 4px;
+  padding-top: 9px;
+  border-top: 1px solid var(--border);
+  font-family: 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
+  font-size: 11px;
+  color: var(--secondary);
+}
+.footer-legal nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+}
+.footer-legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-family: 'Figtree', 'Avenir Next', Arial, sans-serif;
+  font-size: 12px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 4px;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
+}
+.footer-legal a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+@media (max-width: 650px) {
+  .footer-legal {
+    justify-content: flex-start;
+  }
+}
 .green-pill,
 .progress-steps > div.done > span {
   background: #edf5ef;

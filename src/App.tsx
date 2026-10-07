@@ -77,6 +77,9 @@ import PolicyLab from './PolicyLab';
 import WorkspaceShell, { getWorkspaceView } from './WorkspaceNav';
 import ProductTour from './ProductTour';
 import LaunchFilm from './LaunchFilm';
+import PrivacyPolicy from './PrivacyPolicy';
+import TermsOfUse from './TermsOfUse';
+import { OPERATOR_NAME } from './legal';
 
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
@@ -184,6 +187,13 @@ function Footer() {
             ? 'Set a boundary. Plan the work. Keep control.'
             : 'First-party tools · Network-bound payments · Durable receipts'}
         </span>
+        <div className="footer-legal">
+          <span>© 2026 {OPERATOR_NAME}</span>
+          <nav aria-label="Legal">
+            <Link to="/privacy">Privacy policy</Link>
+            <Link to="/terms">Terms of use</Link>
+          </nav>
+        </div>
       </div>
     </footer>
   );
@@ -647,7 +657,6 @@ function Landing() {
           </div>
         </section>
       </main>
-      <Footer />
     </>
   );
 }
@@ -3353,6 +3362,8 @@ function ScrollReset() {
       '/app': 'Operator console',
       '/developers': 'For developers',
       '/login': 'Operator login',
+      '/privacy': 'Privacy policy',
+      '/terms': 'Terms of use',
     };
     const sectionTitles = {
       overview: 'Overview',
@@ -3389,38 +3400,19 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/demo" element={<Demo />} />
-            <Route
-              path="/lab"
-              element={
-                <>
-                  <PolicyLab />
-                  <Footer />
-                </>
-              }
-            />
+            <Route path="/lab" element={<PolicyLab />} />
             <Route path="/login" element={rehearsalOnly ? <HostedConsole /> : <Login />} />
             <Route path="/app" element={rehearsalOnly ? <HostedConsole /> : <OperatorApp />} />
             <Route path="/runs/:id" element={rehearsalOnly ? <HostedConsole /> : <LiveRun />} />
             <Route path="/developers" element={<Developers />} />
-            <Route
-              path="/brand"
-              element={
-                <>
-                  <BrandKit />
-                  <Footer />
-                </>
-              }
-            />
-            <Route
-              path="*"
-              element={
-                <>
-                  <NotFound />
-                  <Footer />
-                </>
-              }
-            />
+            <Route path="/brand" element={<BrandKit />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfUse />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
+          {/* One footer for every page, the console and the walkthrough included, so the
+              privacy policy and terms are always a single tap away. */}
+          <Footer />
         </div>
       </WorkspaceShell>
     </>

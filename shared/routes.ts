@@ -4,6 +4,12 @@
 // Keeping it in one place is what stops the two from disagreeing, which is how a
 // real route ends up served by the platform's own error page instead of ours.
 
+/**
+ * The public legal documents. Store listings link straight to these addresses, so
+ * they must be pages on both deploy targets, never the 404 shell.
+ */
+export const LEGAL_ROUTES = ['/privacy', '/terms'] as const;
+
 /** Every concrete client route the router serves, `/runs/:id` written as a pattern. */
 export const CLIENT_ROUTES = [
   '/',
@@ -14,6 +20,7 @@ export const CLIENT_ROUTES = [
   '/login',
   '/app',
   '/runs/:id',
+  ...LEGAL_ROUTES,
 ] as const;
 
 /** `/runs/:id` becomes `runs/[^/]+`; the leading slash and trailing `/?` are added once. */
