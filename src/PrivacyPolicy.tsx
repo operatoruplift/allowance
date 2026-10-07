@@ -86,10 +86,10 @@ const sections: LegalSection[] = [
     body: (
       <p>
         The Android app is a WebView shell that opens the public site, so everything above applies
-        to it. The only permission it asks for is internet access, and it adds no analytics or
-        tracking of its own. It adds “Solana Mobile Web Shell” to its browser user agent, keeps the
-        site’s storage in the app’s own data, and opens links to other sites in your default
-        browser.
+        to it. It needs internet access and asks for no location, camera, microphone, contacts or
+        storage permission, and it adds no analytics or tracking of its own. It adds “Solana Mobile
+        Web Shell” to its browser user agent, keeps the site’s storage in the app’s own data, and
+        opens links to other sites in your default browser.
       </p>
     ),
   },
