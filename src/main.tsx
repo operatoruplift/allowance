@@ -1,3 +1,5 @@
+// First, so no schema is built before Zod is told not to probe for eval.
+import './zod-config';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';

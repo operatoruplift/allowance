@@ -73,6 +73,14 @@ android {
         buildConfigField("String", "WEB_SHELL_URL", "\"${webShellUrl.escapeForBuildConfig()}\"")
     }
 
+    // English only. The app has no translations of its own, but without this the
+    // APK declares every locale its AndroidX libraries ship (86 entries), and a
+    // store listing should not claim languages the app does not speak.
+    // res/values-en declares English itself, so the APK reports exactly `en`.
+    androidResources {
+        localeFilters += listOf("en")
+    }
+
     signingConfigs {
         if (hasReleaseSigning) {
             create("webShellRelease") {

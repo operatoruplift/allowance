@@ -5,7 +5,7 @@ import express from 'express';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { serveClient } from '../server/frontend.js';
-import { CLIENT_ROUTES } from '../shared/routes.js';
+import { CLIENT_ROUTES, LEGAL_ROUTES } from '../shared/routes.js';
 
 // The router renders a 404 page for an address it does not serve. Serving that
 // page under a 200 says the opposite to everything that reads the status rather
@@ -32,6 +32,16 @@ describe('the built client', () => {
       const response = await request(app).get(url);
       expect(response.status, `${url} should be a page`).toBe(200);
       expect(response.text).toContain('<div id="root">');
+    }
+  });
+
+  it('serves the privacy policy and terms as pages, with or without a trailing slash', async () => {
+    for (const route of LEGAL_ROUTES) {
+      for (const url of [route, `${route}/`]) {
+        const response = await request(app).get(url);
+        expect(response.status, `${url} should be a page`).toBe(200);
+        expect(response.text).toContain('<div id="root">');
+      }
     }
   });
 

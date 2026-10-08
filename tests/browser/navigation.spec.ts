@@ -9,6 +9,8 @@ test('direct public routes and the branded missing page have accurate browser ti
     ['/demo', 'Agent walkthrough'],
     ['/developers', 'For developers'],
     ['/brand', 'Brand kit'],
+    ['/privacy', 'Privacy policy'],
+    ['/terms', 'Terms of use'],
     ['/a-page-that-does-not-exist', 'Page not found'],
     ['/runs/a/b', 'Page not found'],
   ]) {

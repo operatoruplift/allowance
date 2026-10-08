@@ -1,6 +1,6 @@
 # Runtime configuration reference
 
-All variables below are **server-only**, except `VITE_REHEARSAL_ONLY`. Configure secrets through a private environment or mounted secret file; never through a browser, public export or `VITE_*`. Readiness reports presence and validation results, not credentials. `.env.example` is a template, not a funded configuration. Mainnet is the default network and signing defaults off.
+All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_SUPPORT_EMAIL`. Configure secrets through a private environment or mounted secret file; never through a browser, public export or `VITE_*`. Readiness reports presence and validation results, not credentials. `.env.example` is a template, not a funded configuration. Mainnet is the default network and signing defaults off.
 
 | Variable | Shape / default | Required when; source and purpose |
 | --- | --- | --- |
@@ -40,6 +40,7 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY`. Configure
 | `MCP_ENABLED` | Literal `true`; default false | Enables human-created external-run grants/local stdio adapter, not remote public MCP. |
 | `MCP_GRANT_TOKEN` | One-time-visible high-entropy token | Private stdio client environment only; from authenticated `POST /api/external-runs` for x402 or `POST /api/mandates` for direct payments. Bound to the run or mandate, session, scope and expiry; do not pass to the model. |
 | `VITE_REHEARSAL_ONLY` | Build constant `true` for public Vercel | The static build script forces this value and disables environment-file loading. No secret or network endpoint belongs in client configuration. |
+| `VITE_SUPPORT_EMAIL` | Optional public email address; empty | Contact shown on `/privacy` and `/terms`, read at build time and published in the page. Empty or malformed values fall back to the GitHub issue tracker. The static rehearsal build reads it only from the build environment (a Vercel project variable), never from `.env`. |
 
 For built-in x402 runs, the code also enforces a 180-second duration, four tool proposals, 48,000 accumulated model-input characters, fixed catalog prices, a 15,000-lamport fee limit per purchase and bounded provider responses. These are application controls rather than editable model inputs. The scripted two-purchase x402 smoke consumes at most 30,000 micro-USDC, with no third payment for its denied 20,000 probe. Two fee caps total at most 30,000 lamports paid by the separately pinned sponsor. Account creation is excluded on that rail; no paid model call is part of that smoke. Direct transfers use the separate SOL limits above, require payer-funded fees, and can create a recipient's associated USDC account within the configured cap.
 
