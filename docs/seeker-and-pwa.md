@@ -99,8 +99,6 @@ Read the [store listing decision](#store-listing-decision) first. The listing te
 
 Reviewers check that an app completes its core action. Today the app opens the no-spend rehearsal: it explains and simulates guarded agent payments but cannot make one, because payments run on an operator's own server and none is deployed. Apps behind a sign-in must also give reviewers a test login, and Allowance has no public sign-up, so a reviewable live version needs a running deployment and a reviewer account on it. The kit in `docs/dapp-store/` is ready for that moment.
 
-The case for listing sooner: CLOCK IN winners must list on the dApp Store to claim their prize. Weighing that against the review risk is the operator's decision.
-
 ## Decisions to make before the first publish
 
 - **Application ID is permanent.** This shell uses `com.operatoruplift.allowance`. Change `WEB_SHELL_APPLICATION_ID` in `android/gradle.properties` now or never.

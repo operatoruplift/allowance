@@ -8,7 +8,7 @@ Prepared 8 October 2026 for the [Solana dApp Publisher Portal](https://publish.s
 
 Reviewers check that an app completes its core action. Today the app opens the public rehearsal, which explains and simulates guarded agent payments but cannot make one: payments run on an operator's own server, and none is deployed. Gated apps must also give reviewers a test login, and Allowance has no public sign-up, so a reviewable live version needs a running deployment and a reviewer account on it.
 
-When those exist, update the description and reviewer notes to describe the live flow, add the test login to the reviewer notes, and submit. One reason to list sooner is that CLOCK IN winners must list on the dApp Store to claim their prize; that call is the operator's.
+When those exist, update the description and reviewer notes to describe the live flow, add the test login to the reviewer notes, and submit.
 
 ## App details
 
