@@ -76,32 +76,36 @@ test('the privacy policy and terms render under the rehearsal policy without cal
   expect(outside).toEqual([]);
 });
 
-test('every page links the privacy policy and terms from its footer', async ({ page }) => {
-  for (const path of [
-    '/',
-    '/demo',
-    '/lab',
-    '/developers',
-    '/brand',
-    '/app',
-    '/login',
-    '/runs/example-receipt',
-    '/privacy',
-    '/terms',
-    '/a-page-that-does-not-exist',
-  ]) {
+// One test per page, so each page load has its own time budget and a failure
+// names the page that lost its links.
+for (const path of [
+  '/',
+  '/demo',
+  '/lab',
+  '/developers',
+  '/brand',
+  '/app',
+  '/login',
+  '/runs/example-receipt',
+  '/privacy',
+  '/terms',
+  '/a-page-that-does-not-exist',
+]) {
+  test(`${path} links the privacy policy and terms from its footer`, async ({ page }) => {
     await page.goto(path);
     const footer = page.locator('footer.site-footer');
-    await expect(footer.getByRole('link', { name: 'Privacy policy' }), path).toHaveAttribute(
+    await expect(footer.getByRole('link', { name: 'Privacy policy' })).toHaveAttribute(
       'href',
       '/privacy'
     );
-    await expect(footer.getByRole('link', { name: 'Terms of use' }), path).toHaveAttribute(
+    await expect(footer.getByRole('link', { name: 'Terms of use' })).toHaveAttribute(
       'href',
       '/terms'
     );
-  }
+  });
+}
 
+test('the footer links open both legal pages from inside the walkthrough', async ({ page }) => {
   await page.goto('/demo');
   await page.locator('footer.site-footer').getByRole('link', { name: 'Privacy policy' }).click();
   await expect(page).toHaveURL(/\/privacy$/);
