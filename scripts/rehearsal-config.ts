@@ -82,7 +82,8 @@ export const config: { version: number; routes: RehearsalRoute[] } = {
     },
     { handle: 'filesystem' },
     // Every client route the router serves, so a direct load or a refresh does
-    // not 404.
+    // not 404. That includes /privacy and /terms, which store listings link to
+    // directly; they render from the shell under the same connect-src 'none'.
     { src: SPA_ROUTE, dest: '/index.html' },
     // Anything else is not a page here. Serve the app shell so the router's own
     // 404 renders with the site header, navigation and a home link, and keep the

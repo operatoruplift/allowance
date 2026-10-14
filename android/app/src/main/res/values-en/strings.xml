@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares English explicitly. With the English-only locale filter in
+     app/build.gradle.kts, this is the one language the APK reports. -->
+<resources>
+    <string name="app_name">Allowance</string>
+</resources>

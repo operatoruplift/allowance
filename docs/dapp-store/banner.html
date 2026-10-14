@@ -1,0 +1,319 @@
+<!doctype html>
+<!--
+  Solana dApp Store banner, exactly 1200 × 600. Rendered at deviceScaleFactor 1 by
+  `npm run store:kit -- --banner`, which serves this file and the brand assets it
+  references from the repository. Colors and type follow docs/brand.md; the
+  receipt repeats the landing page's own policy plan, figures and labels.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Allowance dApp Store banner</title>
+    <style>
+      @font-face {
+        font-family: 'Figtree';
+        src: url('../../public/fonts/figtree-latin-variable.woff2') format('woff2');
+        font-weight: 300 900;
+        font-display: block;
+      }
+      @font-face {
+        font-family: 'Geist Mono';
+        src: url('../../public/fonts/geist-mono-latin-variable.woff2') format('woff2');
+        font-weight: 100 900;
+        font-display: block;
+      }
+      :root {
+        --paper: #faf7f4;
+        --surface: #ffffff;
+        --ink: #281e20;
+        --muted: #6f6163;
+        --line: #e3d5d4;
+        --red: #b42336;
+        --red-dark: #921a2b;
+        --soft-red: #fbecee;
+        --green: #267656;
+        --mono: 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html,
+      body {
+        width: 1200px;
+        height: 600px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      body {
+        font-family: 'Figtree', Arial, sans-serif;
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        font-synthesis: none;
+      }
+      .banner {
+        position: relative;
+        width: 1200px;
+        height: 600px;
+        overflow: hidden;
+      }
+
+      /* The art plate, cut on the slant of the A's right stroke. */
+      .art {
+        position: absolute;
+        inset: 0 0 0 560px;
+        background: url('../../public/brand/art/sky.jpg') 100% 58% / auto 720px no-repeat;
+        clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%);
+      }
+      .art::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #faf7f430 0%, transparent 34%);
+      }
+
+      .copy {
+        position: absolute;
+        top: 56px;
+        left: 64px;
+        width: 560px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand img {
+        width: 40px;
+        height: 40px;
+      }
+      .brand span {
+        font-size: 31px;
+        font-weight: 650;
+        letter-spacing: -1.4px;
+      }
+      .brand b {
+        color: var(--red);
+        font-weight: 650;
+      }
+      .eyebrow {
+        margin-top: 70px;
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 2.4px;
+        text-transform: uppercase;
+        color: var(--red);
+      }
+      h1 {
+        margin-top: 18px;
+        font-size: 78px;
+        font-weight: 650;
+        line-height: 0.98;
+        letter-spacing: -3.6px;
+      }
+      .lede {
+        margin-top: 24px;
+        font-size: 23px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+      .rule {
+        position: absolute;
+        left: 64px;
+        bottom: 52px;
+        width: 470px;
+        padding-top: 14px;
+        border-top: 1px solid var(--ink);
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .rule span + span::before {
+        content: '·';
+        margin: 0 12px;
+        color: var(--red);
+      }
+
+      /* The landing page's policy plan, floating across the seam. */
+      .receipt {
+        position: absolute;
+        top: 212px;
+        left: 612px;
+        width: 352px;
+        padding: 20px 22px 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface);
+        box-shadow:
+          0 2px 0 #72132112,
+          0 30px 60px -24px #3b0c1466,
+          0 12px 24px -16px #3b0c1440;
+      }
+      .receipt-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .receipt-top .label {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .pill {
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: var(--soft-red);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--red-dark);
+      }
+      .total {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-top: 10px;
+        font-family: var(--mono);
+      }
+      .total b {
+        font-size: 34px;
+        font-weight: 500;
+        letter-spacing: -1px;
+      }
+      .total small {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .meter {
+        height: 6px;
+        margin: 12px 0 6px;
+        border-radius: 99px;
+        background: var(--soft-red);
+        overflow: hidden;
+      }
+      .meter span {
+        display: block;
+        width: 75%;
+        height: 100%;
+        border-radius: 99px;
+        background: var(--red);
+      }
+      .legend {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .legend b {
+        margin-left: 6px;
+        font-family: var(--mono);
+        font-weight: 500;
+        color: var(--ink);
+      }
+      ul {
+        margin-top: 12px;
+        padding: 0;
+        list-style: none;
+        border-top: 1px solid var(--line);
+      }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+        font-weight: 600;
+      }
+      li .cost {
+        text-align: right;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+      }
+      li .cost small {
+        display: block;
+        font-family: 'Figtree', Arial, sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .ok {
+        color: var(--green);
+      }
+      .blocked {
+        color: var(--red);
+      }
+      li.is-blocked {
+        margin: 0 -22px;
+        padding: 9px 22px;
+        background: var(--soft-red);
+      }
+      .receipt-bottom {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 11px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.4px;
+        color: var(--muted);
+      }
+      .receipt-bottom .dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        margin-right: 7px;
+        border-radius: 50%;
+        background: var(--muted);
+        vertical-align: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="banner">
+      <div class="art" aria-hidden="true"></div>
+      <div class="copy">
+        <div class="brand">
+          <img src="../../public/allowance-a.svg" alt="" />
+          <span>Allowance<b>.</b></span>
+        </div>
+        <p class="eyebrow">Agent budgets · USDC on Solana</p>
+        <h1>Give your agent<br />a budget.</h1>
+        <p class="lede">Useful tools. Clear limits.<br />Every decision recorded.</p>
+      </div>
+      <p class="rule"><span>Policy lab</span><span>Walkthrough</span><span>Receipts</span></p>
+      <section class="receipt" aria-label="Policy plan">
+        <div class="receipt-top">
+          <span class="label">Your allowance</span>
+          <span class="pill">Policy plan</span>
+        </div>
+        <p class="total"><b>0.040000</b><small>USDC</small></p>
+        <div class="meter"><span></span></div>
+        <p class="legend">
+          <span>Planned costs<b>0.030000</b></span>
+          <span>Allowance left<b>0.010000</b></span>
+        </p>
+        <ul>
+          <li>
+            Wallet snapshot
+            <span class="cost">0.010000<small class="ok">✓ Within limit</small></span>
+          </li>
+          <li>
+            Transaction explanation
+            <span class="cost">0.020000<small class="ok">✓ Within limit</small></span>
+          </li>
+          <li class="is-blocked">
+            One more transaction
+            <span class="cost">0.020000<small class="blocked">✕ Blocked</small></span>
+          </li>
+        </ul>
+        <p class="receipt-bottom">
+          <span><span class="dot"></span>Policy plan</span><span>No funds moved</span>
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -143,10 +143,12 @@ The red brand edition includes 26 compositions in full-size PNG and outlined SVG
 - [Local external-agent MCP runbook](docs/mcp.md)
 - [Payment channel transport design](docs/payment-channels.md), a documented future adapter
 - [Brand assets and tokens](docs/brand.md)
+- [Privacy policy](https://allowanceonsolana.vercel.app/privacy) and [terms of use](https://allowanceonsolana.vercel.app/terms), linked from every page's footer (source: `src/PrivacyPolicy.tsx`, `src/TermsOfUse.tsx`)
+- [Solana dApp Store listing kit](docs/dapp-store/listing.md): listing text, banner, screenshots and the listing decision
 - [Sources, SDK reuse and licenses](docs/sources.md)
 
 Payment channels and remote MCP are planned adapters, kept as design notes. The local stdio MCP bridge is implemented and uses the same application service, policy, ledger and receipts. Allowance is the working product name; assess trademark availability before any commercial use. Original application code and artwork use the MIT license. Third-party dependencies retain their own licenses.
 
 ## Seeker, Android and PWA
 
-Allowance installs as a PWA and ships an Android WebView shell (`android/`) for the Solana Seeker and dApp Store, with native wallet-intent plumbing for future wallet flows. The current product uses a server-managed payer; native exports and device behavior still need validation. Build, test and publishing steps: [docs/seeker-and-pwa.md](docs/seeker-and-pwa.md).
+Allowance installs as a PWA and ships an Android WebView shell (`android/`) for the Solana Seeker and dApp Store, with native wallet-intent plumbing for future wallet flows. The current product uses a server-managed payer; native exports and device behavior still need validation. The shell packages English resources only. Build, signing, test and publishing steps: [docs/seeker-and-pwa.md](docs/seeker-and-pwa.md). The store listing kit and the recommendation to hold the listing until a live server exists are in [docs/dapp-store/listing.md](docs/dapp-store/listing.md).
