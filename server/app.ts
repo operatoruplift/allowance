@@ -319,7 +319,8 @@ export function createApp(
   const mandateIdSchema = z.string().uuid();
   function directError(error: unknown, res: express.Response): boolean {
     if (error instanceof PaymentError) {
-      const status = error.code === 'disabled' ? 503 : error.code.startsWith('insufficient') ? 409 : 503;
+      const refused = error.code.startsWith('insufficient') || error.code === 'recipient-account';
+      const status = error.code === 'disabled' ? 503 : refused ? 409 : 503;
       res.status(status).json({
         error: error.message,
         code: `DIRECT_${error.code.toUpperCase().replace(/-/g, '_')}`,

@@ -16,7 +16,11 @@ import { approvalMessage, recipientApprovalSchema } from '../shared/mandate.js';
  * add_recipient_to_allowlist. The key never leaves this process; only the
  * signature does. A wallet that signs plain messages produces the same bytes.
  *
- *   npm run approve:recipient -- --mandate <uuid> --recipient <address> --label "Vendor" --key secrets/admin.json [--minutes 30]
+ *   npm run approve:recipient -- --mandate <uuid> --recipient <address> --label "Vendor" --key secrets/admin.json [--minutes 30] [--allow-program-owned]
+ *
+ * The recipient must be a wallet address, not a token account. Pass
+ * --allow-program-owned only for an account a program controls (a vault PDA);
+ * the flag is part of the signed text and defaults to off.
  */
 function flag(name: string, fallback?: string): string {
   const index = process.argv.indexOf(`--${name}`);
@@ -39,8 +43,17 @@ bytes.fill(0);
 const signer = await getAddressFromPublicKey(keyPair.publicKey);
 const nonce = randomBytes(18).toString('base64url');
 const expiresAt = new Date(Date.now() + minutes * 60_000).toISOString();
-const message = approvalMessage({ mandateId, address, label, nonce, expiresAt });
+const allowProgramOwnedRecipient = process.argv.includes('--allow-program-owned');
+const message = approvalMessage({ mandateId, address, label, nonce, expiresAt, allowProgramOwnedRecipient });
 const signature = getBase58Decoder().decode(await signBytes(keyPair.privateKey, getUtf8Encoder().encode(message)));
-const body = recipientApprovalSchema.parse({ address, label, nonce, expiresAt, signer, signature });
+const body = recipientApprovalSchema.parse({
+  address,
+  label,
+  nonce,
+  expiresAt,
+  signer,
+  signature,
+  ...(allowProgramOwnedRecipient ? { allowProgramOwnedRecipient } : {}),
+});
 process.stderr.write(`Signed by ${signer}; valid until ${expiresAt}. Message:\n${message}\n\n`);
 process.stdout.write(`${JSON.stringify(body, null, 2)}\n`);

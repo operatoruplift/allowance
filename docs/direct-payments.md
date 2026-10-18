@@ -13,7 +13,7 @@ A **mandate** is created once by the authenticated operator and never edited:
 | `perRequestCap` | The most one payment may move. |
 | `ceiling` | The most the mandate may move in total (settled plus held). It cannot exceed `DAILY_USDC_CEILING`. |
 | `expiresAt` | 1 minute to 24 hours after authorization. |
-| `recipients` | 1 to 20 Solana addresses with labels. The payer can never be a recipient. |
+| `recipients` | 1 to 20 Solana **wallet** addresses with labels: the owner that will sign for the funds, never a token account, a mint or a program. The payer can never be a recipient. |
 | `network`, `mint`, `payer` | Captured from the running configuration: the network's native USDC and the dedicated payer. |
 
 Recipients can be added later **only** with an administrator's signature (see below); nothing else about a mandate changes. Stopping a mandate releases unsigned reservations and revokes its grant.
@@ -24,7 +24,7 @@ Recipients can be added later **only** with an administrator's signature (see be
 
 ## What happens after "allowed"
 
-1. Read preconditions from the payment RPC: genesis hash, the payer's USDC account and balance, whether the recipient already has a USDC account, the payer's SOL, and a recent blockhash.
+1. Read preconditions from the payment RPC: genesis hash, what the recipient address itself is, the payer's USDC account and balance, whether the recipient already has a USDC account, the payer's SOL, and a recent blockhash. The recipient must be a system-owned wallet or an address with no account yet. A token account, a mint or an executable program pasted as the recipient is refused with `DIRECT_RECIPIENT_ACCOUNT` (MCP: `RECIPIENT_REJECTED`) and the reservation is released: funds sent to such an address's associated token account could never be moved again. Any other program-owned account (a vault PDA) is refused too, unless an administrator approved that recipient with `allowProgramOwnedRecipient` (below).
 2. Compose the exact transaction: compute budget, an idempotent create-associated-token-account instruction only when the recipient lacks one, a single `TransferChecked` of the approved amount with six decimals, and a memo naming the payment id.
 3. Check the fee against `DIRECT_MAX_FEE_LAMPORTS` and simulate the unsigned transaction. A failure here releases the reservation; nothing was signed.
 4. Re-run every policy check and durably claim signing (`signed_identity`). From this point the payment is held until chain evidence resolves it, exactly like an x402 purchase.
@@ -89,9 +89,12 @@ recipient: <address>
 label: <label>
 nonce: <16 to 64 URL-safe characters>
 expires: <ISO 8601 time, at most 24 hours ahead>
+program-owned recipient: allowed      <- only when allowProgramOwnedRecipient is true
 ```
 
 `npm run approve:recipient -- --mandate <id> --recipient <address> --label "Vendor" --key secrets/admin.json` signs it with a local keypair file and prints the JSON body. The server checks the signer is the configured administrator, the expiry is in the future and within a day, the signature verifies, and the nonce has never been used; the nonce is consumed in the same transaction that inserts the recipient.
+
+The recipient must be a wallet address, not a token account. To approve an account a program controls, such as a multisig vault PDA, add `--allow-program-owned` (the body carries `"allowProgramOwnedRecipient": true` and the signed text gains the last line above). The flag defaults to off, is stored with the recipient and is read again before every payment to that address; without it the rail refuses any program-owned recipient at the precondition read, and a signed approval cannot be widened afterwards because the flag changes the signed text.
 
 ## Verification
 

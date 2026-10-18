@@ -124,6 +124,7 @@ function paymentError(error: PaymentError): McpToolError {
     'request-id': 'INVALID_REQUEST',
     'invalid-tool': 'POLICY_DENIED',
     'policy-mismatch': 'POLICY_DENIED',
+    'recipient-account': 'RECIPIENT_REJECTED',
   };
   const code = codes[error.code] || 'PAYMENT_FAILED';
   const messages: Record<string, string> = {
@@ -135,6 +136,8 @@ function paymentError(error: PaymentError): McpToolError {
     INVALID_REQUEST: 'The request ID is invalid.',
     POLICY_DENIED: 'The frozen run policy denied this tool call.',
     PAYMENT_CHALLENGE_INVALID: 'The merchant payment challenge did not match the approved catalog.',
+    // The refusal names what the recipient address is (token account, mint, program); nothing secret.
+    RECIPIENT_REJECTED: error.message,
     PAYMENT_FAILED: 'The payment could not complete; inspect the durable receipt.',
   };
   return new McpToolError(code, messages[code] || messages.PAYMENT_FAILED);

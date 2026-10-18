@@ -227,10 +227,16 @@ export async function createDirectPaymentService(
     }
     let pre;
     try {
-      pre = await readTransferPreconditions(rpc, payer!, payment.recipient, chain.mint);
+      pre = await readTransferPreconditions(rpc, payer!, payment.recipient, chain.mint, {
+        allowProgramOwnedRecipient: mandates.recipientAllowsProgramOwned(mandateId, payment.recipient),
+      });
     } catch (error) {
-      mandates.releaseUnsigned(id, 'Payment RPC preconditions could not be read.');
-      throw error instanceof PaymentError ? error : new PaymentError('rpc-unavailable', 'Payment RPC read failed.', id);
+      // A refused recipient is a policy outcome worth keeping on the receipt; RPC trouble is not.
+      const refusal = error instanceof PaymentError ? error : undefined;
+      mandates.releaseUnsigned(id, refusal?.message ?? 'Payment RPC preconditions could not be read.');
+      throw refusal
+        ? new PaymentError(refusal.code, refusal.message, id)
+        : new PaymentError('rpc-unavailable', 'Payment RPC read failed.', id);
     }
     const amount = BigInt(payment.amount);
     const creation = pre.recipientAccountExists ? 0n : ACCOUNT_CREATION_LAMPORTS;

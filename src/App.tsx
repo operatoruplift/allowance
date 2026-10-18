@@ -1998,14 +1998,14 @@ function MandatesPanel({
             </div>
           </div>
           <div className="field-label">
-            Allowed recipients<span>Frozen with the mandate</span>
+            Allowed recipients<span>Wallet addresses, not token accounts · frozen with the mandate</span>
           </div>
           <div className="recipient-rows">
             {drafts.map((draft, index) => (
               <div className="recipient-row" key={index}>
                 <input
                   aria-label={`Recipient ${index + 1} address`}
-                  placeholder="Solana address"
+                  placeholder="Wallet address, not a token account"
                   maxLength={44}
                   value={draft.address}
                   onChange={(e) =>
