@@ -16,6 +16,7 @@ import { Ledger } from './policy/ledger.js';
 import { PolicyError } from './policy/decision.js';
 import { AgentRunner, type PaidToolRunner } from './agent/runner.js';
 import { createAgentGrant } from './mcp/grants.js';
+import { mountBridgeRoutes } from './mcp/bridge-routes.js';
 import { MandateLedger } from './direct/ledger.js';
 import { createMandateGrant, revokeMandateGrant } from './direct/grants.js';
 import { ApprovalError, verifyRecipientApproval } from './direct/approval.js';
@@ -107,6 +108,8 @@ export function createApp(
   );
   app.use(express.json({ limit: '24kb', strict: true }));
   payments.mountMerchant(app);
+  // Registered before the session layer: the local bridge authenticates with its token, never a cookie.
+  mountBridgeRoutes(app, { config, direct, mandates, payments });
   const { requireOperator } = installAuth(app, db, config, () => runner?.stopActive());
   let observed: Awaited<ReturnType<RuntimePayments['readiness']>> | undefined;
   let directObserved: Awaited<ReturnType<DirectPaymentService['readiness']>> | undefined;

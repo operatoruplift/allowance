@@ -39,6 +39,9 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_
 | `LLM_MAX_OUTPUT_TOKENS` | Integer 256–2000; `1200` | Per-model-call generated-token cap; provider billing remains separate from tool USDC. |
 | `MCP_ENABLED` | Literal `true`; default false | Enables human-created external-run grants/local stdio adapter, not remote public MCP. |
 | `MCP_GRANT_TOKEN` | One-time-visible high-entropy token | Private stdio client environment only; from authenticated `POST /api/external-runs` for x402 or `POST /api/mandates` for direct payments. Bound to the run or mandate, session, scope and expiry; do not pass to the model. |
+| `MCP_BACKEND_URL` | Backend origin; `http://127.0.0.1:<PORT>` | Where the bridge sends its paid tools. HTTPS, or HTTP on loopback only; the bridge always runs beside the backend because both read the same journal. |
+| `MCP_BACKEND_TOKEN` | 32–256 URL-safe characters; empty | Shared secret for `POST /api/bridge/...`, read by the backend and the bridge from the same private environment. Empty keeps that endpoint off (503) and the bridge's paid tools unavailable. Generate with `openssl rand -hex 32`; rotate by changing it in one place. |
+| `ALLOWANCE_MCP_LOCAL_SIGNER` | Literal `1`; unset | Bridge process only: load the payer key inside the MCP client process tree instead of forwarding to the backend. Announced on stderr; for isolated local tests only. |
 | `VITE_REHEARSAL_ONLY` | Build constant `true` for public Vercel | The static build script forces this value and disables environment-file loading. No secret or network endpoint belongs in client configuration. |
 | `VITE_SUPPORT_EMAIL` | Optional public email address; empty | Contact shown on `/privacy` and `/terms`, read at build time and published in the page. Empty or malformed values fall back to the GitHub issue tracker. The static rehearsal build reads it only from the build environment (a Vercel project variable), never from `.env`. |
 

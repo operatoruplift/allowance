@@ -1,8 +1,8 @@
 # Local external-agent bridge
 
-Last updated: **28 September 2026**.
+Last updated: **19 October 2026**.
 
-Allowance exposes a local, stdio-only MCP adapter for an authenticated operator who wants an external agent to use the same guarded payment engine. It is disabled by default and is never part of the public rehearsal or the static Vercel build. The adapter exposes no arbitrary HTTP client, payment channel or policy-editing tool. Its x402 tools never invoke a signer. Since 28 September 2026 it also carries the [mandate tools](direct-payments.md): `execute_guarded_payment` does move USDC, but only after the frozen mandate policy has allowed the exact request, and only through the same durable claim-sign-prove sequence the x402 rail uses. The one policy mutation that exists, adding a recipient, requires an administrator's signature.
+Allowance exposes a local, stdio-only MCP adapter for an authenticated operator who wants an external agent to use the same guarded payment engine. It is disabled by default and is never part of the public rehearsal or the static Vercel build. The adapter exposes no arbitrary HTTP client, payment channel or policy-editing tool. Since 19 October 2026 the bridge process holds **no payer key**: it reads the journal for grants, receipts and the stop tools, and forwards every paid tool (the x402 purchases and `execute_guarded_payment`) to the running backend over a token-authenticated loopback endpoint, so the key never enters the agent client's process tree (see [Where the payer key is](#where-the-payer-key-is)). Since 28 September 2026 it also carries the [mandate tools](direct-payments.md): `execute_guarded_payment` does move USDC, but only after the frozen mandate policy has allowed the exact request, and only through the same durable claim-sign-prove sequence the x402 rail uses, executed by the backend. The one policy mutation that exists, adding a recipient, requires an administrator's signature.
 
 ## Enablement and authorization
 
@@ -26,6 +26,19 @@ npm run --silent mcp
 
 The process speaks JSON-RPC on stdout and writes diagnostics only to stderr. It uses `createRuntime(..., { recover: false, exclusive: false, shared: true })` so connecting a client cannot restart or reactivate a run; paid mutations still require the already-running backend service lease. Keep the Express backend running while the bridge is connected. The bridge should be a child process of a local MCP client, not a publicly reachable HTTP service.
 
+## Where the payer key is
+
+The bridge never reads `PAYER_SECRET_FILE` or `PAYER_SECRET_JSON`: it blanks both in its own configuration and deletes them from its environment before anything else runs, so `createRuntime` builds its payment services without a signer. Paid tools are executed by the backend through two token-authenticated routes that exist only for this purpose:
+
+```text
+POST /api/bridge/mandates/:id/payments   body: the execute_guarded_payment request
+POST /api/bridge/runs/:id/purchases      body: { requestId, tool, args }
+```
+
+Both require `Authorization: Bearer <MCP_BACKEND_TOKEN>`, a shared secret of 32 to 256 URL-safe characters set in the private `.env` that the backend and the bridge both read (`openssl rand -hex 32` produces one). They carry no session, cookie or CSRF token, answer 503 `BRIDGE_DISABLED` until the token is configured, refuse requests that arrive through the reverse proxy when `PROXY_HOPS` is set, and run the same `DirectPaymentService` and `runPaidTool` the operator API uses, so the ledger still checks the human grant inside each reservation and signing claim. The bridge calls `MCP_BACKEND_URL` (default `http://127.0.0.1:<PORT>`; HTTPS or loopback HTTP only). At start it writes one line to stderr saying where the key is and where payments run. Without `MCP_BACKEND_TOKEN` the paid tools answer `PAYMENT_UNAVAILABLE` with that reason while read and stop tools keep working.
+
+`ALLOWANCE_MCP_LOCAL_SIGNER=1` restores the previous behaviour and loads the payer key inside the bridge process; the bridge says so on stderr. Use it only for a deliberately isolated local test, never with an MCP client you do not fully trust.
+
 The production equivalent is `node dist/server/mcp.js` with the same private environment and authoritative journal. Session existence, operator identity and expiry are checked for read tools as well as mutations; the grant is checked again before new signing, so logout during a slow upstream request cannot authorize a late signature. Restored journals remain blocked by the [recovery lock](runtime-recovery.md), and losing backend ownership denies new work. Recovery observes original payments without renewing grants or restarting the external model.
 
 ## Fixed tool contract
@@ -40,7 +53,7 @@ Every tool has a strict object schema. `runId` is a UUID. Paid calls also requir
 | `get_receipt`         | `get_receipt`         | Returns the durable policy, timeline, purchase evidence and delivered results for the run.                                              |
 | `stop_run`            | `stop_run`            | Stops the run, releases unsigned reservations and revokes the grant. Submitted or uncertain payments remain visible for reconciliation. |
 
-Paid x402 calls always use `payments.runPaidTool`, so exact x402 challenge validation, canonical request binding, pre-sign policy checks, durable signing claims, replay recovery and settlement handling are shared with the built-in runner. No x402 tool invokes a signer directly.
+Paid x402 calls reach `payments.runPaidTool` on the backend through the bridge endpoint, so exact x402 challenge validation, canonical request binding, pre-sign policy checks, durable signing claims, replay recovery and settlement handling are shared with the built-in runner. The bridge process signs nothing.
 
 ### Mandate tools
 

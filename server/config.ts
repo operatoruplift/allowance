@@ -38,6 +38,10 @@ export interface Config {
   maxLlmOutputTokens: number;
   maxRuntimeMs: number;
   mcpEnabled: boolean;
+  /** Backend origin the MCP bridge calls for paid tools: HTTPS, or HTTP on loopback. */
+  mcpBackendUrl: string;
+  /** Shared secret the bridge presents to that endpoint; empty keeps the endpoint off. */
+  mcpBackendToken: string;
   directEnabled: boolean;
   adminPublicKey: string;
   directPriorityFeeMicroLamports: number;
@@ -97,6 +101,19 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const adminPublicKey = env.ADMIN_PUBLIC_KEY?.trim() || '';
   if (adminPublicKey && !isBase58Bytes(adminPublicKey, 32))
     throw new Error('ADMIN_PUBLIC_KEY must be a Solana address.');
+  const mcpBackendToken = env.MCP_BACKEND_TOKEN || '';
+  if (mcpBackendToken && !/^[A-Za-z0-9_-]{32,256}$/.test(mcpBackendToken))
+    throw new Error('MCP_BACKEND_TOKEN must be 32 to 256 URL-safe characters.');
+  const mcpBackendUrl = env.MCP_BACKEND_URL || `http://127.0.0.1:${port}`;
+  const backend = new URL(mcpBackendUrl);
+  if (
+    backend.origin !== mcpBackendUrl ||
+    backend.username ||
+    backend.password ||
+    (backend.protocol !== 'https:' &&
+      !(backend.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(backend.hostname)))
+  )
+    throw new Error('MCP_BACKEND_URL must be the backend origin: HTTPS, or HTTP on loopback.');
   const dataNetwork = env.DATA_NETWORK || paymentNetwork;
   if (dataNetwork !== 'devnet' && dataNetwork !== 'mainnet')
     throw new Error('Unknown data network.');
@@ -136,6 +153,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     maxLlmOutputTokens: integer(env.LLM_MAX_OUTPUT_TOKENS, 1200, 256, 2000),
     maxRuntimeMs: 180_000,
     mcpEnabled: env.MCP_ENABLED === 'true',
+    mcpBackendUrl,
+    mcpBackendToken,
     directEnabled,
     adminPublicKey,
     directPriorityFeeMicroLamports: integer(env.DIRECT_PRIORITY_FEE_MICROLAMPORTS, 0, 0, 1_000_000),

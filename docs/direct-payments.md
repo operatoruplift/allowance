@@ -64,7 +64,7 @@ The MCP client runs the same bridge as the x402 tools:
 }
 ```
 
-Build first with `npm run build`; keep the backend running, because the bridge spends only while the backend holds the service lease. `DOTENV_CONFIG_PATH` points the bridge at the same private `.env` as the backend so both read the same journal and payer. Never put the grant token in a prompt, a repository or shell history.
+Build first with `npm run build`; keep the backend running, because every payment the bridge requests is executed by the backend. `DOTENV_CONFIG_PATH` points the bridge at the same private `.env` as the backend so both read the same journal and the same `MCP_BACKEND_TOKEN`; the bridge itself never loads the payer key and forwards each `execute_guarded_payment` to the backend's token-authenticated loopback endpoint (see [mcp.md](mcp.md)). Never put the grant token in a prompt, a repository or shell history.
 
 ## Tools
 

@@ -23,6 +23,12 @@ import {
 } from './mcp/grants.js';
 import { PaymentError, canonicalRequest } from './payments/service.js';
 import { snapshotIncludesSignature } from '../shared/tool-results.js';
+import {
+  bridgeRuntimeConfig,
+  httpBackend,
+  inProcessBackend,
+  type PaymentBackend,
+} from './mcp/backend.js';
 
 const runIdSchema = z.string().uuid();
 const requestIdSchema = z
@@ -125,6 +131,8 @@ function paymentError(error: PaymentError): McpToolError {
     'invalid-tool': 'POLICY_DENIED',
     'policy-mismatch': 'POLICY_DENIED',
     'recipient-account': 'RECIPIENT_REJECTED',
+    'backend-unavailable': 'PAYMENT_UNAVAILABLE',
+    'backend-rejected': 'PAYMENT_FAILED',
   };
   const code = codes[error.code] || 'PAYMENT_FAILED';
   const messages: Record<string, string> = {
@@ -136,12 +144,14 @@ function paymentError(error: PaymentError): McpToolError {
     INVALID_REQUEST: 'The request ID is invalid.',
     POLICY_DENIED: 'The frozen run policy denied this tool call.',
     PAYMENT_CHALLENGE_INVALID: 'The merchant payment challenge did not match the approved catalog.',
-    // The refusal names what the recipient address is (token account, mint, program); nothing secret.
-    RECIPIENT_REJECTED: error.message,
     PAYMENT_FAILED: 'The payment could not complete; inspect the durable receipt.',
   };
-  return new McpToolError(code, messages[code] || messages.PAYMENT_FAILED);
+  // These are the service's own operator-facing sentences (what the recipient address
+  // is, or why the backend bridge refused); they name no secret, so they pass through.
+  const passThrough = PASS_THROUGH_CODES.has(error.code);
+  return new McpToolError(code, passThrough ? error.message : messages[code] || messages.PAYMENT_FAILED);
 }
+const PASS_THROUGH_CODES = new Set(['recipient-account', 'backend-unavailable', 'backend-rejected']);
 
 function grantError(error: unknown): McpToolError {
   if (error instanceof McpToolError) return error;
@@ -190,7 +200,11 @@ function safePurchase(purchase: RunDTO['purchases'][number]) {
   };
 }
 
-export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: string) {
+export function createAllowanceMcpServer(
+  runtime: AllowanceRuntime,
+  grantToken: string,
+  backend: PaymentBackend = inProcessBackend(runtime)
+) {
   const server = new McpServer({ name: 'allowance', version: '0.1.0' });
 
   function authorize(runId: string, scope: AgentGrantScope) {
@@ -216,7 +230,7 @@ export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: 
     args: Record<string, string>
   ) {
     try {
-      const data = await runtime.payments.runPaidTool(runId, requestId, tool, args);
+      const data = await backend.runPaidTool(runId, requestId, tool, args);
       const purchase = runtime.ledger.findIntentByHash(
         runId,
         canonicalRequest(tool, args, runtime.config.origin).hash
@@ -404,11 +418,12 @@ export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: 
     async ({ mandateId, requestId, recipient, amount, memo }) => {
       try {
         authorizeMandate(mandateId, 'execute_guarded_payment');
-        const payment = await runtime.direct.pay(
-          mandateId,
-          { requestId, recipient, amount, ...(memo ? { memo } : {}) },
-          'external-agent'
-        );
+        const payment = await backend.payDirect(mandateId, {
+          requestId,
+          recipient,
+          amount,
+          ...(memo ? { memo } : {}),
+        });
         const mandate = runtime.mandates.get(mandateId, 'operator');
         const summary = {
           mandateId,
@@ -503,16 +518,27 @@ export function createAllowanceMcpServer(runtime: AllowanceRuntime, grantToken: 
 }
 
 export async function main() {
-  const config = loadConfig();
-  if (!config.mcpEnabled)
+  const loaded = loadConfig();
+  if (!loaded.mcpEnabled)
     throw new Error('MCP is disabled. Set MCP_ENABLED=true to enable the local stdio bridge.');
   const grantToken = process.env.MCP_GRANT_TOKEN || '';
   if (!grantToken)
     throw new Error(
       'MCP_GRANT_TOKEN is required; create an external run or a mandate through the operator API first.'
     );
-  const runtime = await createRuntime(config, { recover: false, exclusive: false, shared: true });
-  const server = createAllowanceMcpServer(runtime, grantToken);
+  // The bridge lives inside the agent client's process tree, so it never loads
+  // the payer key: paid tools are forwarded to the backend's bridge endpoint.
+  const bridge = bridgeRuntimeConfig(loaded);
+  if (!bridge.localSigner) {
+    delete process.env.PAYER_SECRET_JSON;
+    delete process.env.PAYER_SECRET_FILE;
+  }
+  const runtime = await createRuntime(bridge.config, { recover: false, exclusive: false, shared: true });
+  const backend = bridge.localSigner
+    ? inProcessBackend(runtime)
+    : httpBackend({ url: bridge.config.mcpBackendUrl, token: bridge.config.mcpBackendToken });
+  process.stderr.write(`Allowance MCP bridge: ${backend.description}\n`);
+  const server = createAllowanceMcpServer(runtime, grantToken, backend);
   const transport = new StdioServerTransport();
   transport.onerror = (error) =>
     process.stderr.write(`Allowance MCP transport error: ${error.message}\n`);

@@ -64,7 +64,7 @@ npm run preflight
 
 This checks configuration and networks without signing or model calls. It exits nonzero when readiness is incomplete. From the operator console, use **Check readiness** before starting a live agent run. The model has at most five calls by default, 1,200 generated tokens per call, 48,000 characters of accumulated input, four tool proposals, and three minutes per run. Each provider call is sent exactly once, with automatic client retries set to zero, so a bounded run cannot quietly multiply model calls. OpenAI billing is **outside** the USDC merchant allowance.
 
-For a separately authorized external agent, set `MCP_ENABLED=true`, create an authenticated external run, and launch the local stdio bridge with `MCP_GRANT_TOKEN` as described in [the MCP runbook](docs/mcp.md). The bridge is opt-in local stdio only, with no public HTTP endpoint.
+For a separately authorized external agent, set `MCP_ENABLED=true`, create an authenticated external run, and launch the local stdio bridge with `MCP_GRANT_TOKEN` as described in [the MCP runbook](docs/mcp.md). The bridge is opt-in local stdio only, with no public HTTP endpoint, and it holds no payer key: its paid tools run on the backend through a token-authenticated loopback endpoint (`MCP_BACKEND_TOKEN`).
 
 The standalone opt-in integration check starts its own local merchant listener; stop `npm run dev` first. This command performs scripted real payments, independent of an autonomous model trace:
 
