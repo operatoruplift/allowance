@@ -11,6 +11,7 @@ import {
   type ReadinessItem,
 } from '../shared/domain.js';
 import { installAuth } from './auth/index.js';
+import { apiRateLimiter, loginRateLimiter } from './auth/rate-limit.js';
 import { configurationReadiness, type Config } from './config.js';
 import { Ledger } from './policy/ledger.js';
 import { PolicyError } from './policy/decision.js';
@@ -106,6 +107,9 @@ export function createApp(
       strictTransportSecurity: new URL(config.origin).protocol === 'https:' ? undefined : false,
     })
   );
+  // Per-address ceilings on the private API, ahead of body parsing and the session layer.
+  app.use('/api', apiRateLimiter());
+  app.use('/api/login', loginRateLimiter());
   app.use(express.json({ limit: '24kb', strict: true }));
   payments.mountMerchant(app);
   // Registered before the session layer: the local bridge authenticates with its token, never a cookie.

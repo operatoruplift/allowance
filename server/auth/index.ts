@@ -6,6 +6,7 @@ import type Database from 'better-sqlite3';
 import { authenticationConfigured, type Config } from '../config.js';
 import { revokeSessionAgentGrants } from '../mcp/grants.js';
 import { revokeSessionMandateGrants } from '../direct/grants.js';
+import { clearAnonymousCsrf, issueAnonymousCsrf, verifyAnonymousCsrf } from './csrf.js';
 declare module 'express-session' {
   interface SessionData {
     operator?: string;
@@ -14,6 +15,10 @@ declare module 'express-session' {
   }
 }
 const SESSION_MS = 8 * 60 * 60 * 1000;
+/** Failed sign-ins one address may make before that address is locked out for the window. */
+export const LOGIN_ATTEMPTS_PER_ADDRESS = 5;
+export const LOGIN_LOCKOUT_MS = 15 * 60 * 1000;
+const CSRF_TOKEN = /^[a-f0-9]{64}$/;
 class SQLiteSessionStore extends session.Store {
   constructor(private db: Database.Database) {
     super();
@@ -54,6 +59,25 @@ class SQLiteSessionStore extends session.Store {
     this.set(sid, data, callback);
   }
 }
+/**
+ * Durable sign-in lockout per address. Counting happens under one immediate
+ * transaction; a locked address is refused before the password is examined,
+ * and a successful sign-in clears only that address's counter.
+ */
+function registerLoginAttempt(db: Database.Database, key: string, now: number): boolean {
+  return db
+    .transaction(() => {
+      db.prepare('DELETE FROM login_attempts WHERE expires<=?').run(now);
+      const row = db.prepare('SELECT count FROM login_attempts WHERE key=?').get(key) as
+        { count: number } | undefined;
+      if ((row?.count || 0) >= LOGIN_ATTEMPTS_PER_ADDRESS) return true;
+      db.prepare(
+        'INSERT INTO login_attempts VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1'
+      ).run(key, now + LOGIN_LOCKOUT_MS);
+      return false;
+    })
+    .immediate();
+}
 export function installAuth(
   app: Express,
   db: Database.Database,
@@ -62,10 +86,12 @@ export function installAuth(
 ) {
   const configured = authenticationConfigured(config);
   const secureCookies = new URL(config.origin).protocol === 'https:';
+  const secret = config.sessionSecret || randomBytes(48).toString('hex');
+  const anonymousCsrf = { secret, secure: secureCookies };
   app.use(
     session({
       name: secureCookies ? '__Host-allowance' : 'allowance.sid',
-      secret: config.sessionSecret || randomBytes(48).toString('hex'),
+      secret,
       store: new SQLiteSessionStore(db),
       resave: false,
       saveUninitialized: false,
@@ -88,23 +114,27 @@ export function installAuth(
     next();
   });
   app.get('/api/session', (req, res) => {
-    req.session.csrf ||= randomBytes(32).toString('hex');
-    res.json({
-      authenticated: configured && req.session.operator === 'operator',
-      csrfToken: req.session.csrf,
-      configured,
-    });
+    const signedIn = req.session.operator === 'operator';
+    // Only a signed-in session is persisted. A visitor's token travels in a signed cookie instead,
+    // so a cookie-less request never writes a row.
+    const csrfToken = signedIn
+      ? (req.session.csrf ||= randomBytes(32).toString('hex'))
+      : issueAnonymousCsrf(req, res, anonymousCsrf);
+    res.json({ authenticated: configured && signedIn, csrfToken, configured });
   });
+  const matchesSession = (req: Request, token: string) =>
+    Boolean(req.session.csrf) &&
+    token.length === req.session.csrf!.length &&
+    timingSafeEqual(Buffer.from(token), Buffer.from(req.session.csrf!));
   const csrf = (req: Request, res: Response, next: NextFunction) => {
-    const origin = req.get('origin');
     const token = req.get('x-csrf-token') || '';
-    if (
-      origin !== config.origin ||
-      !/^[a-f0-9]{64}$/.test(token) ||
-      !req.session.csrf ||
-      token.length !== req.session.csrf.length ||
-      !timingSafeEqual(Buffer.from(token), Buffer.from(req.session.csrf))
-    ) {
+    const valid =
+      req.get('origin') === config.origin &&
+      CSRF_TOKEN.test(token) &&
+      (req.session.operator === 'operator'
+        ? matchesSession(req, token)
+        : verifyAnonymousCsrf(req, token, anonymousCsrf));
+    if (!valid) {
       res.status(403).json({ error: 'Same-origin request and valid CSRF token required.' });
       return;
     }
@@ -121,27 +151,9 @@ export function installAuth(
       return;
     }
     try {
-      const now = Date.now();
-      const denied = db
-        .transaction(() => {
-          db.prepare('DELETE FROM login_attempts WHERE expires<=?').run(now);
-          let limited = false;
-          for (const [key, limit] of [
-            [`ip:${req.ip}`, 5],
-            ['global', 30],
-          ] as const) {
-            const row = db.prepare('SELECT count FROM login_attempts WHERE key=?').get(key) as
-              { count: number } | undefined;
-            if ((row?.count || 0) >= limit) limited = true;
-            db.prepare(
-              'INSERT INTO login_attempts VALUES(?,1,?) ON CONFLICT(key) DO UPDATE SET count=count+1'
-            ).run(key, now + 15 * 60 * 1000);
-          }
-          return limited;
-        })
-        .immediate();
-      if (denied) {
-        res.setHeader('Retry-After', '900');
+      const key = `ip:${req.ip}`;
+      if (registerLoginAttempt(db, key, Date.now())) {
+        res.setHeader('Retry-After', String(LOGIN_LOCKOUT_MS / 1000));
         res.status(429).json({ error: 'Too many sign-in attempts. Try again in 15 minutes.' });
         return;
       }
@@ -155,6 +167,7 @@ export function installAuth(
         res.status(401).json({ error: 'Password not recognized.' });
         return;
       }
+      db.prepare('DELETE FROM login_attempts WHERE key=?').run(key);
       req.session.regenerate((error) => {
         if (error) {
           next(error);
@@ -163,6 +176,7 @@ export function installAuth(
         req.session.operator = 'operator';
         req.session.issuedAt = Date.now();
         req.session.csrf = randomBytes(32).toString('hex');
+        clearAnonymousCsrf(res, secureCookies);
         req.session.save((saveError) => {
           if (saveError) next(saveError);
           else res.json({ authenticated: true, csrfToken: req.session.csrf, configured: true });
