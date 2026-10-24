@@ -130,7 +130,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     backend.username ||
     backend.password ||
     (backend.protocol !== 'https:' &&
-      !(backend.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(backend.hostname)))
+      !(
+        backend.protocol === 'http:' &&
+        ['localhost', '127.0.0.1', '[::1]'].includes(backend.hostname)
+      ))
   )
     throw new Error('MCP_BACKEND_URL must be the backend origin: HTTPS, or HTTP on loopback.');
   // Data reads accept the same cluster spelling as payments; the older `mainnet` still works here.

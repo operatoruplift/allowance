@@ -123,18 +123,16 @@ describe('explicit payment network configuration', () => {
     expect(changed.getRun(run.id)).toMatchObject({ paymentNetwork: 'devnet', held: '10000' });
   });
   it('rejects a wrong-cluster RPC before account reads and checks genesis again before signing', async () => {
-    const fetcher = vi
-      .fn<typeof fetch>()
-      .mockImplementation(
-        async (_input, init) =>
-          new Response(
-            JSON.stringify({
-              jsonrpc: '2.0',
-              id: JSON.parse(String(init?.body)).id,
-              result: PAYMENT_CHAINS.devnet.genesisHash,
-            })
-          )
-      );
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(
+      async (_input, init) =>
+        new Response(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: JSON.parse(String(init?.body)).id,
+            result: PAYMENT_CHAINS.devnet.genesisHash,
+          })
+        )
+    );
     const rpc = new PaymentRpc('https://rpc.example', 'mainnet', fetcher);
     await expect(rpc.preflight(input.wallet, PAYMENT_CHAINS.mainnet.mint)).rejects.toThrow(
       /not Solana mainnet/
