@@ -60,7 +60,10 @@ export function disabledDirectPayments(network: Config['paymentNetwork']): Direc
       };
     },
     async pay() {
-      throw new PaymentError('disabled', 'Direct payments are not enabled; no transfer was signed.');
+      throw new PaymentError(
+        'disabled',
+        'Direct payments are not enabled; no transfer was signed.'
+      );
     },
     async reconcile() {},
   };
@@ -202,7 +205,11 @@ export function createApp(
   });
   app.get('/api/config', requireOperator, (_req, res) => res.json(configDto()));
   app.post('/api/preflight', requireOperator, async (_req, res) => {
-    const result = await Promise.allSettled([payments.readiness(), dataProbe(), direct.readiness()]);
+    const result = await Promise.allSettled([
+      payments.readiness(),
+      dataProbe(),
+      direct.readiness(),
+    ]);
     directObserved =
       result[2].status === 'fulfilled'
         ? result[2].value
@@ -358,7 +365,8 @@ export function createApp(
     }
     if (!directDto().ready) {
       res.status(503).json({
-        error: 'Direct payments are unavailable. Complete configuration and run a fresh readiness check.',
+        error:
+          'Direct payments are unavailable. Complete configuration and run a fresh readiness check.',
         code: 'DIRECT_NOT_READY',
       });
       return;
@@ -374,7 +382,12 @@ export function createApp(
       });
       res.status(201).json({
         mandate: mandates.get(mandate.id),
-        grant: { id: grant.grant.id, expiresAt: grant.grant.expiresAt, scopes: grant.grant.scopes, token: grant.token },
+        grant: {
+          id: grant.grant.id,
+          expiresAt: grant.grant.expiresAt,
+          scopes: grant.grant.scopes,
+          token: grant.token,
+        },
       });
     } catch (error) {
       mandates.stop(mandate.id);
@@ -415,7 +428,9 @@ export function createApp(
       const request = directPaymentRequestSchema.parse(req.body);
       mandates.get(id);
       const payment = await direct.pay(id, request, 'operator');
-      res.status(payment.status === 'denied' ? 409 : 201).json({ payment, mandate: mandates.get(id) });
+      res
+        .status(payment.status === 'denied' ? 409 : 201)
+        .json({ payment, mandate: mandates.get(id) });
     } catch (error) {
       if (!directError(error, res)) next(error);
     }
@@ -444,24 +459,20 @@ export function createApp(
   app.use(
     (error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({
-            error: 'Invalid request fields.',
-            code: 'INVALID_FIELDS',
-            requestId: res.getHeader('X-Request-ID'),
-            fields: z.flattenError(error).fieldErrors,
-          });
+        res.status(400).json({
+          error: 'Invalid request fields.',
+          code: 'INVALID_FIELDS',
+          requestId: res.getHeader('X-Request-ID'),
+          fields: z.flattenError(error).fieldErrors,
+        });
         return;
       }
       if (error instanceof PolicyError) {
-        res
-          .status(409)
-          .json({
-            error: error.message,
-            code: 'POLICY_DENIED',
-            requestId: res.getHeader('X-Request-ID'),
-          });
+        res.status(409).json({
+          error: error.message,
+          code: 'POLICY_DENIED',
+          requestId: res.getHeader('X-Request-ID'),
+        });
         return;
       }
       if (error instanceof Error && error.message === 'Run not found.') {

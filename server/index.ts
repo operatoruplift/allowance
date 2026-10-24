@@ -4,7 +4,10 @@ import { serveClient } from './frontend.js';
 import { startAuthMaintenance } from './auth/maintenance.js';
 const runtime = await createRuntime();
 const { config, db, ledger, payments, runner, data, mandates, direct } = runtime;
-const app = createApp(config, db, ledger, payments, runner, () => data.probe(), { mandates, direct });
+const app = createApp(config, db, ledger, payments, runner, () => data.probe(), {
+  mandates,
+  direct,
+});
 // Expired sessions and lapsed lockout counters are pruned now and every quarter hour, not only at restart.
 const stopAuthMaintenance = startAuthMaintenance(db);
 let closeFrontend: (() => Promise<void>) | undefined;
