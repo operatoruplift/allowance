@@ -38,7 +38,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: PAYMENT_NETWORK
-        value: mainnet
+        value: mainnet-beta
       - key: LIVE_PAYMENTS_ENABLED
         value: 'false'
       - key: MAINNET_PAYMENTS_ACKNOWLEDGED
@@ -46,7 +46,7 @@ services:
       - key: PAYMENT_RPC_URL
         value: https://api.mainnet-beta.solana.com
       - key: DATA_NETWORK
-        value: mainnet
+        value: mainnet-beta
       - key: DATA_RPC_URL
         value: https://api.mainnet-beta.solana.com
       - key: ALLOW_MAINNET_READ_ONLY

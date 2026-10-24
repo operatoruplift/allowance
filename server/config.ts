@@ -54,6 +54,27 @@ function integer(value: string | undefined, fallback: number, min: number, max: 
     throw new Error('Invalid bounded numeric configuration.');
   return n;
 }
+/** The only spellings PAYMENT_NETWORK accepts; the environment names clusters the way Solana does. */
+export const PAYMENT_NETWORK_SETTINGS = ['devnet', 'mainnet-beta'] as const;
+export type PaymentNetworkSetting = (typeof PAYMENT_NETWORK_SETTINGS)[number];
+const NETWORK_BY_SETTING: Record<PaymentNetworkSetting, PaymentNetwork> = {
+  devnet: 'devnet',
+  'mainnet-beta': 'mainnet',
+};
+/** The environment spelling for an internal network name, for messages that tell an operator what to set. */
+export const paymentNetworkSetting = (network: PaymentNetwork): PaymentNetworkSetting =>
+  network === 'mainnet' ? 'mainnet-beta' : 'devnet';
+/**
+ * Unset keeps the inert mainnet default: neither payment rail can be enabled
+ * without an explicit value. Anything but the two exact spellings, including
+ * the old `mainnet`, refuses to start, so a typo can never select a cluster.
+ */
+export function parsePaymentNetwork(value: string | undefined): PaymentNetwork {
+  if (value === undefined || value === '') return 'mainnet';
+  const setting = PAYMENT_NETWORK_SETTINGS.find((candidate) => candidate === value);
+  if (!setting) throw new Error("PAYMENT_NETWORK must be exactly 'devnet' or 'mainnet-beta'.");
+  return NETWORK_BY_SETTING[setting];
+}
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const production = env.NODE_ENV === 'production';
   const port = integer(env.PORT, 4318, 1024, 65535);
@@ -67,9 +88,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)))
   )
     throw new Error('APP_ORIGIN must be HTTPS or an exact local development origin.');
-  const paymentNetwork = env.PAYMENT_NETWORK || 'mainnet';
-  if (paymentNetwork !== 'mainnet' && paymentNetwork !== 'devnet')
-    throw new Error('PAYMENT_NETWORK must be mainnet or devnet.');
+  const paymentNetwork = parsePaymentNetwork(env.PAYMENT_NETWORK);
   const liveEnabled = env.LIVE_PAYMENTS_ENABLED === 'true';
   if (liveEnabled && (!env.PAYMENT_NETWORK || !env.PAYMENT_RPC_URL || !env.FACILITATOR_URL))
     throw new Error(
@@ -114,9 +133,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       !(backend.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(backend.hostname)))
   )
     throw new Error('MCP_BACKEND_URL must be the backend origin: HTTPS, or HTTP on loopback.');
-  const dataNetwork = env.DATA_NETWORK || paymentNetwork;
+  // Data reads accept the same cluster spelling as payments; the older `mainnet` still works here.
+  const dataNetwork =
+    env.DATA_NETWORK === 'mainnet-beta' ? 'mainnet' : env.DATA_NETWORK || paymentNetwork;
   if (dataNetwork !== 'devnet' && dataNetwork !== 'mainnet')
-    throw new Error('Unknown data network.');
+    throw new Error("DATA_NETWORK must be 'devnet' or 'mainnet-beta'.");
   if (
     dataNetwork === 'mainnet' &&
     (env.DATA_NETWORK || liveEnabled) &&

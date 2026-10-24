@@ -1,6 +1,6 @@
 # Runtime configuration reference
 
-All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_SUPPORT_EMAIL`. Configure secrets through a private environment or mounted secret file; never through a browser, public export or `VITE_*`. Readiness reports presence and validation results, not credentials. `.env.example` is a template, not a funded configuration. Mainnet is the default network and signing defaults off.
+All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_SUPPORT_EMAIL`. Configure secrets through a private environment or mounted secret file; never through a browser, public export or `VITE_*`. Readiness reports presence and validation results, not credentials. `.env.example` is a devnet template, not a funded configuration. An unset `PAYMENT_NETWORK` means mainnet with every payment gate closed, and signing defaults off.
 
 | Variable | Shape / default | Required when; source and purpose |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_
 | `PROXY_HOPS` | Integer 0–2; `0` | Exact trusted reverse-proxy hop count. Set `1` only behind the specified single proxy; restrict direct backend access. |
 | `LIVE_PAYMENTS_ENABLED` | Literal `true`; otherwise false | Enables the x402 rail. Independent of the direct-payment gate; disabling this flag does not disable direct transfers. Does not itself authorize a funded test. |
 | `DIRECT_PAYMENTS_ENABLED` | Literal `true`; otherwise false | Enables direct USDC transfers under mandates. Requires an explicit payment network/RPC and a dedicated signer; does not require the x402 gate or facilitator. Keep both rail flags false during initial setup and restoration. |
-| `PAYMENT_NETWORK` | `mainnet` or `devnet`; `mainnet` | Must be explicitly set when either payment rail is enabled. Frozen into each run or mandate; never relabel existing receipts. |
+| `PAYMENT_NETWORK` | Exactly `devnet` or `mainnet-beta`; unset means mainnet with payments off | Must be explicitly set when either payment rail is enabled; `mainnet` or any other spelling refuses to start. Frozen into each run or mandate; never relabel existing receipts. |
 | `MAINNET_PAYMENTS_ACKNOWLEDGED` | Literal `true`; default false | Required when either rail is enabled on mainnet. Acknowledge actual USDC and reviewed limits; independent of deployment permission. |
 | `PAYER_SECRET_FILE` | Path to 64-byte JSON keypair | Dedicated low-balance signer; private read-only secret mount. Required for payment readiness unless JSON alternative supplied. |
 | `PAYER_SECRET_JSON` | 64 integer bytes, JSON array | Server-only alternative to key file. Prefer the mounted file and configure only one source. |
@@ -29,7 +29,7 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_
 | `DIRECT_MAX_ACCOUNT_CREATION_LAMPORTS` | Integer 0–10,000,000; `3000000` | Direct rail only: recipient-account creation allowance. A missing USDC account requires the current 2,100,000-lamport estimate to fit this cap; `0` requires an existing recipient account. |
 | `DAILY_USDC_CEILING` | Canonical decimal, at most 6 decimals; `0.100000` | Shared payer limit in USDC, not SOL/provider cost; review against funding. Unresolved holds continue counting across UTC days. |
 | `MAX_RUN_ALLOWANCE` | Canonical decimal; `0.040000` | Maximum operator-selectable run allowance, independent of per-request cap. |
-| `DATA_NETWORK` | `mainnet` or `devnet`; selected payment network | Provenance of useful data, independent of payment network. Frozen run labels show both when they differ. |
+| `DATA_NETWORK` | `devnet` or `mainnet-beta` (`mainnet` still accepted); selected payment network | Provenance of useful data, independent of payment network. Frozen run labels show both when they differ. |
 | `DATA_RPC_URL` | HTTPS endpoint; network public RPC by default | Read-only data provider. Bounded responses, no redirects, genesis checked. |
 | `ALLOW_MAINNET_READ_ONLY` | Literal `true`; default false | Separate permission to read mainnet data. Does not enable mainnet payments. |
 | `DEMO_WALLET` | 32-byte base58 wallet address | Prepared data wallet for repeatable smoke; actual history may be empty. No private key is needed for the data wallet. |

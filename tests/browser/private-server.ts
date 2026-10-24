@@ -34,7 +34,7 @@ const config = loadConfig({
   }),
   SESSION_SECRET: randomBytes(48).toString('hex'),
   LIVE_PAYMENTS_ENABLED: 'false',
-  PAYMENT_NETWORK: 'mainnet',
+  PAYMENT_NETWORK: 'mainnet-beta',
   DATA_NETWORK: 'devnet',
 });
 const db = openDatabase(config.databasePath);

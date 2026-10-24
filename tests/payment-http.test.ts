@@ -14,7 +14,7 @@ import { ExactSvmScheme } from '@x402/svm/exact/client';
 import { declarePaymentIdentifierExtension } from '@x402/extensions/payment-identifier';
 import { openDatabase } from '../server/db/index.js';
 import { Ledger } from '../server/policy/ledger.js';
-import { loadConfig } from '../server/config.js';
+import { loadConfig, paymentNetworkSetting } from '../server/config.js';
 import { createPaymentService, type PaymentAdapters } from '../server/payments/service.js';
 import {
   canonicalRequest,
@@ -183,7 +183,7 @@ async function setup(
   const db = openDatabase(':memory:');
   dbs.push(db);
   const rootConfig = loadConfig({
-    PAYMENT_NETWORK: network,
+    PAYMENT_NETWORK: paymentNetworkSetting(network),
     APP_ORIGIN: origin,
     MERCHANT_RECIPIENT: recipient,
   });
