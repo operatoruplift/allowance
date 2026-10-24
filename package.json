@@ -32,7 +32,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.3.1",
-    "@modelcontextprotocol/server": "2.0.0",
+    "@modelcontextprotocol/server": "2.4.0",
     "@solana-program/compute-budget": "0.11.0",
     "@solana-program/token": "0.9.0",
     "@solana/kit": "5.5.1",
@@ -78,7 +78,7 @@
     "tsx": "4.23.13",
     "typescript": "5.9.3",
     "typescript-eslint": "8.70.0",
-    "vite": "8.3.0",
+    "vite": "8.3.5",
     "vitest": "5.0.0"
   }
 }
