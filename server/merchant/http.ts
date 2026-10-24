@@ -64,6 +64,25 @@ export function recordRecoveredSettlement(
   );
 }
 
+/** Verified payments one merchant accepts per rolling day, across every payer. */
+export const DAILY_VERIFICATION_QUOTA = 1000;
+
+/**
+ * Receipts that count toward the daily quota: only those whose payment the
+ * facilitator verified (and whatever followed). A payload that was rejected, or
+ * whose verification never completed, is not a payment; counting it would let
+ * an outsider with a throwaway key fill the quota and starve the operator's
+ * own runner.
+ */
+export function verifiedReceiptsToday(db: Database.Database): number {
+  const row = db
+    .prepare(
+      "SELECT COUNT(*) AS n FROM merchant_receipts WHERE created_at >= datetime('now','-1 day') AND status NOT IN ('verifying','rejected')"
+    )
+    .get() as { n: number };
+  return row.n;
+}
+
 export function createMerchant(options: {
   db: Database.Database;
   network: PaymentNetwork;
@@ -96,12 +115,7 @@ export function createMerchant(options: {
       });
       return false;
     }
-    const count = db
-      .prepare(
-        "SELECT COUNT(*) AS n FROM merchant_receipts WHERE created_at >= datetime('now','-1 day')"
-      )
-      .get() as { n: number };
-    if (count.n >= 1000) {
+    if (verifiedReceiptsToday(db) >= DAILY_VERIFICATION_QUOTA) {
       res.status(429).json({ error: 'Merchant daily verification limit reached.' });
       return false;
     }
