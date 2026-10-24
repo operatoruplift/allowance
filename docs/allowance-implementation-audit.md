@@ -3,7 +3,7 @@
 > Historical audit through September 16. The September 19 release corrects the A logo, updates the working example, and implements network-bound mainnet support. See [the current release report](release-2026-09-19.md) for current checks, deployment and unresolved live prerequisites. Earlier test counts, logo geometry and devnet-only statements below are dated history.
 
 **Audit date:** 15 September 2026  
-**Repository:** `/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance`  
+**Repository:** `operatoruplift/allowance`, audited from a local checkout  
 **Selected composition:** A14_RED — A1 Constellation + A4 Axiom in red  
 **Audit mode:** local production and static rehearsal builds, controlled browser fixtures, read-only comparison with the public Vercel rehearsal. No funded transaction or paid model request was initiated; production deployment was performed afterward only when explicitly requested.
 
@@ -93,20 +93,20 @@ The local Vite preview used for the route sweep was `http://127.0.0.1:4328`. The
 
 ## Evidence
 
-- Before baseline: [landing-desktop.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/landing-desktop.png), [rehearsal-desktop-complete.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/rehearsal-desktop-complete.png), [rehearsal-mobile-complete.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/rehearsal-mobile-complete.png).
-- Repaired local candidate: [audit-after-desktop.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/audit-after-desktop.png), [audit-after-tablet.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/audit-after-tablet.png), [audit-after-mobile.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/audit-after-mobile.png), [audit-after-narrow.png](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/audit-after-narrow.png).
-- Motion proof: [allowance-films-motion.webm](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/allowance-films-motion.webm), recorded from the local candidate; VP8, 1440×900, 7.48 seconds.
-- Brand kit: [brand README](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/public/brand/README.md), [manifest](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/public/brand/manifest.json), [ZIP](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/public/brand/allowance-brand-kit.zip).
+- Before baseline: [landing-desktop.png](../evidence/landing-desktop.png), [rehearsal-desktop-complete.png](../evidence/rehearsal-desktop-complete.png), [rehearsal-mobile-complete.png](../evidence/rehearsal-mobile-complete.png).
+- Repaired local candidate: [audit-after-desktop.png](../evidence/audit-after-desktop.png), [audit-after-tablet.png](../evidence/audit-after-tablet.png), [audit-after-mobile.png](../evidence/audit-after-mobile.png), [audit-after-narrow.png](../evidence/audit-after-narrow.png).
+- Motion proof: [allowance-films-motion.webm](../evidence/allowance-films-motion.webm), recorded from the local candidate; VP8, 1440×900, 7.48 seconds.
+- Brand kit: [brand README](../public/brand/README.md), [manifest](../public/brand/manifest.json), [ZIP](../public/brand/allowance-brand-kit.zip).
 
 ## Public status and deployment boundary
 
 The explicitly requested production deployment is READY at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app), deployment `dpl_wkBdsvHWKVCNDg4xA6DFuAy3ULQE`, built from source commit `fc4f093`. Public verification returned HTTP 200 for the cache-busted A mark favicon, both films and brand ZIP; `/api/health` remains HTTP 404. The response CSP keeps `connect-src 'none'` and allows only same-origin media. Public browser checks confirm no film-control elements, autoplaying media, mainnet-preview copy, readable receipt statements and the guided `/demo` flow, with no external requests. The public site remains a deterministic static rehearsal with no backend, signer or model runtime.
 
-Deployment evidence and public screenshots are recorded in [UI refresh deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-16-ui-refresh.json), [final production deployment](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-deployment-2026-09-16-final.json) and [production recovery](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/evidence/production-2026-09-16-recovery.png). The refreshed landing, demo, brand and print captures remain available under `evidence/`.
+Deployment evidence and public screenshots are recorded in [UI refresh deployment](../evidence/production-deployment-2026-09-16-ui-refresh.json), [final production deployment](../evidence/production-deployment-2026-09-16-final.json) and [production recovery](../evidence/production-2026-09-16-recovery.png). The refreshed landing, demo, brand and print captures remain available under `evidence/`.
 
 ## Source provenance
 
-The selected media are locally served derivatives of the supplied Axiom and Constellation sources. Provenance, poster URLs and derivative dimensions are recorded in [docs/sources.md](/Users/rvaclassic/Documents/Codex/2026-09-12/files-pasted-by-the-user-build/outputs/allowance/docs/sources.md). The implementation references the supplied A14_RED board and handoff documents; no replacement stock scenes or video screenshots were used.
+The selected media are locally served derivatives of the supplied Axiom and Constellation sources. Provenance, poster URLs and derivative dimensions are recorded in [docs/sources.md](sources.md). The implementation references the supplied A14_RED board and handoff documents; no replacement stock scenes or video screenshots were used.
 
 ## Commit and build identifiers
 
