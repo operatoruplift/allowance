@@ -28,6 +28,8 @@ export class FakeChain implements DirectRpc {
   readonly network: PaymentNetwork = 'devnet';
   readonly calls: { method: string; params: unknown[] }[] = [];
   readonly tokenAccounts = new Map<string, TokenAccount>();
+  /** Raw `getAccountInfo` values for addresses that are not token accounts (wallets, mints, programs, PDAs). */
+  readonly accounts = new Map<string, unknown>();
   readonly lamports = new Map<string, bigint>();
   readonly landed = new Map<string, Landed>();
   readonly submitted: string[] = [];
@@ -62,11 +64,15 @@ export class FakeChain implements DirectRpc {
       case 'getGenesisHash':
         return PAYMENT_CHAINS.devnet.genesisHash;
       case 'getAccountInfo': {
-        const account = this.tokenAccounts.get(params[0] as string);
+        const key = params[0] as string;
+        if (this.accounts.has(key)) return { value: this.accounts.get(key) };
+        const account = this.tokenAccounts.get(key);
         if (!account) return { value: null };
         return {
           value: {
             owner: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+            executable: false,
+            lamports: 2_039_280,
             data: {
               parsed: {
                 type: 'account',

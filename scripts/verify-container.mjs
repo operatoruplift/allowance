@@ -93,7 +93,9 @@ try {
   assert.equal(session.body.authenticated, false);
   assert.equal(session.body.configured, false);
   assert.equal(session.cache, 'no-store');
-  assert.match(session.cookie, /^__Host-allowance=/);
+  // A signed-out visitor gets the signed double-submit CSRF cookie; a session row and its
+  // __Host-allowance cookie exist only after sign-in (server/auth/index.ts).
+  assert.match(session.cookie, /^__Host-allowance-csrf=/);
   assert.match(session.cookie, /; Secure/);
   const cookie = session.cookie.split(';')[0];
   assert.equal(request('/api/runs', cookie).status, 401);

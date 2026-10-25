@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://allowanceonsolana.vercel.app/sitemap.xml

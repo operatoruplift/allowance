@@ -13,7 +13,7 @@ afterEach(() => {
 });
 const live = {
   LIVE_PAYMENTS_ENABLED: 'true',
-  PAYMENT_NETWORK: 'mainnet',
+  PAYMENT_NETWORK: 'mainnet-beta',
   PAYMENT_RPC_URL: PAYMENT_CHAINS.mainnet.rpcUrl,
   FACILITATOR_URL: 'https://facilitator.example',
   MAINNET_PAYMENTS_ACKNOWLEDGED: 'true',
@@ -67,6 +67,14 @@ describe('explicit payment network configuration', () => {
       loadConfig({ ...live, PAYMENT_NETWORK: 'devnet', DATA_NETWORK: 'mainnet' })
     ).toMatchObject({ paymentNetwork: 'devnet', dataNetwork: 'mainnet' });
     expect(() => loadConfig({ PAYMENT_NETWORK: 'testnet' })).toThrow(/PAYMENT_NETWORK/);
+    // Only the two exact spellings select a cluster; the old `mainnet` and any variant refuse to start.
+    for (const spelling of ['mainnet', 'Devnet', 'MAINNET-BETA', 'mainnet-beta ', 'devnet\n'])
+      expect(() => loadConfig({ PAYMENT_NETWORK: spelling })).toThrow(
+        /exactly 'devnet' or 'mainnet-beta'/
+      );
+    expect(loadConfig({ PAYMENT_NETWORK: 'devnet' }).paymentNetwork).toBe('devnet');
+    expect(loadConfig({ ...live, DATA_NETWORK: 'mainnet-beta' }).dataNetwork).toBe('mainnet');
+    expect(() => loadConfig({ DATA_NETWORK: 'testnet' })).toThrow(/DATA_NETWORK/);
     expect(() => loadConfig({ ...live, PAYMENT_RPC_URL: 'http://insecure.example' })).toThrow(
       /HTTPS/
     );
@@ -115,18 +123,16 @@ describe('explicit payment network configuration', () => {
     expect(changed.getRun(run.id)).toMatchObject({ paymentNetwork: 'devnet', held: '10000' });
   });
   it('rejects a wrong-cluster RPC before account reads and checks genesis again before signing', async () => {
-    const fetcher = vi
-      .fn<typeof fetch>()
-      .mockImplementation(
-        async (_input, init) =>
-          new Response(
-            JSON.stringify({
-              jsonrpc: '2.0',
-              id: JSON.parse(String(init?.body)).id,
-              result: PAYMENT_CHAINS.devnet.genesisHash,
-            })
-          )
-      );
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(
+      async (_input, init) =>
+        new Response(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: JSON.parse(String(init?.body)).id,
+            result: PAYMENT_CHAINS.devnet.genesisHash,
+          })
+        )
+    );
     const rpc = new PaymentRpc('https://rpc.example', 'mainnet', fetcher);
     await expect(rpc.preflight(input.wallet, PAYMENT_CHAINS.mainnet.mint)).rejects.toThrow(
       /not Solana mainnet/

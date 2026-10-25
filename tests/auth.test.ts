@@ -33,6 +33,14 @@ async function setup(
   app.get('/api/runs/private/export', requireOperator, (_req, res) => res.json({ private: true }));
   return { app, db };
 }
+const origin = 'http://127.0.0.1:4318';
+/** The Set-Cookie line for one cookie name, so assertions do not depend on header order. */
+const cookie = (response: request.Response, name: string): string | undefined =>
+  ((response.headers['set-cookie'] as unknown as string[] | undefined) ?? []).find((value) =>
+    value.startsWith(`${name}=`)
+  );
+const sessionRows = (db: ReturnType<typeof openDatabase>) =>
+  (db.prepare('SELECT COUNT(*) AS n FROM sessions').get() as { n: number }).n;
 describe('operator boundary', () => {
   it('public visitors cannot create live runs or read private exports using mode flags', async () => {
     const { app } = await setup();
@@ -48,11 +56,15 @@ describe('operator boundary', () => {
     await guest.get('/api/runs/private/export?mode=demo').expect(401);
   });
   it('requires CSRF+origin, rotates sessions and uses HttpOnly SameSite cookies', async () => {
-    const { app } = await setup();
+    const { app, db } = await setup();
     const agent = request.agent(app);
     const initial = await agent.get('/api/session');
-    expect(initial.headers['set-cookie'][0]).toMatch(/HttpOnly/);
-    expect(initial.headers['set-cookie'][0]).toMatch(/SameSite=Strict/);
+    // A visitor gets a signed CSRF cookie and no session: nothing is persisted before sign-in.
+    const anonymous = cookie(initial, 'allowance.csrf');
+    expect(anonymous).toMatch(/HttpOnly/);
+    expect(anonymous).toMatch(/SameSite=Strict/);
+    expect(cookie(initial, 'allowance.sid')).toBeUndefined();
+    expect(sessionRows(db)).toBe(0);
     await agent.post('/api/login').send({ password: 'local-test-password' }).expect(403);
     await agent
       .post('/api/login')
@@ -62,18 +74,28 @@ describe('operator boundary', () => {
       .expect(403);
     const login = await agent
       .post('/api/login')
-      .set('Origin', 'http://127.0.0.1:4318')
+      .set('Origin', origin)
       .set('x-csrf-token', initial.body.csrfToken)
       .send({ password: 'local-test-password' })
       .expect(200);
     expect(login.body.csrfToken).not.toBe(initial.body.csrfToken);
-    expect(login.headers['set-cookie'][0].split(';')[0]).not.toBe(
-      initial.headers['set-cookie'][0].split(';')[0]
-    );
+    const sessionCookie = cookie(login, 'allowance.sid');
+    expect(sessionCookie).toMatch(/HttpOnly/);
+    expect(sessionCookie).toMatch(/SameSite=Strict/);
+    expect(sessionRows(db)).toBe(1);
+    // Signing in again regenerates the session id and still leaves one row.
+    const again = await agent
+      .post('/api/login')
+      .set('Origin', origin)
+      .set('x-csrf-token', login.body.csrfToken)
+      .send({ password: 'local-test-password' })
+      .expect(200);
+    expect(cookie(again, 'allowance.sid')?.split(';')[0]).not.toBe(sessionCookie?.split(';')[0]);
+    expect(sessionRows(db)).toBe(1);
     await agent
       .post('/api/runs')
-      .set('Origin', 'http://127.0.0.1:4318')
-      .set('x-csrf-token', login.body.csrfToken)
+      .set('Origin', origin)
+      .set('x-csrf-token', again.body.csrfToken)
       .send({})
       .expect(200);
     await agent.get('/api/runs/private/export').expect(200);
@@ -108,6 +130,52 @@ describe('operator boundary', () => {
       .send({ password: 'local-test-password' })
       .expect(429);
   });
+  it('persists no session for visitors and refuses a CSRF token without its signed cookie', async () => {
+    const { app, db } = await setup();
+    const agent = request.agent(app);
+    const first = await agent.get('/api/session');
+    const second = await agent.get('/api/session');
+    expect(second.body.csrfToken).toBe(first.body.csrfToken);
+    expect(second.headers['set-cookie']).toBeUndefined();
+    expect(sessionRows(db)).toBe(0);
+    // The token alone, or a cookie forged without the secret, does not pass.
+    await request(app)
+      .post('/api/login')
+      .set('Origin', origin)
+      .set('x-csrf-token', first.body.csrfToken)
+      .send({ password: 'local-test-password' })
+      .expect(403);
+    await request(app)
+      .post('/api/login')
+      .set('Cookie', `allowance.csrf=${'a'.repeat(64)}.${'b'.repeat(64)}`)
+      .set('Origin', origin)
+      .set('x-csrf-token', 'a'.repeat(64))
+      .send({ password: 'local-test-password' })
+      .expect(403);
+    expect(sessionRows(db)).toBe(0);
+  });
+  it('locks out sign-in per address, not for everyone, and clears that counter on success', async () => {
+    const { app, db } = await setup(true, { PROXY_HOPS: '1' });
+    const attacker = '198.51.100.7';
+    const operator = '203.0.113.5';
+    const attempt = async (ip: string, password: string) => {
+      const agent = request.agent(app);
+      const s = await agent.get('/api/session').set('X-Forwarded-For', ip);
+      return agent
+        .post('/api/login')
+        .set('X-Forwarded-For', ip)
+        .set('Origin', origin)
+        .set('x-csrf-token', s.body.csrfToken)
+        .send({ password });
+    };
+    for (let i = 0; i < 5; i++) expect((await attempt(attacker, 'wrong')).status).toBe(401);
+    expect((await attempt(attacker, 'local-test-password')).status).toBe(429);
+    expect((await attempt(operator, 'wrong')).status).toBe(401);
+    expect((await attempt(operator, 'local-test-password')).status).toBe(200);
+    expect(db.prepare('SELECT key,count FROM login_attempts ORDER BY key').all()).toEqual([
+      { key: `ip:${attacker}`, count: 5 },
+    ]);
+  });
   it('sets host-only Secure cookies only through the explicitly trusted HTTPS proxy', async () => {
     const environment = { NODE_ENV: 'production', APP_ORIGIN: 'https://console.example' };
     const direct = await setup(true, environment);
@@ -118,22 +186,28 @@ describe('operator boundary', () => {
     const session = await request(trusted.app)
       .get('/api/session')
       .set('X-Forwarded-Proto', 'https');
-    const cookie = session.headers['set-cookie'][0];
-    expect(cookie).toMatch(/^__Host-allowance=/);
-    expect(cookie).toMatch(/; Secure/);
-    expect(cookie).toMatch(/; HttpOnly/);
-    expect(cookie).toMatch(/; Path=\//);
-    expect(cookie).not.toMatch(/Domain=/);
+    // Before sign-in the only cookie is the signed CSRF cookie, host-only and Secure.
+    const csrfCookie = cookie(session, '__Host-allowance-csrf');
+    expect(csrfCookie).toBeDefined();
+    expect(cookie(session, '__Host-allowance')).toBeUndefined();
+    expect(csrfCookie).toMatch(/; Secure/);
+    expect(csrfCookie).toMatch(/; HttpOnly/);
+    expect(csrfCookie).toMatch(/; Path=\//);
+    expect(csrfCookie).not.toMatch(/Domain=/);
     expect(session.headers['cache-control']).toBe('no-store');
     const result = await request(trusted.app)
       .post('/api/login')
       .set('X-Forwarded-Proto', 'https')
-      .set('Cookie', cookie.split(';')[0])
+      .set('Cookie', csrfCookie!.split(';')[0])
       .set('Origin', environment.APP_ORIGIN)
       .set('x-csrf-token', session.body.csrfToken)
       .send({ password: 'local-test-password' })
       .expect(200);
-    expect(result.headers['set-cookie'][0]).toMatch(/; Secure/);
+    const sessionCookie = cookie(result, '__Host-allowance');
+    expect(sessionCookie).toMatch(/; Secure/);
+    expect(sessionCookie).toMatch(/; HttpOnly/);
+    expect(sessionCookie).toMatch(/; Path=\//);
+    expect(sessionCookie).not.toMatch(/Domain=/);
     expect(result.headers['cache-control']).toBe('no-store');
   });
   it('expires authenticated sessions durably and never caches private responses', async () => {

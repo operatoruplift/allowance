@@ -56,6 +56,7 @@ export async function verifyRecipientApproval(
       label: approval.label,
       nonce: approval.nonce,
       expiresAt: approval.expiresAt,
+      allowProgramOwnedRecipient: approval.allowProgramOwnedRecipient === true,
     })
   );
   const key = await getPublicKeyFromAddress(address(approval.signer));

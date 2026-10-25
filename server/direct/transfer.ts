@@ -31,6 +31,7 @@ import {
 } from '@solana-program/compute-budget';
 import type { PaymentNetwork } from '../../shared/domain.js';
 import { MEMO_PROGRAM, PaymentError, sha256 } from '../payments/guard.js';
+import { assertRecipientAccount, classifyRecipientAccount } from './recipient.js';
 
 /** The bounded JSON-RPC surface the direct rail needs; `PaymentRpc` provides it. */
 export interface DirectRpc {
@@ -70,25 +71,44 @@ export interface TransferPreconditions {
   lastValidBlockHeight: bigint;
 }
 
-/** Everything the policy layer needs to know before any signature: accounts, balances and a lifetime. */
+export interface TransferPreconditionOptions {
+  /** True only for a recipient an administrator approved as a program-controlled account. */
+  allowProgramOwnedRecipient?: boolean;
+}
+
+const accountEnvelope = z.object({ value: z.unknown().nullable() });
+
+/**
+ * Everything the policy layer needs to know before any signature: what the
+ * recipient address is, both token accounts, balances and a lifetime. The
+ * recipient must be a wallet (or not exist yet); a token account, mint or
+ * program pasted as the recipient is refused here, before any account is created.
+ */
 export async function readTransferPreconditions(
   rpc: DirectRpc,
   payer: string,
   recipient: string,
-  mint: string
+  mint: string,
+  options: TransferPreconditionOptions = {}
 ): Promise<TransferPreconditions> {
   await rpc.assertNetwork();
   const [[source], [destination]] = await Promise.all([
     findAssociatedTokenPda({ owner: address(payer), mint: address(mint), tokenProgram: TOKEN_PROGRAM_ADDRESS }),
     findAssociatedTokenPda({ owner: address(recipient), mint: address(mint), tokenProgram: TOKEN_PROGRAM_ADDRESS }),
   ]);
-  const [sourceRaw, destinationRaw, balanceRaw, blockhashRaw] = await Promise.all([
-    rpc.call('getAccountInfo', [source, { encoding: 'jsonParsed', commitment: 'confirmed' }]),
-    rpc.call('getAccountInfo', [destination, { encoding: 'jsonParsed', commitment: 'confirmed' }]),
+  const parsed = { encoding: 'jsonParsed', commitment: 'confirmed' };
+  const [recipientRaw, sourceRaw, destinationRaw, balanceRaw, blockhashRaw] = await Promise.all([
+    rpc.call('getAccountInfo', [recipient, parsed]),
+    rpc.call('getAccountInfo', [source, parsed]),
+    rpc.call('getAccountInfo', [destination, parsed]),
     rpc.call('getBalance', [payer, { commitment: 'confirmed' }]),
     rpc.call('getLatestBlockhash', [{ commitment: 'confirmed' }]),
   ]);
-  const sourceValue = z.object({ value: z.unknown().nullable() }).parse(sourceRaw).value;
+  assertRecipientAccount(
+    classifyRecipientAccount(accountEnvelope.parse(recipientRaw).value),
+    options.allowProgramOwnedRecipient === true
+  );
+  const sourceValue = accountEnvelope.parse(sourceRaw).value;
   if (sourceValue === null)
     throw new PaymentError('payer-account', 'The payer has no USDC associated token account.');
   const sourceAccount = tokenAccountSchema.parse(sourceValue);
@@ -99,7 +119,7 @@ export async function readTransferPreconditions(
     sourceAccount.data.parsed.info.state !== 'initialized'
   )
     throw new PaymentError('payer-account', 'The payer USDC account is not an initialized token account.');
-  const destinationValue = z.object({ value: z.unknown().nullable() }).parse(destinationRaw).value;
+  const destinationValue = accountEnvelope.parse(destinationRaw).value;
   let recipientAccountExists = false;
   if (destinationValue !== null) {
     const account = tokenAccountSchema.parse(destinationValue);

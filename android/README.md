@@ -22,3 +22,18 @@ adb install -r app/build/outputs/apk/release/app-release.apk
 - This project is a WebView-based Android shell, not a Trusted Web Activity.
 - External links outside the configured host open in the system browser.
 - Solana wallet intents are handled natively by the app shell.
+
+## Links and downloads
+
+The shell keeps the app inside the WebView and hands everything else to the system with a
+guard around every launch, so a phone without a wallet or mail app shows a short message instead
+of closing the app:
+
+- `https` links off the app's host open in the system browser; `mailto:` opens the mail app;
+  `solana-wallet:` opens the wallet. `intent:` URLs lose their component, selector, extras and
+  URI grants and must be BROWSABLE before they are started. Every other scheme is blocked.
+- Downloads are saved to the device's Downloads collection: `https` through the system
+  DownloadManager, `blob:` and `data:` (the JSON and CSV exports) through a two-method page
+  bridge named `WebShellDownloads` that only ever creates a new file.
+- Mixed content is never allowed, third-party cookies and file or content access are off, popups
+  need a user gesture, and backup and device-transfer rules exclude everything.

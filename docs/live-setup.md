@@ -14,7 +14,7 @@ Keep `LIVE_PAYMENTS_ENABLED=false` and `DIRECT_PAYMENTS_ENABLED=false` during in
 
 ## Mainnet x402 configuration
 
-1. Set `PAYMENT_NETWORK=mainnet` and an explicit HTTPS `PAYMENT_RPC_URL`. The official public endpoint is `https://api.mainnet-beta.solana.com`; a production deployment should use its configured RPC provider. Preflight and the final pre-sign check verify the full genesis hash, independently of the URL label.
+1. Set `PAYMENT_NETWORK=mainnet-beta` (exactly that spelling; `mainnet` refuses to start) and an explicit HTTPS `PAYMENT_RPC_URL`. The official public endpoint is `https://api.mainnet-beta.solana.com`; a production deployment should use its configured RPC provider. Preflight and the final pre-sign check verify the full genesis hash, independently of the URL label.
 2. Create a dedicated low-balance payer and supply its 64-byte JSON keypair through ignored `PAYER_SECRET_FILE` or backend-only `PAYER_SECRET_JSON`. Set `MERCHANT_RECIPIENT` to a different token owner. Both need initialized associated accounts for native Circle USDC; the x402 rail does not create accounts. Fund the payer with real USDC only for an explicitly intended run. The reviewed sponsor pays x402 transaction SOL fees; this rail requires sponsorship, so payer SOL is reported rather than used as a funding threshold for those purchases.
 3. Select and set `FACILITATOR_URL` explicitly. Its `/supported` response must advertise x402 v2 `exact`, the selected Solana CAIP-2 network and your reviewed sponsor. Set `TRUSTED_FEE_PAYER` to that sponsor; never automatically trust the first returned address. If the provider uses bearer authentication, configure `FACILITATOR_TOKEN`. Providers that require a different authentication mechanism need a compatible gateway/client; do not assume the public test facilitator supports production mainnet.
 4. Set `DAILY_USDC_CEILING` and `MAX_RUN_ALLOWANCE`; defaults are 0.100000 daily and 0.040000 per run. Each policy permanently records network, mint, recipient, origin, limits and expiry. The model cannot change them. Signing accepts the exact approved transfer, associated accounts, memo, sponsor and bounded SOL fee.
@@ -27,7 +27,7 @@ See the [dated facilitator compatibility check](facilitator-readiness.md) for Pa
 
 ## Mainnet direct-payment configuration
 
-Direct transfers use the same dedicated payer, payment network/RPC and shared daily ceiling, with their own mandate limits. Explicitly set `PAYMENT_NETWORK=mainnet`, `PAYMENT_RPC_URL`, `MAINNET_PAYMENTS_ACKNOWLEDGED=true` and, only after reviewing the intended capability, `DIRECT_PAYMENTS_ENABLED=true`. This rail does not require `LIVE_PAYMENTS_ENABLED`, a merchant recipient, facilitator or sponsor. The network default remains mainnet; the [direct-payment guide](direct-payments.md) deliberately uses explicit devnet settings for its funded verification procedure.
+Direct transfers use the same dedicated payer, payment network/RPC and shared daily ceiling, with their own mandate limits. Explicitly set `PAYMENT_NETWORK=mainnet-beta`, `PAYMENT_RPC_URL`, `MAINNET_PAYMENTS_ACKNOWLEDGED=true` and, only after reviewing the intended capability, `DIRECT_PAYMENTS_ENABLED=true`. This rail does not require `LIVE_PAYMENTS_ENABLED`, a merchant recipient, facilitator or sponsor. An unset network means mainnet with every payment gate closed, and `.env.example` ships devnet values; the [direct-payment guide](direct-payments.md) uses those explicit devnet settings for its funded verification procedure.
 
 The payer needs an initialized native USDC account, enough USDC for the approved transfer, and SOL for transaction fees and any recipient-account creation. Direct readiness requires at least 5,000,000 lamports; each request also checks its fee and account-creation budget. A missing recipient USDC account is created in the transfer transaction only when the 2,100,000-lamport creation estimate fits `DIRECT_MAX_ACCOUNT_CREATION_LAMPORTS` (default 3,000,000). `DIRECT_MAX_FEE_LAMPORTS` defaults to 15,000 and `DIRECT_PRIORITY_FEE_MICROLAMPORTS` to zero. See the [configuration bounds](configuration.md) before changing either limit.
 
@@ -35,7 +35,7 @@ Use the authenticated console's **Check readiness** action or `npm run preflight
 
 ## Read-only Solana data
 
-New configuration defaults data to the selected payment network. `.env.example` explicitly uses `DATA_NETWORK=mainnet`, `DATA_RPC_URL=https://api.mainnet-beta.solana.com`, `ALLOW_MAINNET_READ_ONLY=true`. Mainnet reads require that separate opt-in. An unconfigured server can start, but its mainnet data client rejects requests before network access. Data and payment networks remain separate in policies, receipts and the interface. Empty or unavailable wallet history must never be replaced with invented activity.
+New configuration defaults data to the selected payment network. `.env.example` ships devnet data settings; mainnet reads use `DATA_NETWORK=mainnet-beta`, `DATA_RPC_URL=https://api.mainnet-beta.solana.com` and `ALLOW_MAINNET_READ_ONLY=true`, and require that separate opt-in. An unconfigured server can start, but its mainnet data client rejects requests before network access. Data and payment networks remain separate in policies, receipts and the interface. Empty or unavailable wallet history must never be replaced with invented activity.
 
 ## Guarded x402 smoke commands
 

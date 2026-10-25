@@ -22,7 +22,7 @@ The latest UI refresh from source commit `fc4f093` was promoted afterward as `dp
 
 ## Build and publish
 
-The static build uses Vercel's [Build Output API](https://vercel.com/docs/build-output-api/configuration). Its only outputs are `config.json` and static assets. Build-time `VITE_REHEARSAL_ONLY=true` removes the private route components from the published bundle. The build does not load `.env` files. Normal `npm run build` and `npm start` continue to build and serve the complete backend application.
+The static build uses Vercel's [Build Output API](https://vercel.com/docs/build-output-api/configuration). Its only outputs are `config.json` and static assets. Build-time `VITE_REHEARSAL_ONLY=true` removes the private route components from the published bundle. The build does not load `.env` files. An optional `VITE_SUPPORT_EMAIL` in the build environment, such as a Vercel project variable, sets the contact on `/privacy` and `/terms`; without it, both pages link the GitHub issue tracker. Normal `npm run build` and `npm start` continue to build and serve the complete backend application.
 
 ```sh
 npm ci

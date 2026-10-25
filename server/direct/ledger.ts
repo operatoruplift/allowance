@@ -82,6 +82,12 @@ export interface SignedIdentity extends SigningClaim {
 }
 const settledStates: DirectPaymentStatus[] = ['settled'];
 const heldStates: DirectPaymentStatus[] = ['reserved', 'submitted', 'settlement-unknown'];
+interface StoredApproval {
+  signer?: string;
+  allowProgramOwnedRecipient?: boolean;
+}
+const parseApproval = (raw: string | null): StoredApproval | undefined =>
+  raw ? (JSON.parse(raw) as StoredApproval) : undefined;
 const requestHash = (request: { recipient: string; amount: number; memo?: string }) =>
   createHash('sha256')
     .update(JSON.stringify({ recipient: request.recipient, amount: request.amount, memo: request.memo ?? '' }), 'utf8')
@@ -138,6 +144,13 @@ export class MandateLedger {
   }
   recipientAddresses(id: string): string[] {
     return this.recipientRows(id).map((row) => row.address);
+  }
+  /** True only when an administrator approval explicitly allowed a program-controlled recipient. */
+  recipientAllowsProgramOwned(id: string, recipient: string): boolean {
+    const row = this.db
+      .prepare('SELECT approval FROM mandate_recipients WHERE mandate_id=? AND address=?')
+      .get(id, recipient) as { approval: string | null } | undefined;
+    return parseApproval(row?.approval ?? null)?.allowProgramOwnedRecipient === true;
   }
   event(
     mandateId: string,
@@ -243,15 +256,14 @@ export class MandateLedger {
       createdAt: row.created_at,
       ...(row.stopped_at ? { stoppedAt: row.stopped_at } : {}),
       recipients: recipients.map((recipient) => {
-        const approval = recipient.approval
-          ? (JSON.parse(recipient.approval) as { signer?: string })
-          : undefined;
+        const approval = parseApproval(recipient.approval);
         return {
           address: recipient.address,
           label: recipient.label,
           addedAt: recipient.added_at,
           addedBy: recipient.added_by,
           ...(approval?.signer ? { approvedBy: approval.signer } : {}),
+          ...(approval?.allowProgramOwnedRecipient === true ? { allowProgramOwnedRecipient: true } : {}),
         };
       }),
       ceiling: policy.ceiling,
@@ -314,13 +326,16 @@ export class MandateLedger {
               nonce: approval.nonce,
               expiresAt: approval.expiresAt,
               signature: approval.signature,
+              allowProgramOwnedRecipient: approval.allowProgramOwnedRecipient === true,
             })
           );
         this.event(
           id,
           'recipient-added',
           'Recipient added by administrator signature',
-          `${approval.label} (${approval.address}) approved by ${approval.signer}.`,
+          `${approval.label} (${approval.address}) approved by ${approval.signer}.${
+            approval.allowProgramOwnedRecipient ? ' A program-owned account may be paid.' : ''
+          }`,
           'policy'
         );
       })

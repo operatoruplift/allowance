@@ -63,6 +63,8 @@ export interface MandateRecipient {
   addedAt: string;
   addedBy: 'operator' | 'admin-signature';
   approvedBy?: string;
+  /** Set only by an administrator approval: a program-controlled account (a vault PDA) may be paid. */
+  allowProgramOwnedRecipient?: boolean;
 }
 export interface DirectPaymentDTO {
   id: string;
@@ -171,17 +173,27 @@ export const recipientApprovalSchema = z
     expiresAt: z.iso.datetime(),
     signer: addressSchema,
     signature: signatureSchema,
+    /**
+     * Opt a program-controlled recipient (a vault PDA) in. Default false: a
+     * recipient must otherwise be a wallet, never a token account, mint or program.
+     */
+    allowProgramOwnedRecipient: z.boolean().optional(),
   })
   .strict();
 export type RecipientApproval = z.infer<typeof recipientApprovalSchema>;
 
-/** The exact UTF-8 text an administrator signs to add one recipient to one mandate. */
+/**
+ * The exact UTF-8 text an administrator signs to add one recipient to one
+ * mandate. The program-owned line is present only when that flag is set, so a
+ * signed approval cannot be widened by adding the flag afterwards.
+ */
 export function approvalMessage(input: {
   mandateId: string;
   address: string;
   label: string;
   nonce: string;
   expiresAt: string;
+  allowProgramOwnedRecipient?: boolean;
 }): string {
   return [
     'Allowance recipient approval v1',
@@ -190,6 +202,7 @@ export function approvalMessage(input: {
     `label: ${input.label}`,
     `nonce: ${input.nonce}`,
     `expires: ${input.expiresAt}`,
+    ...(input.allowProgramOwnedRecipient ? ['program-owned recipient: allowed'] : []),
   ].join('\n');
 }
 

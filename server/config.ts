@@ -38,6 +38,10 @@ export interface Config {
   maxLlmOutputTokens: number;
   maxRuntimeMs: number;
   mcpEnabled: boolean;
+  /** Backend origin the MCP bridge calls for paid tools: HTTPS, or HTTP on loopback. */
+  mcpBackendUrl: string;
+  /** Shared secret the bridge presents to that endpoint; empty keeps the endpoint off. */
+  mcpBackendToken: string;
   directEnabled: boolean;
   adminPublicKey: string;
   directPriorityFeeMicroLamports: number;
@@ -49,6 +53,27 @@ function integer(value: string | undefined, fallback: number, min: number, max: 
   if (!Number.isSafeInteger(n) || n < min || n > max)
     throw new Error('Invalid bounded numeric configuration.');
   return n;
+}
+/** The only spellings PAYMENT_NETWORK accepts; the environment names clusters the way Solana does. */
+export const PAYMENT_NETWORK_SETTINGS = ['devnet', 'mainnet-beta'] as const;
+export type PaymentNetworkSetting = (typeof PAYMENT_NETWORK_SETTINGS)[number];
+const NETWORK_BY_SETTING: Record<PaymentNetworkSetting, PaymentNetwork> = {
+  devnet: 'devnet',
+  'mainnet-beta': 'mainnet',
+};
+/** The environment spelling for an internal network name, for messages that tell an operator what to set. */
+export const paymentNetworkSetting = (network: PaymentNetwork): PaymentNetworkSetting =>
+  network === 'mainnet' ? 'mainnet-beta' : 'devnet';
+/**
+ * Unset keeps the inert mainnet default: neither payment rail can be enabled
+ * without an explicit value. Anything but the two exact spellings, including
+ * the old `mainnet`, refuses to start, so a typo can never select a cluster.
+ */
+export function parsePaymentNetwork(value: string | undefined): PaymentNetwork {
+  if (value === undefined || value === '') return 'mainnet';
+  const setting = PAYMENT_NETWORK_SETTINGS.find((candidate) => candidate === value);
+  if (!setting) throw new Error("PAYMENT_NETWORK must be exactly 'devnet' or 'mainnet-beta'.");
+  return NETWORK_BY_SETTING[setting];
 }
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const production = env.NODE_ENV === 'production';
@@ -63,9 +88,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       !(url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)))
   )
     throw new Error('APP_ORIGIN must be HTTPS or an exact local development origin.');
-  const paymentNetwork = env.PAYMENT_NETWORK || 'mainnet';
-  if (paymentNetwork !== 'mainnet' && paymentNetwork !== 'devnet')
-    throw new Error('PAYMENT_NETWORK must be mainnet or devnet.');
+  const paymentNetwork = parsePaymentNetwork(env.PAYMENT_NETWORK);
   const liveEnabled = env.LIVE_PAYMENTS_ENABLED === 'true';
   if (liveEnabled && (!env.PAYMENT_NETWORK || !env.PAYMENT_RPC_URL || !env.FACILITATOR_URL))
     throw new Error(
@@ -97,9 +120,27 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const adminPublicKey = env.ADMIN_PUBLIC_KEY?.trim() || '';
   if (adminPublicKey && !isBase58Bytes(adminPublicKey, 32))
     throw new Error('ADMIN_PUBLIC_KEY must be a Solana address.');
-  const dataNetwork = env.DATA_NETWORK || paymentNetwork;
+  const mcpBackendToken = env.MCP_BACKEND_TOKEN || '';
+  if (mcpBackendToken && !/^[A-Za-z0-9_-]{32,256}$/.test(mcpBackendToken))
+    throw new Error('MCP_BACKEND_TOKEN must be 32 to 256 URL-safe characters.');
+  const mcpBackendUrl = env.MCP_BACKEND_URL || `http://127.0.0.1:${port}`;
+  const backend = new URL(mcpBackendUrl);
+  if (
+    backend.origin !== mcpBackendUrl ||
+    backend.username ||
+    backend.password ||
+    (backend.protocol !== 'https:' &&
+      !(
+        backend.protocol === 'http:' &&
+        ['localhost', '127.0.0.1', '[::1]'].includes(backend.hostname)
+      ))
+  )
+    throw new Error('MCP_BACKEND_URL must be the backend origin: HTTPS, or HTTP on loopback.');
+  // Data reads accept the same cluster spelling as payments; the older `mainnet` still works here.
+  const dataNetwork =
+    env.DATA_NETWORK === 'mainnet-beta' ? 'mainnet' : env.DATA_NETWORK || paymentNetwork;
   if (dataNetwork !== 'devnet' && dataNetwork !== 'mainnet')
-    throw new Error('Unknown data network.');
+    throw new Error("DATA_NETWORK must be 'devnet' or 'mainnet-beta'.");
   if (
     dataNetwork === 'mainnet' &&
     (env.DATA_NETWORK || liveEnabled) &&
@@ -136,6 +177,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     maxLlmOutputTokens: integer(env.LLM_MAX_OUTPUT_TOKENS, 1200, 256, 2000),
     maxRuntimeMs: 180_000,
     mcpEnabled: env.MCP_ENABLED === 'true',
+    mcpBackendUrl,
+    mcpBackendToken,
     directEnabled,
     adminPublicKey,
     directPriorityFeeMicroLamports: integer(env.DIRECT_PRIORITY_FEE_MICROLAMPORTS, 0, 0, 1_000_000),

@@ -11,11 +11,13 @@ import {
   type ReadinessItem,
 } from '../shared/domain.js';
 import { installAuth } from './auth/index.js';
+import { apiRateLimiter, loginRateLimiter } from './auth/rate-limit.js';
 import { configurationReadiness, type Config } from './config.js';
 import { Ledger } from './policy/ledger.js';
 import { PolicyError } from './policy/decision.js';
 import { AgentRunner, type PaidToolRunner } from './agent/runner.js';
 import { createAgentGrant } from './mcp/grants.js';
+import { mountBridgeRoutes } from './mcp/bridge-routes.js';
 import { MandateLedger } from './direct/ledger.js';
 import { createMandateGrant, revokeMandateGrant } from './direct/grants.js';
 import { ApprovalError, verifyRecipientApproval } from './direct/approval.js';
@@ -58,7 +60,10 @@ export function disabledDirectPayments(network: Config['paymentNetwork']): Direc
       };
     },
     async pay() {
-      throw new PaymentError('disabled', 'Direct payments are not enabled; no transfer was signed.');
+      throw new PaymentError(
+        'disabled',
+        'Direct payments are not enabled; no transfer was signed.'
+      );
     },
     async reconcile() {},
   };
@@ -105,8 +110,13 @@ export function createApp(
       strictTransportSecurity: new URL(config.origin).protocol === 'https:' ? undefined : false,
     })
   );
+  // Per-address ceilings on the private API, ahead of body parsing and the session layer.
+  app.use('/api', apiRateLimiter());
+  app.use('/api/login', loginRateLimiter());
   app.use(express.json({ limit: '24kb', strict: true }));
   payments.mountMerchant(app);
+  // Registered before the session layer: the local bridge authenticates with its token, never a cookie.
+  mountBridgeRoutes(app, { config, direct, mandates, payments });
   const { requireOperator } = installAuth(app, db, config, () => runner?.stopActive());
   let observed: Awaited<ReturnType<RuntimePayments['readiness']>> | undefined;
   let directObserved: Awaited<ReturnType<DirectPaymentService['readiness']>> | undefined;
@@ -195,7 +205,11 @@ export function createApp(
   });
   app.get('/api/config', requireOperator, (_req, res) => res.json(configDto()));
   app.post('/api/preflight', requireOperator, async (_req, res) => {
-    const result = await Promise.allSettled([payments.readiness(), dataProbe(), direct.readiness()]);
+    const result = await Promise.allSettled([
+      payments.readiness(),
+      dataProbe(),
+      direct.readiness(),
+    ]);
     directObserved =
       result[2].status === 'fulfilled'
         ? result[2].value
@@ -319,7 +333,8 @@ export function createApp(
   const mandateIdSchema = z.string().uuid();
   function directError(error: unknown, res: express.Response): boolean {
     if (error instanceof PaymentError) {
-      const status = error.code === 'disabled' ? 503 : error.code.startsWith('insufficient') ? 409 : 503;
+      const refused = error.code.startsWith('insufficient') || error.code === 'recipient-account';
+      const status = error.code === 'disabled' ? 503 : refused ? 409 : 503;
       res.status(status).json({
         error: error.message,
         code: `DIRECT_${error.code.toUpperCase().replace(/-/g, '_')}`,
@@ -350,7 +365,8 @@ export function createApp(
     }
     if (!directDto().ready) {
       res.status(503).json({
-        error: 'Direct payments are unavailable. Complete configuration and run a fresh readiness check.',
+        error:
+          'Direct payments are unavailable. Complete configuration and run a fresh readiness check.',
         code: 'DIRECT_NOT_READY',
       });
       return;
@@ -366,7 +382,12 @@ export function createApp(
       });
       res.status(201).json({
         mandate: mandates.get(mandate.id),
-        grant: { id: grant.grant.id, expiresAt: grant.grant.expiresAt, scopes: grant.grant.scopes, token: grant.token },
+        grant: {
+          id: grant.grant.id,
+          expiresAt: grant.grant.expiresAt,
+          scopes: grant.grant.scopes,
+          token: grant.token,
+        },
       });
     } catch (error) {
       mandates.stop(mandate.id);
@@ -407,7 +428,9 @@ export function createApp(
       const request = directPaymentRequestSchema.parse(req.body);
       mandates.get(id);
       const payment = await direct.pay(id, request, 'operator');
-      res.status(payment.status === 'denied' ? 409 : 201).json({ payment, mandate: mandates.get(id) });
+      res
+        .status(payment.status === 'denied' ? 409 : 201)
+        .json({ payment, mandate: mandates.get(id) });
     } catch (error) {
       if (!directError(error, res)) next(error);
     }
@@ -436,24 +459,20 @@ export function createApp(
   app.use(
     (error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
       if (error instanceof z.ZodError) {
-        res
-          .status(400)
-          .json({
-            error: 'Invalid request fields.',
-            code: 'INVALID_FIELDS',
-            requestId: res.getHeader('X-Request-ID'),
-            fields: z.flattenError(error).fieldErrors,
-          });
+        res.status(400).json({
+          error: 'Invalid request fields.',
+          code: 'INVALID_FIELDS',
+          requestId: res.getHeader('X-Request-ID'),
+          fields: z.flattenError(error).fieldErrors,
+        });
         return;
       }
       if (error instanceof PolicyError) {
-        res
-          .status(409)
-          .json({
-            error: error.message,
-            code: 'POLICY_DENIED',
-            requestId: res.getHeader('X-Request-ID'),
-          });
+        res.status(409).json({
+          error: error.message,
+          code: 'POLICY_DENIED',
+          requestId: res.getHeader('X-Request-ID'),
+        });
         return;
       }
       if (error instanceof Error && error.message === 'Run not found.') {

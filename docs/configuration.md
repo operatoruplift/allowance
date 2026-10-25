@@ -1,6 +1,6 @@
 # Runtime configuration reference
 
-All variables below are **server-only**, except `VITE_REHEARSAL_ONLY`. Configure secrets through a private environment or mounted secret file; never through a browser, public export or `VITE_*`. Readiness reports presence and validation results, not credentials. `.env.example` is a template, not a funded configuration. Mainnet is the default network and signing defaults off.
+All variables below are **server-only**, except `VITE_REHEARSAL_ONLY` and `VITE_SUPPORT_EMAIL`. Configure secrets through a private environment or mounted secret file; never through a browser, public export or `VITE_*`. Readiness reports presence and validation results, not credentials. `.env.example` is a devnet template, not a funded configuration. An unset `PAYMENT_NETWORK` means mainnet with every payment gate closed, and signing defaults off.
 
 | Variable | Shape / default | Required when; source and purpose |
 | --- | --- | --- |
@@ -14,7 +14,7 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY`. Configure
 | `PROXY_HOPS` | Integer 0–2; `0` | Exact trusted reverse-proxy hop count. Set `1` only behind the specified single proxy; restrict direct backend access. |
 | `LIVE_PAYMENTS_ENABLED` | Literal `true`; otherwise false | Enables the x402 rail. Independent of the direct-payment gate; disabling this flag does not disable direct transfers. Does not itself authorize a funded test. |
 | `DIRECT_PAYMENTS_ENABLED` | Literal `true`; otherwise false | Enables direct USDC transfers under mandates. Requires an explicit payment network/RPC and a dedicated signer; does not require the x402 gate or facilitator. Keep both rail flags false during initial setup and restoration. |
-| `PAYMENT_NETWORK` | `mainnet` or `devnet`; `mainnet` | Must be explicitly set when either payment rail is enabled. Frozen into each run or mandate; never relabel existing receipts. |
+| `PAYMENT_NETWORK` | Exactly `devnet` or `mainnet-beta`; unset means mainnet with payments off | Must be explicitly set when either payment rail is enabled; `mainnet` or any other spelling refuses to start. Frozen into each run or mandate; never relabel existing receipts. |
 | `MAINNET_PAYMENTS_ACKNOWLEDGED` | Literal `true`; default false | Required when either rail is enabled on mainnet. Acknowledge actual USDC and reviewed limits; independent of deployment permission. |
 | `PAYER_SECRET_FILE` | Path to 64-byte JSON keypair | Dedicated low-balance signer; private read-only secret mount. Required for payment readiness unless JSON alternative supplied. |
 | `PAYER_SECRET_JSON` | 64 integer bytes, JSON array | Server-only alternative to key file. Prefer the mounted file and configure only one source. |
@@ -29,7 +29,7 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY`. Configure
 | `DIRECT_MAX_ACCOUNT_CREATION_LAMPORTS` | Integer 0–10,000,000; `3000000` | Direct rail only: recipient-account creation allowance. A missing USDC account requires the current 2,100,000-lamport estimate to fit this cap; `0` requires an existing recipient account. |
 | `DAILY_USDC_CEILING` | Canonical decimal, at most 6 decimals; `0.100000` | Shared payer limit in USDC, not SOL/provider cost; review against funding. Unresolved holds continue counting across UTC days. |
 | `MAX_RUN_ALLOWANCE` | Canonical decimal; `0.040000` | Maximum operator-selectable run allowance, independent of per-request cap. |
-| `DATA_NETWORK` | `mainnet` or `devnet`; selected payment network | Provenance of useful data, independent of payment network. Frozen run labels show both when they differ. |
+| `DATA_NETWORK` | `devnet` or `mainnet-beta` (`mainnet` still accepted); selected payment network | Provenance of useful data, independent of payment network. Frozen run labels show both when they differ. |
 | `DATA_RPC_URL` | HTTPS endpoint; network public RPC by default | Read-only data provider. Bounded responses, no redirects, genesis checked. |
 | `ALLOW_MAINNET_READ_ONLY` | Literal `true`; default false | Separate permission to read mainnet data. Does not enable mainnet payments. |
 | `DEMO_WALLET` | 32-byte base58 wallet address | Prepared data wallet for repeatable smoke; actual history may be empty. No private key is needed for the data wallet. |
@@ -39,7 +39,11 @@ All variables below are **server-only**, except `VITE_REHEARSAL_ONLY`. Configure
 | `LLM_MAX_OUTPUT_TOKENS` | Integer 256–2000; `1200` | Per-model-call generated-token cap; provider billing remains separate from tool USDC. |
 | `MCP_ENABLED` | Literal `true`; default false | Enables human-created external-run grants/local stdio adapter, not remote public MCP. |
 | `MCP_GRANT_TOKEN` | One-time-visible high-entropy token | Private stdio client environment only; from authenticated `POST /api/external-runs` for x402 or `POST /api/mandates` for direct payments. Bound to the run or mandate, session, scope and expiry; do not pass to the model. |
+| `MCP_BACKEND_URL` | Backend origin; `http://127.0.0.1:<PORT>` | Where the bridge sends its paid tools. HTTPS, or HTTP on loopback only; the bridge always runs beside the backend because both read the same journal. |
+| `MCP_BACKEND_TOKEN` | 32–256 URL-safe characters; empty | Shared secret for `POST /api/bridge/...`, read by the backend and the bridge from the same private environment. Empty keeps that endpoint off (503) and the bridge's paid tools unavailable. Generate with `openssl rand -hex 32`; rotate by changing it in one place. |
+| `ALLOWANCE_MCP_LOCAL_SIGNER` | Literal `1`; unset | Bridge process only: load the payer key inside the MCP client process tree instead of forwarding to the backend. Announced on stderr; for isolated local tests only. |
 | `VITE_REHEARSAL_ONLY` | Build constant `true` for public Vercel | The static build script forces this value and disables environment-file loading. No secret or network endpoint belongs in client configuration. |
+| `VITE_SUPPORT_EMAIL` | Optional public email address; empty | Contact shown on `/privacy` and `/terms`, read at build time and published in the page. Empty or malformed values fall back to the GitHub issue tracker. The static rehearsal build reads it only from the build environment (a Vercel project variable), never from `.env`. |
 
 For built-in x402 runs, the code also enforces a 180-second duration, four tool proposals, 48,000 accumulated model-input characters, fixed catalog prices, a 15,000-lamport fee limit per purchase and bounded provider responses. These are application controls rather than editable model inputs. The scripted two-purchase x402 smoke consumes at most 30,000 micro-USDC, with no third payment for its denied 20,000 probe. Two fee caps total at most 30,000 lamports paid by the separately pinned sponsor. Account creation is excluded on that rail; no paid model call is part of that smoke. Direct transfers use the separate SOL limits above, require payer-funded fees, and can create a recipient's associated USDC account within the configured cap.
 

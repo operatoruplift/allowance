@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# The page calls the download bridge by method name.
+-keepclassmembers class com.operatoruplift.allowance.WebShellDownloads {
+    @android.webkit.JavascriptInterface <methods>;
+}

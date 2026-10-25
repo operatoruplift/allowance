@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import express from 'express';
 import { z } from 'zod';
 import { createRuntime } from '../server/runtime.js';
-import { loadConfig } from '../server/config.js';
+import { loadConfig, paymentNetworkSetting } from '../server/config.js';
 import {
   addressSchema,
   signatureSchema,
@@ -20,7 +20,7 @@ export async function runPaymentSmoke(network: PaymentNetwork) {
   const config = loadConfig();
   if (!config.liveEnabled || config.paymentNetwork !== network)
     throw new Error(
-      `This script requires LIVE_PAYMENTS_ENABLED=true and PAYMENT_NETWORK=${network}. It cannot spend on another network.`
+      `This script requires LIVE_PAYMENTS_ENABLED=true and PAYMENT_NETWORK=${paymentNetworkSetting(network)}. It cannot spend on another network.`
     );
   const wallet = addressSchema.parse(config.defaultWallet);
   if (!['localhost', '127.0.0.1'].includes(new URL(config.origin).hostname))

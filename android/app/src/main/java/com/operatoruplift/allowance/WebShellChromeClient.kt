@@ -1,6 +1,5 @@
 package com.operatoruplift.allowance
 
-import android.content.Intent
 import android.os.Message
 import android.util.Log
 import android.webkit.ConsoleMessage
@@ -12,6 +11,7 @@ import android.webkit.WebViewClient
 class WebShellChromeClient(
     private val onProgressChanged: (Int) -> Unit,
     private val isDebug: Boolean,
+    private val opener: LinkOpener,
 ) : WebChromeClient() {
     override fun onProgressChanged(
         view: WebView,
@@ -45,9 +45,9 @@ class WebShellChromeClient(
         isUserGesture: Boolean,
         resultMsg: Message,
     ): Boolean {
-        // Handle window.open() and target="_blank" links (used by OAuth
-        // flows like Privy, social logins, etc.).  Open the URL in the
-        // system browser so the user can complete the flow there.
+        // window.open() and target="_blank" open in the system browser, and only when the
+        // user asked for it: a page script cannot pop windows on its own.
+        if (!isUserGesture) return false
         val newWebView = WebView(view.context)
         newWebView.webViewClient =
             object : WebViewClient() {
@@ -55,7 +55,14 @@ class WebShellChromeClient(
                     view: WebView,
                     request: WebResourceRequest,
                 ): Boolean {
-                    view.context.startActivity(Intent(Intent.ACTION_VIEW, request.url))
+                    val url = request.url
+                    when (url.scheme?.lowercase()) {
+                        "https" -> opener.openInBrowser(url)
+                        "http" -> opener.openInBrowser(url.buildUpon().scheme("https").build())
+                        "mailto" -> opener.openEmail(url)
+                        "solana-wallet" -> opener.openWallet(url)
+                        "intent" -> opener.openIntentUrl(url.toString())
+                    }
                     return true
                 }
             }

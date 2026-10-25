@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { config, contentSecurityPolicy } from '../scripts/rehearsal-config';
+import { config, contentSecurityPolicy, SPA_ROUTE } from '../scripts/rehearsal-config';
+import { LEGAL_ROUTES } from '../shared/routes';
 
 // A rehearsal document never calls the network, and `connect-src 'none'` is what
 // makes that checkable from outside rather than a claim in the README. The
@@ -36,5 +37,41 @@ describe('static rehearsal content security policy', () => {
       expect(policy).not.toMatch(/https?:\/\//);
       expect(policy).not.toMatch(/\*/);
     }
+  });
+});
+
+/**
+ * The headers a GET for this path would carry, read from the route table the way
+ * the platform applies it: every matching route before the filesystem phase adds
+ * its headers in order, a later match overriding an earlier one, until a route
+ * without `continue` ends the phase.
+ */
+function documentHeaders(pathname: string): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const route of config.routes) {
+    if (route.handle === 'filesystem') break;
+    if (route.methods && !route.methods.includes('GET')) continue;
+    if (!route.src || !new RegExp(`^${route.src}$`).test(pathname)) continue;
+    expect(route.status, `${pathname} is answered with ${route.status}`).toBeUndefined();
+    Object.assign(headers, route.headers);
+    if (!route.continue) break;
+  }
+  return headers;
+}
+
+// Store listings link straight to these two documents, so a reviewer's first load
+// arrives without the app ever having run. They need nothing from the network to
+// render, which is why they get the same policy as every other document.
+describe('the legal pages on the static rehearsal', () => {
+  const paths = LEGAL_ROUTES.flatMap((route) => [route, `${route}/`]);
+
+  it.each(paths)('serves %s as a page, not the 404 shell', (path) => {
+    expect(new RegExp(`^${SPA_ROUTE}$`).test(path)).toBe(true);
+  });
+
+  it.each(paths)('keeps connect-src none on %s', (path) => {
+    const policy = documentHeaders(path)['Content-Security-Policy'];
+    expect(policy).toBe(contentSecurityPolicy("'none'"));
+    expect(/connect-src ([^;]*)/.exec(policy)![1]).toBe("'none'");
   });
 });

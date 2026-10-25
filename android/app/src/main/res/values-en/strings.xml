@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares English explicitly. With the English-only locale filter in
+     app/build.gradle.kts, this is the one language the APK reports. -->
+<resources>
+    <string name="app_name">Allowance</string>
+    <string name="webshell_no_browser">No browser is available to open this link.</string>
+    <string name="webshell_no_wallet_app">No Solana wallet app is installed. Install one, then try again.</string>
+    <string name="webshell_no_email_app">No email app is installed. The address is shown on the page.</string>
+    <string name="webshell_download_started">Downloading to your Downloads folder.</string>
+    <string name="webshell_download_saved">Saved to your Downloads folder.</string>
+    <string name="webshell_download_failed">The file could not be saved.</string>
+    <string name="webshell_download_needs_android_10">Saving files needs Android 10 or newer.</string>
+</resources>

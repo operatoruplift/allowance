@@ -78,6 +78,9 @@ fun WebShellScreen() {
     var hasError by remember { mutableStateOf(false) }
     var showSplash by remember { mutableStateOf(true) }
 
+    val opener = remember { LinkOpener(context) }
+    val downloads = remember(opener) { WebShellDownloads(context, opener) }
+
     val webView =
         remember {
             WebView(context).apply {
@@ -91,13 +94,17 @@ fun WebShellScreen() {
                 settings.databaseEnabled = true
                 settings.loadWithOverviewMode = false
                 settings.useWideViewPort = false
-                settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                // The site is https only. localhost is a secure context in Chromium, so the
+                // Mobile Wallet Adapter websocket is not mixed content and still works.
+                settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 settings.builtInZoomControls = true
                 settings.displayZoomControls = false
                 settings.setSupportZoom(true)
-                settings.javaScriptCanOpenWindowsAutomatically = true
+                settings.javaScriptCanOpenWindowsAutomatically = false
                 settings.setSupportMultipleWindows(true)
                 settings.offscreenPreRaster = true
+                settings.allowFileAccess = false
+                settings.allowContentAccess = false
 
                 val originalUa = settings.userAgentString
                 settings.userAgentString =
@@ -110,7 +117,7 @@ fun WebShellScreen() {
                     Log.i(TAG, "UA verify:   ${settings.userAgentString}")
                 }
 
-                CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
+                CookieManager.getInstance().setAcceptThirdPartyCookies(this, false)
 
                 webChromeClient =
                     WebShellChromeClient(
@@ -120,10 +127,11 @@ fun WebShellScreen() {
                             isLoading = newProgress < 100
                         },
                         isDebug = BuildConfig.DEBUG,
+                        opener = opener,
                     )
 
                 webViewClient =
-                    object : WebShellViewClient(context, scopeHostProvider = { scopeHost }) {
+                    object : WebShellViewClient(context, scopeHostProvider = { scopeHost }, opener = opener) {
                         override fun onPageFinished(
                             view: WebView,
                             url: String?,
@@ -146,6 +154,11 @@ fun WebShellScreen() {
                             }
                         }
                     }
+
+                addJavascriptInterface(downloads, WebShellDownloads.BRIDGE)
+                setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+                    downloads.onDownloadStart(this, url, userAgent, contentDisposition, mimeType)
+                }
 
                 loadUrl(startUrl)
             }

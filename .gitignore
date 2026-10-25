@@ -3,7 +3,6 @@ dist/
 .vercel/
 .env
 .env.*
-!.env.example
 secrets/
 var/
 *.sqlite*
@@ -14,3 +13,11 @@ test-results/
 .DS_Store
 .vercel
 .env*
+# The template is the one env file that belongs in the repository; it must follow every .env* rule.
+!.env.example
+# Key material never belongs in the repository, wherever it is written.
+*.pem
+*payer*.json
+*keypair*.json
+id.json
+*.key
