@@ -1,113 +1,218 @@
-# Allowance
+<div align="center">
 
-> **In 20 seconds.** Allowance gives an AI agent a fixed, human-approved USDC budget for exact x402 payments on Solana, with the spending policy enforced outside the model and every decision and receipt recorded. Try the public rehearsal: [allowanceonsolana.vercel.app/lab](https://allowanceonsolana.vercel.app/lab). Built by Matt ([RVAClassic](https://x.com/operatoruplift), Operator Uplift) for the Solana Foundation **Agentic Payments** sprint, September 2026. Working today: the policy lab, durable receipts, the MCP bridge, policy-gated direct USDC payments to allowlisted recipients (mandates, devnet-first), an installable PWA and the Seeker Android shell. Live devnet and mainnet settlement is implemented and ships behind an explicit operator gate: run the persistent backend, configure the payment accounts, then authorize the funded smoke command. Everything below is verification detail, with each claim scoped to the dated evidence in this repository.
+<img src="docs/readme/banner.png" alt="Allowance. AI agents, x402, Solana. Give your agent a budget. Human-approved USDC spending for AI agents: the limits live outside the model, and every call leaves a receipt. Exact x402 payments, Solana USDC, local MCP bridge, durable receipts. allowanceonsolana.vercel.app" width="100%">
 
-**Give your agent a budget.** A small, single-operator application for buying useful Solana data with exact x402 USDC payments on Solana, with spending decisions enforced outside the model.
+<br><br>
 
-**Short description:** Allowance gives AI agents human-approved USDC budgets to buy useful tools and pay approved recipients on Solana, with spending controls outside the model and a durable record of each decision.
+<a href="https://allowanceonsolana.vercel.app/lab"><img src="https://img.shields.io/badge/Open_the_policy_lab-B42336?style=for-the-badge" alt="Open the policy lab" height="36"></a>&nbsp;&nbsp;
+<a href="https://allowanceonsolana.vercel.app/demo#product-tour"><img src="https://img.shields.io/badge/Watch_the_product_tour-281E20?style=for-the-badge" alt="Watch the product tour" height="36"></a>&nbsp;&nbsp;
+<a href="https://allowanceonsolana.vercel.app/developers"><img src="https://img.shields.io/badge/Developer_guide-6F6163?style=for-the-badge" alt="Read the developer guide" height="36"></a>
 
-**Full description:** Allowance is a single-operator application for bounded agent payments on Solana. A human approves the budget, per-request cap, permitted tools or recipients, and expiry. Agents can buy the first-party `wallet_snapshot` and `transaction_explain` tools through exact x402 payments, or make direct USDC payments under an allowlisted-recipient mandate. Application code checks every request before the server-managed payer signs; both rails share a daily ceiling and durable receipts that distinguish holds, settlement evidence and service delivery. A local stdio MCP bridge gives authorized external agents access to the same controls. The public policy lab lets visitors adjust limits and save a plan without moving funds, and an installable PWA provides access to the public pages. An unset network means mainnet with every payment gate closed (the template ships devnet values), but actual payments still require a persistent backend host, operator credentials, funded accounts and the relevant payment-provider setup; no Allowance mainnet or devnet settlement has been verified in this delivery. The included Android shell still needs native download and device validation. See the [complete product description](docs/product-description.md).
+<br><br>
 
-The public rehearsal works immediately without accounts, signing, paid HTTP requests, or model calls. Live execution switches on with explicit operator setup. **Every settlement statement here is scoped to the evidence behind it: the rehearsal, the controlled-adapter payment suites, and dated public read-only chain checks.** See the [integration matrix](docs/integration-status.md) and [current release evidence](docs/release-2026-09-20.md) for what each check covers and the setup each live capability needs.
+<a href="https://github.com/operatoruplift/allowance/actions/workflows/ci.yml"><img src="https://github.com/operatoruplift/allowance/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
+<a href="https://allowanceonsolana.vercel.app"><img src="https://img.shields.io/website?url=https%3A%2F%2Fallowanceonsolana.vercel.app&label=rehearsal&up_message=live&down_message=down&up_color=34d399&labelColor=281E20&style=flat-square" alt="Public rehearsal status"></a>
+<img src="https://img.shields.io/badge/payments-x402_exact_SVM-B42336?style=flat-square&labelColor=281E20" alt="Payments: x402 exact SVM">
+<img src="https://img.shields.io/badge/settles_in-Solana_USDC-9945FF?style=flat-square&logo=solana&logoColor=white&labelColor=281E20" alt="Settles in Solana USDC">
+<img src="https://img.shields.io/badge/agents-MCP_stdio-6F6163?style=flat-square&labelColor=281E20" alt="Agents connect over local MCP stdio">
+<img src="https://img.shields.io/badge/node-22.19%2B-339933?style=flat-square&logo=nodedotjs&logoColor=white&labelColor=281E20" alt="Node 22.19 or newer">
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6F6163?style=flat-square&labelColor=281E20" alt="License: MIT"></a>
 
-The public rehearsal is live at [allowanceonsolana.vercel.app](https://allowanceonsolana.vercel.app). The [Vercel deployment guide](docs/vercel.md) documents its separate static build. Operator access and live payments run on the persistent backend described below.
+<h3>Let it buy the tools it needs. See where every cent went.</h3>
 
-[Source on GitHub](https://github.com/operatoruplift/allowance) · [Product tour](https://allowanceonsolana.vercel.app/demo#product-tour) · [Brand kit](https://allowanceonsolana.vercel.app/brand) · [Download all brand assets](https://allowanceonsolana.vercel.app/brand/allowance-brand-kit.zip)
+<b>Approve</b> &nbsp;→&nbsp; <b>Propose</b> &nbsp;→&nbsp; <b>Check</b> &nbsp;→&nbsp; <b>Reserve</b> &nbsp;→&nbsp; <b>Sign</b> &nbsp;→&nbsp; <b>Receipt</b>
 
-## Run
+<br>
 
-Node 22.19 or newer in the supported Node 22/24 lines, npm, and a writable local disk are required.
+<a href="#how-it-works">How it works</a> &nbsp;·&nbsp;
+<a href="#the-trust-model">Trust model</a> &nbsp;·&nbsp;
+<a href="#status">Status</a> &nbsp;·&nbsp;
+<a href="#run-it-locally">Run it locally</a> &nbsp;·&nbsp;
+<a href="#documentation">Docs</a>
 
-```sh
+</div>
+
+<br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/screens-dark.png">
+  <img src="docs/readme/screens-light.png" alt="Four screens of the public rehearsal. 01, plan the allowance: set a total, a per-request cap and a daily limit in the policy lab. 02, keep the budget in code: the agent proposes a tool and the server checks the policy and reserves the charge before the payer signs. 03, watch a run unfold in the narrated walkthrough, with no funds moved. 04, keep the receipt: settled, held and remaining amounts stay visible, and a blocked request never consumes the allowance." width="100%">
+</picture>
+
+<p align="center"><sub>Captured from a local build of the public rehearsal on 30 October 2026. No funds moved.</sub></p>
+
+**Allowance gives an AI agent a fixed, human-approved USDC budget for exact x402 payments on Solana.** A person sets the budget, the per-request cap, the permitted tools or recipients, and the expiry. The agent only proposes: the server checks each request against that frozen policy, reserves the charge in a durable ledger, and only then lets a dedicated payer sign. Every decision, hold and settlement lands in a receipt.
+
+Built by Matt ([RVAClassic](https://x.com/rvaclassic), [Operator Uplift](https://operatoruplift.com)) for the Solana Foundation **Agentic Payments** sprint, September 2026.
+
+<br>
+
+## How it works
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/flow-dark.png">
+  <img src="docs/readme/flow-light.png" alt="Agent, Allowance and Solana. The agent proposes: a bounded OpenAI Responses run or any MCP client over local stdio, with narrow tool schemas, and it never sees the payer key. Allowance decides: it checks each request against the operator's frozen policy, reserves in a SQLite ledger before signing, and holds one dedicated backend signer. Solana settles: exact x402 USDC payments through a facilitator, allowlisted direct transfers under a mandate, and settlement checked against chain evidence. Every decision becomes a durable receipt." width="100%">
+</picture>
+
+<table>
+  <tr valign="top">
+    <td width="33%"><b>The limits live outside the model</b><br><sub>The model can only propose a purchase. Budget, per-call maximum, tools, recipient, network, mint and expiry form an immutable policy that application code enforces before anything is signed.</sub></td>
+    <td width="33%"><b>Reserve, then sign</b><br><sub>A SQLite <code>BEGIN IMMEDIATE</code> transaction reserves the charge first. A unique purchase identity and a canonical request hash stop repeated signing, and a database failure denies new payments.</sub></td>
+    <td width="33%"><b>Evidence, not claims</b><br><sub>A facilitator response, chain verification and a delivered result are recorded as separate evidence. A receipt only says <code>SETTLED</code> once the chain shows it.</sub></td>
+  </tr>
+</table>
+
+Two payment rails share one policy engine, one daily ceiling and one receipt format:
+
+<table>
+  <tr>
+    <th width="22%" align="left">Rail</th>
+    <th width="39%" align="left">What the agent can do</th>
+    <th width="39%" align="left">How it is gated</th>
+  </tr>
+  <tr valign="top">
+    <td><b>x402 tool purchases</b></td>
+    <td>Buy two first-party Solana data tools with exact x402 payments: <code>wallet_snapshot</code> for 0.010000 USDC and <code>transaction_explain</code> for 0.020000 USDC.</td>
+    <td>The run's policy names the tools, the per-request cap and the budget. The guarded buyer checks the actual payment requirement before the payer signs.</td>
+  </tr>
+  <tr valign="top">
+    <td><b>Direct payments</b></td>
+    <td>Pay exact USDC to recipients the operator listed in advance, through the <code>execute_guarded_payment</code> MCP tool: one <code>TransferChecked</code> per request.</td>
+    <td>A mandate fixes the per-request cap, ceiling, expiry and recipients. Blocked requests become durable <code>BLOCKED</code> receipts with nothing signed. See <a href="docs/direct-payments.md">direct payments</a>.</td>
+  </tr>
+</table>
+
+<p align="center"><sub>React 19 · Vite 8 · Express 5 · TypeScript · SQLite (better-sqlite3) · @solana/kit 5 · x402 2.25 exact SVM · OpenAI Responses API · MCP stdio · Argon2id sessions · Vitest · Playwright · Docker</sub></p>
+
+<br>
+
+## The trust model
+
+Allowance is a **server-managed signer with application-enforced controls**, and the scope is deliberate: controls live in application code, not in a custom onchain budget program, a smart wallet or a payment channel.
+
+<table>
+  <tr>
+    <th width="24%" align="left">Control</th>
+    <th width="76%" align="left">What it guarantees</th>
+  </tr>
+  <tr valign="top">
+    <td><b>Exact money</b></td>
+    <td>USDC is bounded integer micro-units inside, decimal strings at the API boundary. <code>0.04</code> is exactly <code>40000</code>.</td>
+  </tr>
+  <tr valign="top">
+    <td><b>Frozen policy</b></td>
+    <td>Budget, per-call maximum, tools, destination, recipient, network and mint, expiry and call limit are bound at approval. A shared UTC daily ceiling applies across runs, and outstanding holds still count when the day changes.</td>
+  </tr>
+  <tr valign="top">
+    <td><b>Guarded signer</b></td>
+    <td>The signer checks the actual transaction and records a signing claim before it touches the key. An uncertain outcome stays held and freezes the payer instead of retrying.</td>
+  </tr>
+  <tr valign="top">
+    <td><b>Stop and expiry</b></td>
+    <td>Both block new signatures. Work already signed can still settle, and a restart restores receipts and reconciliation without restarting the old model authorization.</td>
+  </tr>
+</table>
+
+What it does not claim: a compromised server could defeat application-level controls. That is why the signer stays backend-only and the documented setup uses a dedicated low-balance payer, and why both shipped merchants are labeled as first-party sample services rather than third-party adoption. The full analysis is in the [threat model](docs/threat-model.md).
+
+<br>
+
+## Status
+
+<table>
+  <tr valign="top">
+    <td width="16%" align="center"><img src="https://img.shields.io/badge/LIVE-34d399?style=for-the-badge" alt="Live"></td>
+    <td>The public rehearsal at <a href="https://allowanceonsolana.vercel.app">allowanceonsolana.vercel.app</a>: landing page, policy lab, narrated tour and walkthrough, developer guide, brand library and installable PWA. It runs no backend, signer, model or payment endpoint.</td>
+    <td width="22%"><a href="docs/vercel.md">Vercel deployment</a></td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><img src="https://img.shields.io/badge/GATED-B42336?style=for-the-badge" alt="Gated"></td>
+    <td>Live x402 purchases and direct USDC payments on devnet or mainnet. Implemented and covered by controlled-adapter suites, closed until an operator supplies a persistent host, credentials and funded accounts. As of the 20 September 2026 inspection, no Allowance settlement had been observed on either network.</td>
+    <td><a href="docs/integration-status.md">Integration status</a></td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><img src="https://img.shields.io/badge/VALIDATING-96631B?style=for-the-badge" alt="Validating"></td>
+    <td>The Seeker Android shell and Solana dApp Store listing. The WebView shell builds; native exports and device behavior still need validation, and the listing waits for a live server.</td>
+    <td><a href="docs/seeker-and-pwa.md">Seeker and PWA</a></td>
+  </tr>
+  <tr valign="top">
+    <td align="center"><img src="https://img.shields.io/badge/PLANNED-6F6163?style=for-the-badge" alt="Planned"></td>
+    <td>Payment channels and remote MCP, kept as design notes. The local stdio MCP bridge is implemented and shares the same policy, ledger and receipts.</td>
+    <td><a href="docs/payment-channels.md">Payment channels</a></td>
+  </tr>
+</table>
+
+<br>
+
+## Run it locally
+
+<table>
+  <tr valign="top">
+    <td width="33%"><b>Prerequisites</b><br><sub>Node 22.19 or newer in the 22 or 24 line, npm and a writable local disk. Docker for the container check.</sub></td>
+    <td width="33%"><b>Read first</b><br><sub><a href="docs/live-setup.md">Live setup</a> and the <a href="docs/threat-model.md">threat model</a>, before any payment is switched on.</sub></td>
+    <td width="33%"><b>What the checks prove</b><br><sub>The <a href="docs/verification.md">verification report</a> says what each check covers and what none of them do.</sub></td>
+  </tr>
+</table>
+
+### 1. Run the app
+
+```bash
 npm ci
-npm run dev
+npm run dev        # http://127.0.0.1:4318, Express hosts Vite in one process
 ```
 
-Open [127.0.0.1:4318](http://127.0.0.1:4318). Development is **one command: `npm run dev`**. Express hosts Vite in development; there is no second backend to start.
+For a local production build, `npm run build` then `npm start`: Express serves `dist/client` and runs the bounded background worker.
 
-For a local production build:
+### 2. Before a pull request, run what [CI](.github/workflows/ci.yml) runs
 
-```sh
-npm run build
-npm start
-```
-
-Production startup is **`npm start`**; Express serves `dist/client` and runs the bounded background worker. The local HTTP origin is allowed only at the exact configured loopback origin. Hosted origins must use HTTPS, with Secure cookies. Set `APP_ORIGIN` to the real origin and configure only the actual trusted proxy hop count.
-
-| Route         | Use                                                                                   |
-| ------------- | ------------------------------------------------------------------------------------- |
-| `/`           | Landing and interactive receipt preview                                               |
-| `/demo`       | Narrated product tour, captions and downloads; separate interactive outcome fixtures  |
-| `/lab`        | Policy lab: set an allowance, a per-request cap and a daily limit, then save the plan |
-| `/login`      | Single-operator password login                                                        |
-| `/app`        | Overview, Runs, Payments and Setup workspace; authenticated task and payment controls |
-| `/runs/:id`   | Private durable run, report, JSON export, print view and stop                         |
-| `/developers` | Tool descriptions and server-side client example                                      |
-| `/brand`      | Downloadable profiles, wallpapers, headers, social artwork and logos                  |
-
-The workspace uses a desktop sidebar and phone navigation. Direct section links are `/app?view=overview`, `/app?view=runs`, `/app?view=payments`, and `/app?view=setup`. The static public deployment shows setup requirements; private activity and live controls require the persistent operator backend. The [53-second product tour](https://allowanceonsolana.vercel.app/demo#product-tour) records the public planning tools without moving funds.
-
-## Operator and live setup
-
-```sh
-cp .env.example .env
-npm run setup:operator
-```
-
-The terminal command hides password input and writes an Argon2id hash and random session secret into ignored `.env` with mode 0600. Restart the service after setup. It rotates the session secret, invalidating old sessions. No public registration exists. Every live API stays closed until that hash and session secret are in place, so a deployment without operator credentials cannot spend.
-
-See [live setup](docs/live-setup.md) for dedicated payer and recipient setup, network-specific SOL and native Circle USDC, required associated token accounts, pinned facilitator fee sponsor, and a repeatable data wallet. Mainnet is the default network, and real spending is opt-in: it turns on with `LIVE_PAYMENTS_ENABLED=true` plus `MAINNET_PAYMENTS_ACKNOWLEDGED=true`. Devnet remains an explicit testing option; existing receipts retain their original network. Configure `OPENAI_API_KEY` and an explicit `OPENAI_MODEL`. The example `gpt-5-mini` is listed in [official documentation](https://developers.openai.com/api/docs/models/gpt-5-mini); set a model your own account can call. The app requires that explicit ID and never guesses a fallback.
-
-```sh
-npm run preflight
-```
-
-This checks configuration and networks without signing or model calls. It exits nonzero when readiness is incomplete. From the operator console, use **Check readiness** before starting a live agent run. The model has at most five calls by default, 1,200 generated tokens per call, 48,000 characters of accumulated input, four tool proposals, and three minutes per run. Each provider call is sent exactly once, with automatic client retries set to zero, so a bounded run cannot quietly multiply model calls. OpenAI billing is **outside** the USDC merchant allowance.
-
-For a separately authorized external agent, set `MCP_ENABLED=true`, create an authenticated external run, and launch the local stdio bridge with `MCP_GRANT_TOKEN` as described in [the MCP runbook](docs/mcp.md). The bridge is opt-in local stdio only, with no public HTTP endpoint, and it holds no payer key: its paid tools run on the backend through a token-authenticated loopback endpoint (`MCP_BACKEND_TOKEN`).
-
-The standalone opt-in integration check starts its own local merchant listener; stop `npm run dev` first. This command performs scripted real payments, independent of an autonomous model trace:
-
-```sh
-# Only after configuring and explicitly authorizing this real-USDC spend:
-npm run smoke:mainnet -- --confirm-mainnet-spend
-
-# Separate testing alternative: set PAYMENT_NETWORK=devnet first.
-npm run smoke:devnet -- --confirm-devnet-spend
-```
-
-Each command rejects the wrong payment network and requires its explicit confirmation flag. Mainnet also requires `MAINNET_PAYMENTS_ACKNOWLEDGED=true`. Both require `LIVE_PAYMENTS_ENABLED=true`, all payment configuration, and `DEMO_WALLET` with at least two available transactions. The scripted two-purchase scenario spends up to 0.030000 USDC; its separate 0.020000 probe must be denied before signing. It buys the wallet snapshot and latest transaction facts, then performs a separately labeled policy probe. It writes its own dated evidence file into `evidence/` the first time an operator authorizes it; the artifacts already in `evidence/` come from the controlled suites, public read-only chain checks and rehearsal captures. Without the flag it exits before creating a signer or a runtime. Do not retry uncertain payments with new IDs.
-
-## Guarded direct payments
-
-Besides buying catalog tools, an agent can pay exact USDC to recipients the operator listed in advance. The operator authorizes a **mandate** (per-request cap, ceiling, expiry, recipients) and receives a one-time grant token; the MCP tool `execute_guarded_payment` checks every request against that frozen policy, the shared daily ceiling and the payer hold, and only then signs and submits a single `TransferChecked` with the dedicated payer, proving settlement from chain evidence before the receipt says `SETTLED`. Blocked requests are durable `BLOCKED` receipts; nothing is signed for them. Recipients can be added later only with an administrator's signature and a single-use nonce. The rail is off until `DIRECT_PAYMENTS_ENABLED=true`, uses the explicitly configured payment network (`devnet` or `mainnet-beta`, exactly; the template ships devnet), and is covered by policy, ledger, transfer, MCP and API tests. Its funded devnet check requires `PAYMENT_NETWORK=devnet`: `npm run smoke:direct-devnet -- --confirm-devnet-spend`. See [docs/direct-payments.md](docs/direct-payments.md).
-
-## Controls and recovery
-
-- USDC is represented as bounded integer micro-units and decimal strings at the API boundary. `0.04` is exactly `40000`.
-- An immutable policy binds budget, per-call maximum, tools, exact destination, recipient, selected network/mint, expiry and call limit. The shared UTC daily ceiling applies across runs. Outstanding holds count even when the day changes.
-- SQLite `BEGIN IMMEDIATE` transactions reserve before signing. Unique purchase identity and canonical request hashes prevent repeated signing. Database failure denies new payments.
-- The guarded signer checks the actual transaction and durably records a signing claim before invoking the key. Uncertain outcomes remain held and freeze the payer. A rejected or crashed signer after this boundary is conservatively uncertain.
-- A successful facilitator response, chain verification and returned service result are separate evidence. Replayed purchased responses reuse the same signed identity and never require a new signature.
-- Stop or expiry prevents new signatures. Already signed work can settle afterward. Restart restores receipts and reconciliation; it does **not** restart the old model authorization. A new run remains subject to the shared daily ceiling.
-
-This is a **server-managed signer with application-enforced controls**, and the trust model is stated plainly: a compromised server could defeat application-level controls, which is why the signer stays backend-only and the documented setup uses a dedicated low-balance payer. The scope is deliberate. Controls live in application code rather than in a custom onchain budget program, a smart-wallet claim or a payment channel, and both shipped merchants are first-party sample services rather than third-party adoption.
-
-## Tests
-
-```sh
-npm run check
+```bash
+npm run check                      # lint, types, unit and integration tests, production build
 npx playwright install chromium
 npm run test:browser
+npm run build:rehearsal && npm run test:hosted
 ```
 
-`check` runs lint, TypeScript, controlled unit/integration tests, and the production build. Tests use deterministic adapters and isolated SQLite databases. They do not spend or call paid APIs. The HTTP payment test traverses the actual middleware with controlled facilitator/signing adapters. The opt-in smoke commands above are **separate funded checks**, not part of the automated suite. Browser screenshots and dated read-only findings are in `evidence/`.
+Tests use deterministic adapters and isolated SQLite databases. They never spend or call paid APIs.
 
-## Docker and persistent disk
+### 3. Open the operator workspace
 
-Use exactly one application instance and one persistent volume for SQLite, its WAL, sessions, purchase identities and merchant response cache. Never put the live backend on an ephemeral serverless filesystem.
+```bash
+cp .env.example .env
+npm run setup:operator             # Argon2id hash and session secret into .env, mode 0600
+npm run build && npm run preflight # configuration and network checks, no signing, no model calls
+```
 
-```sh
+There is no public registration. Every live API stays closed until the password hash and session secret are in place, so a deployment without operator credentials cannot spend.
+
+### 4. Live payments, only on purpose
+
+| Setting | Effect |
+|---|---|
+| `LIVE_PAYMENTS_ENABLED=true` | Turns on real spending. Off by default. |
+| `MAINNET_PAYMENTS_ACKNOWLEDGED=true` | Required as well for mainnet, the default network. |
+| `PAYMENT_NETWORK=devnet` | Selects devnet for testing. Existing receipts keep their original network. |
+| `DIRECT_PAYMENTS_ENABLED=true` | Opens the mandate rail for allowlisted recipients. |
+| `MCP_ENABLED=true` and `MCP_GRANT_TOKEN` | Lets an authorized local agent use the stdio bridge (`npm run mcp`). |
+| `OPENAI_API_KEY` and `OPENAI_MODEL` | Powers the built-in runner. The model ID is required and never guessed. |
+
+```bash
+# Only after configuring and explicitly authorizing a real-USDC spend:
+npm run smoke:mainnet -- --confirm-mainnet-spend
+
+# Testing alternatives, with PAYMENT_NETWORK=devnet:
+npm run smoke:devnet -- --confirm-devnet-spend
+npm run smoke:direct-devnet -- --confirm-devnet-spend
+```
+
+The scripted scenario spends at most 0.030000 USDC, and its separate 0.020000 probe must be denied before signing. Without the confirmation flag a smoke command exits before it creates a signer. Do not retry an uncertain payment under a new ID. Setup for payer and recipient accounts, the facilitator and the fee sponsor is in [live setup](docs/live-setup.md); every variable is in the [configuration reference](docs/configuration.md).
+
+<details>
+<summary><b>Docker and persistent disk</b></summary>
+<br>
+
+Run exactly one application instance on one persistent volume, which holds SQLite, its WAL, sessions, purchase identities and the merchant response cache. Never put the live backend on an ephemeral serverless filesystem.
+
+```bash
 docker build -t allowance .
 docker volume create allowance-data
 docker run --name allowance --restart unless-stopped \
@@ -122,33 +227,68 @@ docker run --name allowance --restart unless-stopped \
   allowance
 ```
 
-Place one HTTPS reverse proxy in front of the bound local port. `.env.docker` is ignored by git. Docker env files take literal values: omit the surrounding single quotes from the Argon2 hash generated in `.env` when copying it to `.env.docker`. Do not copy key files into the image. The image runs as the unprivileged `node` user; ensure that user can read the mounted dedicated key. For rehearsal-only hosting, omit the secret mount and keep `LIVE_PAYMENTS_ENABLED=false`; the container then serves the full rehearsal with no signer present.
+- Put one HTTPS reverse proxy in front of the bound local port. `.env.docker` is ignored by git, and Docker env files take literal values, so drop the single quotes around the Argon2 hash when copying it from `.env`.
+- Never copy key files into the image. The image runs as the unprivileged `node` user, which must be able to read the mounted key.
+- For rehearsal-only hosting, omit the secret mount and keep `LIVE_PAYMENTS_ENABLED=false`: the container then serves the full rehearsal with no signer present.
+- Back up and restore with the [supported commands](docs/runtime-recovery.md), never by copying an active SQLite file. A restored journal starts locked against new spending until an operator reviews it. Never run replicas or share one payer across journals.
 
-Use the [supported backup and restore commands](docs/runtime-recovery.md) rather than copying an active SQLite file. Restores preserve original receipts, holds and replay identities, and each restored journal begins locked against new spending, so offline recovery passes through an explicit operator review. Keep secrets and backups private. Do not run multiple replicas or share one payer across different journals. The schema migration version is recorded in `schema_migrations`; payment cache tables are created by the payment module.
+</details>
 
-## Project map and delivery
+<details>
+<summary><b>Routes</b></summary>
+<br>
 
-The red brand edition includes 26 compositions in full-size PNG and outlined SVG, a phone-friendly `/brand` library, and a complete ZIP. Use the library's **Open full-size image** action to save individual PNGs to a phone; browser downloads may go to Files. See [the brand guide](docs/brand.md) for colors, typography, dimensions and the local `npm run brand:generate` command.
+| Route | Use |
+|---|---|
+| `/` | Landing page and interactive receipt preview |
+| `/demo` | Narrated product tour with captions and downloads, plus interactive outcome fixtures |
+| `/lab` | Policy lab: set an allowance, a per-request cap and a daily limit, then save the plan |
+| `/developers` | Tool descriptions and a server-side client example |
+| `/brand` | Downloadable profiles, wallpapers, headers, social artwork and logos |
+| `/login` | Single-operator password login |
+| `/app` | Overview, Runs, Payments and Setup, with authenticated task and payment controls |
+| `/runs/:id` | A private durable run: report, JSON export, print view and stop |
 
-`src` contains the original React UI; `shared` contains validated contracts and money handling. `server/auth`, `agent`, `policy`, `payments`, `merchant`, `data`, and `db` form one Express service. [Architecture](docs/architecture.md) explains trust boundaries; [the reusable example](examples/paid-tool.ts) demonstrates calling the guarded buyer outside the sample agent.
+The workspace uses a desktop sidebar and phone navigation, with direct links such as `/app?view=payments`. The static deployment shows setup requirements; private activity and live controls need the persistent operator backend.
 
-- [Product tour and interactive walkthrough guide](docs/demo-script.md)
-- [Product descriptions](docs/product-description.md)
-- [Submission draft](docs/submission.md), written to be finalized with a funded run's receipts and the event's published rules
-- [Verification report](docs/verification.md)
-- [Integration evidence and setup gates](docs/integration-status.md)
-- [Complete configuration reference](docs/configuration.md)
-- [Durable runtime, backup and recovery](docs/runtime-recovery.md)
-- [Focused threat model](docs/threat-model.md)
-- [Local external-agent MCP runbook](docs/mcp.md)
-- [Payment channel transport design](docs/payment-channels.md), a documented future adapter
-- [Brand assets and tokens](docs/brand.md)
-- [Privacy policy](https://allowanceonsolana.vercel.app/privacy) and [terms of use](https://allowanceonsolana.vercel.app/terms), linked from every page's footer (source: `src/PrivacyPolicy.tsx`, `src/TermsOfUse.tsx`)
-- [Solana dApp Store listing kit](docs/dapp-store/listing.md): listing text, banner, screenshots and the listing decision
-- [Sources, SDK reuse and licenses](docs/sources.md)
+</details>
 
-Payment channels and remote MCP are planned adapters, kept as design notes. The local stdio MCP bridge is implemented and uses the same application service, policy, ledger and receipts. Allowance is the working product name; assess trademark availability before any commercial use. Original application code and artwork use the MIT license. Third-party dependencies retain their own licenses.
+<details>
+<summary><b>Repository layout</b></summary>
+<br>
 
-## Seeker, Android and PWA
+| Path | Contents |
+|---|---|
+| `src/` | The React UI: landing page, policy lab, walkthrough, workspace, brand library |
+| `shared/` | Validated contracts, mandates and exact money handling shared by client and server |
+| `server/` | One Express service: `auth`, `agent`, `policy`, `payments`, `direct`, `merchant`, `data`, `db` and the MCP bridge |
+| `examples/` | [`paid-tool.ts`](examples/paid-tool.ts): calling the guarded buyer outside the sample agent |
+| `tests/` | Vitest suites with controlled adapters, plus Playwright browser and hosted journeys |
+| `android/` | The Seeker WebView shell with native wallet-intent plumbing |
+| `docs/` | Architecture, setup, runbooks, threat model and dated release reports |
+| `evidence/` | Dated screenshots, deployment checks and read-only chain observations |
 
-Allowance installs as a PWA and ships an Android WebView shell (`android/`) for the Solana Seeker and dApp Store, with native wallet-intent plumbing for future wallet flows. The current product uses a server-managed payer; native exports and device behavior still need validation. The shell packages English resources only. Build, signing, test and publishing steps: [docs/seeker-and-pwa.md](docs/seeker-and-pwa.md). The store listing kit and the recommendation to hold the listing until a live server exists are in [docs/dapp-store/listing.md](docs/dapp-store/listing.md).
+</details>
+
+<br>
+
+## Documentation
+
+<table>
+  <tr valign="top">
+    <td width="33%"><b>Understand it</b><br><sub><a href="docs/product-description.md">Product description</a><br><a href="docs/architecture.md">Architecture</a><br><a href="docs/threat-model.md">Threat model</a><br><a href="docs/receipt-contract.md">Receipt contract</a></sub></td>
+    <td width="33%"><b>Operate it</b><br><sub><a href="docs/live-setup.md">Live setup</a><br><a href="docs/configuration.md">Configuration reference</a><br><a href="docs/runtime-recovery.md">Runtime, backup and recovery</a><br><a href="docs/mcp.md">Local MCP runbook</a></sub></td>
+    <td width="33%"><b>Check it</b><br><sub><a href="docs/verification.md">Verification report</a><br><a href="docs/integration-status.md">Integration evidence and gates</a><br><a href="docs/release-2026-09-20.md">Release report, 20 September 2026</a><br><a href="docs/sources.md">Sources, SDK reuse and licenses</a></sub></td>
+  </tr>
+  <tr valign="top">
+    <td><b>Show it</b><br><sub><a href="docs/demo-script.md">Product tour and walkthrough guide</a><br><a href="docs/brand.md">Brand kit: 26 compositions, tokens and fonts</a></sub></td>
+    <td><b>Ship it</b><br><sub><a href="docs/vercel.md">Vercel rehearsal</a><br><a href="docs/seeker-and-pwa.md">Seeker, Android and PWA</a><br><a href="docs/dapp-store/listing.md">dApp Store listing kit</a></sub></td>
+    <td><b>Submit it</b><br><sub><a href="docs/submission.md">Sprint submission draft</a>, written to be finalized with a funded run's receipts</sub></td>
+  </tr>
+</table>
+
+<br>
+
+<p align="center"><sub>Original code and artwork are MIT licensed (see <a href="LICENSE">LICENSE</a>); dependencies keep their own licenses. Allowance is a working product name: check trademark availability before any commercial use.</sub></p>
+
+<p align="center"><sub>Built by <a href="https://rvaclassic.xyz">Matt Sim</a>, founder of <a href="https://operatoruplift.com">Operator Uplift</a>. More builds at <a href="https://github.com/operatoruplift">github.com/operatoruplift</a>. Want one built for your product? <a href="https://cal.com/rvaclassic/15min">Book a 15-minute call</a>.</sub></p>
